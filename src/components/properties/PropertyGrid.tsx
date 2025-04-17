@@ -32,12 +32,12 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
             className="pl-9"
           />
         </div>
-        <Link to="/property/new">
-          <Button className="w-full sm:w-auto flex gap-2">
+        <Button asChild className="w-full sm:w-auto flex gap-2">
+          <Link to="/property/new">
             <Plus className="h-4 w-4" />
             <span>Nueva Propiedad</span>
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
       
       {filteredProperties.length === 0 ? (

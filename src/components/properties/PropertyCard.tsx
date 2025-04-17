@@ -11,8 +11,8 @@ interface PropertyCardProps {
 
 const PropertyCard = ({ property }: PropertyCardProps) => {
   return (
-    <Link to={`/property/${property.id}`}>
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+      <Link to={`/property/${property.id}`}>
         <div className="aspect-video overflow-hidden">
           <img
             src={property.image}
@@ -46,8 +46,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           <span>Neto:</span>
           <span>{property.netIncome}€/mes</span>
         </CardFooter>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 };
 
