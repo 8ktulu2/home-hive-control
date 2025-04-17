@@ -18,6 +18,8 @@ export interface Property {
   ibi?: number;
   documents?: Document[];
   tasks?: Task[];
+  paymentHistory?: PaymentRecord[];
+  financialMetrics?: FinancialMetrics;
 }
 
 export interface Tenant {
@@ -54,4 +56,23 @@ export interface FinancialSummary {
   totalRent: number;
   totalExpenses: number;
   netIncome: number;
+}
+
+export interface PaymentRecord {
+  id: string;
+  date: string;
+  amount: number;
+  isPaid: boolean;
+  notes?: string;
+  month: number;
+  year: number;
+}
+
+export interface FinancialMetrics {
+  roi?: number;
+  cashOnCash?: number;
+  capRate?: number;
+  grossRentMultiplier?: number;
+  netOperatingIncome?: number;
+  annualizedReturn?: number;
 }
