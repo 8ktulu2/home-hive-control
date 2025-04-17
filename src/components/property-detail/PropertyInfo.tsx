@@ -1,7 +1,7 @@
 
 import { Property } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap } from 'lucide-react';
+import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap, Shield } from 'lucide-react';
 import ContactDetails from '@/components/properties/ContactDetails';
 
 interface PropertyInfoProps {
@@ -49,6 +49,15 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
                 <p className="text-sm text-muted-foreground">No hay inquilinos</p>
               )}
             </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <Shield className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+            <ContactDetails 
+              label="Compañía de Seguros"
+              value={property.insuranceCompany || 'No especificado'} 
+              details={property.insuranceDetails}
+            />
           </div>
         </div>
         

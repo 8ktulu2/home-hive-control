@@ -9,7 +9,7 @@ import PropertyDocuments from '@/components/property-detail/PropertyDocuments';
 import PropertyFinances from '@/components/property-detail/PropertyFinances';
 import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import { mockProperties } from '@/data/mockData';
-import { Property, Task, PaymentRecord } from '@/types/property';
+import { Property, Task, PaymentRecord, MonthlyExpense } from '@/types/property';
 import { toast } from 'sonner';
 
 const PropertyDetail = () => {
@@ -49,14 +49,18 @@ const PropertyDetail = () => {
     }
   };
 
-  const handleTaskAdd = (newTask: { title: string; description?: string }) => {
+  const handleTaskAdd = (newTask: { title: string; description?: string; notification?: { date: string; enabled: boolean } }) => {
     if (property) {
       const task: Task = {
         id: `task-${Date.now()}`,
         title: newTask.title,
         description: newTask.description,
         completed: false,
-        dueDate: undefined
+        dueDate: undefined,
+        notification: newTask.notification ? {
+          enabled: newTask.notification.enabled,
+          date: newTask.notification.date,
+        } : undefined
       };
       
       setProperty({
@@ -71,6 +75,18 @@ const PropertyDetail = () => {
       setProperty({
         ...property,
         tasks: property.tasks.filter(task => task.id !== taskId)
+      });
+    }
+  };
+
+  const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
+    if (property && property.tasks) {
+      const updatedTasks = property.tasks.map(task => 
+        task.id === taskId ? { ...task, ...updates } : task
+      );
+      setProperty({
+        ...property,
+        tasks: updatedTasks
       });
     }
   };
@@ -129,6 +145,40 @@ const PropertyDetail = () => {
     }
   };
 
+  const handleExpenseAdd = (expense: Partial<MonthlyExpense>) => {
+    if (property) {
+      const newExpense: MonthlyExpense = {
+        id: `expense-${Date.now()}`,
+        name: expense.name || '',
+        amount: expense.amount || 0,
+        isPaid: expense.isPaid || false,
+        category: expense.category || 'utilities',
+        propertyId: property.id,
+        month: new Date().getMonth(),
+        year: new Date().getFullYear(),
+        date: new Date().toISOString()
+      };
+      
+      setProperty({
+        ...property,
+        monthlyExpenses: [...(property.monthlyExpenses || []), newExpense]
+      });
+    }
+  };
+  
+  const handleExpenseUpdate = (expenseId: string, updates: Partial<MonthlyExpense>) => {
+    if (property && property.monthlyExpenses) {
+      const updatedExpenses = property.monthlyExpenses.map(expense => 
+        expense.id === expenseId ? { ...expense, ...updates } : expense
+      );
+      
+      setProperty({
+        ...property,
+        monthlyExpenses: updatedExpenses
+      });
+    }
+  };
+
   if (!property) {
     return (
       <Layout>
@@ -154,7 +204,11 @@ const PropertyDetail = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PropertyInfo property={property} />
-          <PropertyFinances property={property} />
+          <PropertyFinances 
+            property={property} 
+            onExpenseAdd={handleExpenseAdd} 
+            onExpenseUpdate={handleExpenseUpdate} 
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -163,6 +217,7 @@ const PropertyDetail = () => {
             onTaskToggle={handleTaskToggle}
             onTaskAdd={handleTaskAdd}
             onTaskDelete={handleTaskDelete}
+            onTaskUpdate={handleTaskUpdate}
           />
           <PropertyDocuments 
             documents={property.documents || []}

@@ -24,6 +24,9 @@ export interface Property {
   communityManagerDetails?: ContactDetails;
   waterProviderDetails?: ContactDetails;
   electricityProviderDetails?: ContactDetails;
+  homeInsurance?: Insurance;
+  lifeInsurance?: Insurance;
+  monthlyExpenses?: MonthlyExpense[];
 }
 
 export interface Tenant {
@@ -38,6 +41,15 @@ export interface Mortgage {
   bank?: string;
   monthlyPayment?: number;
   endDate?: string;
+}
+
+export interface Insurance {
+  company?: string;
+  policyNumber?: string;
+  cost?: number;
+  renewalDate?: string;
+  isPaid?: boolean;
+  paymentFrequency?: 'monthly' | 'quarterly' | 'annually';
 }
 
 export interface Document {
@@ -56,6 +68,14 @@ export interface Task {
   description?: string;
   completed: boolean;
   dueDate?: string;
+  notification?: TaskNotification;
+}
+
+export interface TaskNotification {
+  enabled: boolean;
+  date: string;
+  reminderDays?: number;
+  type?: 'email' | 'push' | 'both';
 }
 
 export interface FinancialSummary {

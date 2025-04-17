@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Document } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Upload, FileType, Download, Trash, File } from 'lucide-react';
+import { FileText, Upload, FileType, Download, Trash, File, FolderOpen, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,12 +16,12 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
   const [activeCategory, setActiveCategory] = useState('all');
   
   const categories = [
-    { id: 'all', name: 'Todos' },
-    { id: 'tenant-contract', name: 'Contratos de Inquilino' },
-    { id: 'supply-contract', name: 'Contratos de Suministros' },
-    { id: 'insurance', name: 'Seguros' },
-    { id: 'invoice', name: 'Facturas' },
-    { id: 'other', name: 'Otros' }
+    { id: 'all', name: 'Todos', icon: <FolderOpen className="h-4 w-4" /> },
+    { id: 'tenant-contract', name: 'Contratos de Inquilino', icon: <FileText className="h-4 w-4" /> },
+    { id: 'supply-contract', name: 'Contratos de Suministros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'insurance', name: 'Seguros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'invoice', name: 'Facturas', icon: <FileText className="h-4 w-4" /> },
+    { id: 'other', name: 'Otros', icon: <Folder className="h-4 w-4" /> }
   ];
   
   const filteredDocuments = activeCategory === 'all' 
@@ -98,60 +98,64 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
           </div>
         )}
 
-        <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="w-full mb-4 overflow-auto flex-nowrap whitespace-nowrap">
-            {categories.map(category => (
-              <TabsTrigger key={category.id} value={category.id} className="flex-shrink-0">
-                {category.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+          {categories.map(category => (
+            <Button
+              key={category.id}
+              variant={activeCategory === category.id ? "default" : "outline"}
+              className="flex items-center gap-2 justify-center"
+              onClick={() => setActiveCategory(category.id)}
+            >
+              {category.icon}
+              <span className="text-xs whitespace-nowrap overflow-hidden text-ellipsis">{category.name}</span>
+            </Button>
+          ))}
+        </div>
           
-          <TabsContent value={activeCategory}>
-            {filteredDocuments.length === 0 ? (
-              <p className="text-center py-6 text-muted-foreground">No hay documentos en esta categoría</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {filteredDocuments.map(document => (
-                  <div 
-                    key={document.id} 
-                    className="border rounded-lg p-3 flex flex-col"
-                  >
-                    <div className="flex justify-center p-2">
-                      {getDocumentIcon(document.type)}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-sm truncate">{document.name}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(document.uploadDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex justify-between mt-2 pt-2 border-t">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-primary flex items-center gap-1"
-                        onClick={() => handleDownload(document)}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        <span className="text-xs">Descargar</span>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-destructive flex items-center gap-1"
-                        onClick={() => handleDelete(document.id)}
-                      >
-                        <Trash className="h-3.5 w-3.5" />
-                        <span className="text-xs">Borrar</span>
-                      </Button>
-                    </div>
+        <div className="mt-4">
+          {filteredDocuments.length === 0 ? (
+            <p className="text-center py-6 text-muted-foreground">No hay documentos en esta categoría</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredDocuments.map(document => (
+                <div 
+                  key={document.id} 
+                  className="border rounded-lg p-3 flex flex-col"
+                >
+                  <div className="flex justify-center p-2">
+                    {getDocumentIcon(document.type)}
                   </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-sm truncate">{document.name}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(document.uploadDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex justify-between mt-2 pt-2 border-t">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-primary flex items-center gap-1"
+                      onClick={() => handleDownload(document)}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span className="text-xs">Descargar</span>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-destructive flex items-center gap-1"
+                      onClick={() => handleDelete(document.id)}
+                    >
+                      <Trash className="h-3.5 w-3.5" />
+                      <span className="text-xs">Borrar</span>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
