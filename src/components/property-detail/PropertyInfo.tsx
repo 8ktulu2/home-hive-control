@@ -2,6 +2,7 @@
 import { Property } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap } from 'lucide-react';
+import ContactDetails from '@/components/properties/ContactDetails';
 
 interface PropertyInfoProps {
   property: Property;
@@ -54,26 +55,29 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
         <div className="space-y-3">
           <div className="flex items-start gap-2">
             <Building className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Administrador Comunidad</p>
-              <p className="text-sm text-muted-foreground">{property.communityManager || 'No especificado'}</p>
-            </div>
+            <ContactDetails 
+              label="Administrador Comunidad"
+              value={property.communityManager || 'No especificado'} 
+              details={property.communityManagerDetails}
+            />
           </div>
           
           <div className="flex items-start gap-2">
             <Droplet className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Proveedor de Agua</p>
-              <p className="text-sm text-muted-foreground">{property.waterProvider || 'No especificado'}</p>
-            </div>
+            <ContactDetails 
+              label="Proveedor de Agua"
+              value={property.waterProvider || 'No especificado'} 
+              details={property.waterProviderDetails}
+            />
           </div>
           
           <div className="flex items-start gap-2">
             <Zap className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Proveedor de Electricidad</p>
-              <p className="text-sm text-muted-foreground">{property.electricityProvider || 'No especificado'}</p>
-            </div>
+            <ContactDetails 
+              label="Proveedor de Electricidad"
+              value={property.electricityProvider || 'No especificado'} 
+              details={property.electricityProviderDetails}
+            />
           </div>
         </div>
       </CardContent>

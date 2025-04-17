@@ -1,9 +1,11 @@
 
+import { useState } from 'react';
 import { Document } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Upload, FileType, Download, Trash } from 'lucide-react';
+import { FileText, Upload, FileType, Download, Trash, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PropertyDocumentsProps {
   documents: Document[];
@@ -11,6 +13,21 @@ interface PropertyDocumentsProps {
 }
 
 const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsProps) => {
+  const [activeCategory, setActiveCategory] = useState('all');
+  
+  const categories = [
+    { id: 'all', name: 'Todos' },
+    { id: 'tenant-contract', name: 'Contratos de Inquilino' },
+    { id: 'supply-contract', name: 'Contratos de Suministros' },
+    { id: 'insurance', name: 'Seguros' },
+    { id: 'invoice', name: 'Facturas' },
+    { id: 'other', name: 'Otros' }
+  ];
+  
+  const filteredDocuments = activeCategory === 'all' 
+    ? documents 
+    : documents.filter(doc => doc.category === activeCategory);
+  
   const handleFileUpload = () => {
     toast.info('La función de subida de documentos estará disponible próximamente', {
       description: 'Esta característica está en desarrollo'
@@ -42,6 +59,9 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
     }
   };
 
+  const tenantContracts = documents.filter(doc => doc.category === 'tenant-contract');
+  const primaryContract = tenantContracts.find(doc => doc.isPrimary) || tenantContracts[0];
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -60,48 +80,78 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
         </Button>
       </CardHeader>
       <CardContent>
-        {documents.length === 0 ? (
-          <p className="text-center py-6 text-muted-foreground">No hay documentos todavía</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {documents.map(document => (
-              <div 
-                key={document.id} 
-                className="border rounded-lg p-3 flex flex-col"
-              >
-                <div className="flex justify-center p-2">
-                  {getDocumentIcon(document.type)}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-sm truncate">{document.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(document.uploadDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex justify-between mt-2 pt-2 border-t">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary flex items-center gap-1"
-                    onClick={() => handleDownload(document)}
-                  >
+        {primaryContract && (
+          <div className="mb-4 p-3 bg-primary/10 rounded-lg">
+            <div className="flex items-start gap-3">
+              <File className="h-10 w-10 text-primary" />
+              <div className="flex-1">
+                <h3 className="font-medium mb-1">Contrato Principal</h3>
+                <p className="text-sm text-muted-foreground mb-2">{primaryContract.name}</p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="text-primary flex items-center gap-1" onClick={() => handleDownload(primaryContract)}>
                     <Download className="h-3.5 w-3.5" />
                     <span className="text-xs">Descargar</span>
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-destructive flex items-center gap-1"
-                    onClick={() => handleDelete(document.id)}
-                  >
-                    <Trash className="h-3.5 w-3.5" />
-                    <span className="text-xs">Borrar</span>
-                  </Button>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         )}
+
+        <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
+          <TabsList className="w-full mb-4 overflow-auto flex-nowrap whitespace-nowrap">
+            {categories.map(category => (
+              <TabsTrigger key={category.id} value={category.id} className="flex-shrink-0">
+                {category.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          <TabsContent value={activeCategory}>
+            {filteredDocuments.length === 0 ? (
+              <p className="text-center py-6 text-muted-foreground">No hay documentos en esta categoría</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {filteredDocuments.map(document => (
+                  <div 
+                    key={document.id} 
+                    className="border rounded-lg p-3 flex flex-col"
+                  >
+                    <div className="flex justify-center p-2">
+                      {getDocumentIcon(document.type)}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm truncate">{document.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(document.uploadDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex justify-between mt-2 pt-2 border-t">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-primary flex items-center gap-1"
+                        onClick={() => handleDownload(document)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        <span className="text-xs">Descargar</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-destructive flex items-center gap-1"
+                        onClick={() => handleDelete(document.id)}
+                      >
+                        <Trash className="h-3.5 w-3.5" />
+                        <span className="text-xs">Borrar</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

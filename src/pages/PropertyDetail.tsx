@@ -7,8 +7,9 @@ import PropertyInfo from '@/components/property-detail/PropertyInfo';
 import PropertyTasks from '@/components/property-detail/PropertyTasks';
 import PropertyDocuments from '@/components/property-detail/PropertyDocuments';
 import PropertyFinances from '@/components/property-detail/PropertyFinances';
+import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import { mockProperties } from '@/data/mockData';
-import { Property, Task } from '@/types/property';
+import { Property, Task, PaymentRecord } from '@/types/property';
 import { toast } from 'sonner';
 
 const PropertyDetail = () => {
@@ -82,6 +83,51 @@ const PropertyDetail = () => {
       });
     }
   };
+  
+  const handlePaymentUpdate = (month: number, year: number, isPaid: boolean, notes?: string) => {
+    if (property) {
+      const existingPayments = property.paymentHistory || [];
+      const existingPaymentIndex = existingPayments.findIndex(p => p.month === month && p.year === year);
+      
+      let updatedPayments: PaymentRecord[];
+      
+      if (existingPaymentIndex >= 0) {
+        // Update existing payment record
+        updatedPayments = [...existingPayments];
+        updatedPayments[existingPaymentIndex] = {
+          ...updatedPayments[existingPaymentIndex],
+          isPaid,
+          date: new Date().toISOString(),
+          notes: notes || updatedPayments[existingPaymentIndex].notes
+        };
+      } else {
+        // Create new payment record
+        const newPayment: PaymentRecord = {
+          id: `payment-${Date.now()}`,
+          date: new Date().toISOString(),
+          amount: property.rent,
+          isPaid,
+          month,
+          year,
+          notes
+        };
+        updatedPayments = [...existingPayments, newPayment];
+      }
+      
+      // Update current month's payment status in property
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      
+      const isCurrentMonth = month === currentMonth && year === currentYear;
+      
+      setProperty({
+        ...property,
+        paymentHistory: updatedPayments,
+        rentPaid: isCurrentMonth ? isPaid : property.rentPaid
+      });
+    }
+  };
 
   if (!property) {
     return (
@@ -99,6 +145,11 @@ const PropertyDetail = () => {
         <PropertyDetailHeader 
           property={property}
           onRentPaidChange={handleRentPaidChange}
+        />
+
+        <MonthlyPaymentStatus 
+          property={property}
+          onPaymentUpdate={handlePaymentUpdate}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

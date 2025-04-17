@@ -4,14 +4,15 @@ import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import PropertyCard from './PropertyCard';
-import { Property } from '@/types/property';
+import { Property, PaymentRecord } from '@/types/property';
 import { Link } from 'react-router-dom';
 
 interface PropertyGridProps {
   properties: Property[];
+  onPropertiesUpdate?: (updatedProperties: Property[]) => void;
 }
 
-const PropertyGrid = ({ properties }: PropertyGridProps) => {
+const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const filteredProperties = properties.filter(
@@ -19,6 +20,52 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
       property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePaymentUpdate = (propertyId: string, month: number, year: number, isPaid: boolean, notes?: string) => {
+    const updatedProperties = properties.map(property => {
+      if (property.id === propertyId) {
+        const existingPayments = property.paymentHistory || [];
+        const existingPaymentIndex = existingPayments.findIndex(p => p.month === month && p.year === year);
+        
+        let updatedPayments: PaymentRecord[];
+        
+        if (existingPaymentIndex >= 0) {
+          // Update existing payment record
+          updatedPayments = [...existingPayments];
+          updatedPayments[existingPaymentIndex] = {
+            ...updatedPayments[existingPaymentIndex],
+            isPaid,
+            date: new Date().toISOString(),
+            notes: notes || updatedPayments[existingPaymentIndex].notes
+          };
+        } else {
+          // Create new payment record
+          const newPayment: PaymentRecord = {
+            id: `payment-${Date.now()}`,
+            date: new Date().toISOString(),
+            amount: property.rent,
+            isPaid,
+            month,
+            year,
+            notes
+          };
+          updatedPayments = [...existingPayments, newPayment];
+        }
+        
+        // Update the property
+        return {
+          ...property,
+          paymentHistory: updatedPayments,
+          rentPaid: isPaid
+        };
+      }
+      return property;
+    });
+    
+    if (onPropertiesUpdate) {
+      onPropertiesUpdate(updatedProperties);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -48,7 +95,11 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map(property => (
-            <PropertyCard key={property.id} property={property} />
+            <PropertyCard 
+              key={property.id} 
+              property={property} 
+              onPaymentUpdate={handlePaymentUpdate}
+            />
           ))}
         </div>
       )}

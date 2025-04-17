@@ -20,6 +20,10 @@ export interface Property {
   tasks?: Task[];
   paymentHistory?: PaymentRecord[];
   financialMetrics?: FinancialMetrics;
+  insuranceDetails?: ContactDetails;
+  communityManagerDetails?: ContactDetails;
+  waterProviderDetails?: ContactDetails;
+  electricityProviderDetails?: ContactDetails;
 }
 
 export interface Tenant {
@@ -42,6 +46,8 @@ export interface Document {
   type: string;
   url: string;
   uploadDate: string;
+  category?: 'tenant-contract' | 'supply-contract' | 'insurance' | 'invoice' | 'other';
+  isPrimary?: boolean;
 }
 
 export interface Task {
@@ -75,4 +81,24 @@ export interface FinancialMetrics {
   grossRentMultiplier?: number;
   netOperatingIncome?: number;
   annualizedReturn?: number;
+}
+
+export interface ContactDetails {
+  phone?: string;
+  email?: string;
+  website?: string;
+  contactPerson?: string;
+  notes?: string;
+}
+
+export interface MonthlyExpense {
+  id: string;
+  name: string;
+  amount: number;
+  isPaid: boolean;
+  date?: string;
+  category: string;
+  propertyId: string;
+  month: number;
+  year: number;
 }
