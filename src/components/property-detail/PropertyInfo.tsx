@@ -76,21 +76,6 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
               )}
             </div>
           </div>
-          
-          <Button
-            variant="ghost"
-            className="w-full flex items-start gap-2 justify-start h-auto py-2"
-            onClick={() => handleContactClick(
-              'Compañía de Seguros',
-              property.insuranceDetails
-            )}
-          >
-            <Shield className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div className="text-left">
-              <p className="text-sm font-medium">Compañía de Seguros</p>
-              <p className="text-sm text-muted-foreground">{property.insuranceCompany || 'No especificado'}</p>
-            </div>
-          </Button>
         </div>
         
         <div className="space-y-3">
@@ -138,6 +123,21 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
               <p className="text-sm text-muted-foreground">{property.electricityProvider || 'No especificado'}</p>
             </div>
           </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full flex items-start gap-2 justify-start h-auto py-2"
+            onClick={() => handleContactClick(
+              'Compañía de Seguros',
+              property.insuranceDetails
+            )}
+          >
+            <Shield className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+            <div className="text-left">
+              <p className="text-sm font-medium">Compañía de Seguros</p>
+              <p className="text-sm text-muted-foreground">{property.insuranceCompany || 'No especificado'}</p>
+            </div>
+          </Button>
         </div>
       </CardContent>
 
@@ -146,7 +146,7 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
           isOpen={true}
           onClose={() => setSelectedContact(null)}
           title={selectedContact.title}
-          details={selectedContact.details}
+          details={selectedContact.details || {}}
         />
       )}
       

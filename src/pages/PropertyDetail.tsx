@@ -11,6 +11,8 @@ import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import { mockProperties } from '@/data/mockData';
 import { Property, Task, PaymentRecord, MonthlyExpense } from '@/types/property';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { FileSpreadsheet } from 'lucide-react';
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -27,15 +29,6 @@ const PropertyDetail = () => {
       navigate('/');
     }
   }, [id, navigate]);
-
-  const handleRentPaidChange = (paid: boolean) => {
-    if (property) {
-      setProperty({
-        ...property,
-        rentPaid: paid
-      });
-    }
-  };
 
   const handleTaskToggle = (taskId: string, completed: boolean) => {
     if (property && property.tasks) {
@@ -172,11 +165,41 @@ const PropertyDetail = () => {
         expense.id === expenseId ? { ...expense, ...updates } : expense
       );
       
+      // Recalculate total expenses and net income
+      let totalExpenses = property.expenses;
+      const updatedExpense = updates.isPaid !== undefined ? updates : null;
+      
+      if (updatedExpense && updatedExpense.isPaid) {
+        // If expense is marked as paid, remove from total expenses
+        const expense = property.monthlyExpenses.find(e => e.id === expenseId);
+        if (expense && !expense.isPaid) {
+          totalExpenses -= expense.amount;
+        }
+      } else if (updatedExpense && !updatedExpense.isPaid) {
+        // If expense is marked as unpaid, add to total expenses
+        const expense = property.monthlyExpenses.find(e => e.id === expenseId);
+        if (expense && expense.isPaid) {
+          totalExpenses += expense.amount;
+        }
+      }
+      
+      const netIncome = property.rent - totalExpenses;
+      
       setProperty({
         ...property,
-        monthlyExpenses: updatedExpenses
+        monthlyExpenses: updatedExpenses,
+        expenses: totalExpenses,
+        netIncome
       });
     }
+  };
+  
+  const handleExportToGoogleSheets = () => {
+    toast.success('Preparando exportación a Google Sheets...');
+    // En una aplicación real, aquí se conectaría con la API de Google Sheets
+    setTimeout(() => {
+      toast.success('Datos exportados correctamente a Google Sheets');
+    }, 1500);
   };
 
   if (!property) {
@@ -192,10 +215,20 @@ const PropertyDetail = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <PropertyDetailHeader 
-          property={property}
-          onRentPaidChange={handleRentPaidChange}
-        />
+        <div className="flex justify-between items-start">
+          <PropertyDetailHeader 
+            property={property}
+          />
+          
+          <Button 
+            variant="outline" 
+            onClick={handleExportToGoogleSheets}
+            className="flex items-center gap-2"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            <span>Exportar a Google Sheets</span>
+          </Button>
+        </div>
 
         <MonthlyPaymentStatus 
           property={property}

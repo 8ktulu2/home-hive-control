@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import PropertyCard from './PropertyCard';
 import { Property, PaymentRecord } from '@/types/property';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface PropertyGridProps {
   properties: Property[];
@@ -64,6 +65,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
     
     if (onPropertiesUpdate) {
       onPropertiesUpdate(updatedProperties);
+      toast.success(`Estado de pago actualizado para ${month + 1}/${year}`);
     }
   };
 

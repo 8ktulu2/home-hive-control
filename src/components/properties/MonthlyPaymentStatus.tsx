@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, CircleDashed, XCircle, CalendarDays, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MonthlyPaymentStatusProps {
   property: Property;
@@ -174,12 +175,19 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
                       </div>
                     )}
                     {paymentNotes && (
-                      <div className="flex items-center mt-1 text-xs">
-                        <FileText className="h-3 w-3 mr-1" />
-                        <span className="truncate w-full max-w-[80px]" title={paymentNotes}>
-                          {paymentNotes.length > 10 ? paymentNotes.substring(0, 10) + '...' : paymentNotes}
-                        </span>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center mt-1 text-xs">
+                            <FileText className="h-3 w-3 mr-1" />
+                            <span className="truncate w-full max-w-[80px]">
+                              {paymentNotes.length > 10 ? paymentNotes.substring(0, 10) + '...' : paymentNotes}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs whitespace-normal">{paymentNotes}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
                 </AlertDialogTrigger>

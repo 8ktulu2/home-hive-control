@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -40,6 +39,7 @@ const PropertyEdit = () => {
         documents: [],
         tenants: [],
         paymentHistory: [],
+        monthlyExpenses: [],
       });
       setLoading(false);
     } else {
@@ -122,19 +122,58 @@ const PropertyEdit = () => {
 
       setProperty({
         ...property,
-        [type]: type === 'insuranceCompany' ? value : property[type],
+        [type]: field === 'name' ? value : property[type],
         [detailsField]: updatedDetails
       });
     }
   };
 
+  // Calculate total expenses from all expense sources
+  const calculateTotalExpenses = () => {
+    let total = 0;
+    
+    // Add mortgage payment if exists
+    if (property?.mortgage?.monthlyPayment) {
+      total += property.mortgage.monthlyPayment;
+    }
+    
+    // Add IBI (divided by 12 for monthly amount)
+    if (property?.ibi) {
+      total += property.ibi / 12;
+    }
+    
+    // Add home insurance (divided by 12 for monthly amount)
+    if (property?.homeInsurance?.cost) {
+      total += property.homeInsurance.cost / 12;
+    }
+    
+    // Add life insurance (divided by 12 for monthly amount)
+    if (property?.lifeInsurance?.cost) {
+      total += property.lifeInsurance.cost / 12;
+    }
+    
+    // Add any other monthly expenses
+    if (property?.monthlyExpenses) {
+      property.monthlyExpenses.forEach(expense => {
+        if (!expense.isPaid) {
+          total += expense.amount;
+        }
+      });
+    }
+    
+    return total;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (property) {
-      // Calcular el beneficio neto
-      const netIncome = property.rent - property.expenses;
+      // Calculate expenses and net income
+      const expenses = calculateTotalExpenses();
+      const netIncome = property.rent - expenses;
+      
       const updatedProperty = {
         ...property,
+        expenses,
         netIncome
       };
       
@@ -256,7 +295,7 @@ const PropertyEdit = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div className="space-y-2">
                     <Label htmlFor="rent">Alquiler Mensual (€)</Label>
                     <Input
@@ -265,36 +304,12 @@ const PropertyEdit = () => {
                       value={property.rent}
                       onChange={(e) => {
                         const rent = parseInt(e.target.value);
-                        const netIncome = rent - property.expenses;
+                        const expenses = calculateTotalExpenses();
+                        const netIncome = rent - expenses;
                         setProperty({ ...property, rent, netIncome });
                       }}
                       placeholder="0"
                       required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="expenses">Gastos Mensuales (€)</Label>
-                    <Input
-                      id="expenses"
-                      type="number"
-                      value={property.expenses}
-                      onChange={(e) => {
-                        const expenses = parseInt(e.target.value);
-                        const netIncome = property.rent - expenses;
-                        setProperty({ ...property, expenses, netIncome });
-                      }}
-                      placeholder="0"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ibi">IBI Anual (€)</Label>
-                    <Input
-                      id="ibi"
-                      type="number"
-                      value={property.ibi || 0}
-                      onChange={(e) => setProperty({ ...property, ibi: parseInt(e.target.value) })}
-                      placeholder="0"
                     />
                   </div>
                 </div>
@@ -402,7 +417,7 @@ const PropertyEdit = () => {
                     <Label>Nombre</Label>
                     <Input
                       value={property.communityManager || ''}
-                      onChange={(e) => setProperty({ ...property, communityManager: e.target.value })}
+                      onChange={(e) => updateContactDetails('communityManager', 'name', e.target.value)}
                       placeholder="Nombre del administrador"
                     />
                   </div>
@@ -538,6 +553,16 @@ const PropertyEdit = () => {
                       placeholder="Sitio web"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label>Notas</Label>
+                    <Textarea
+                      value={property.waterProviderDetails?.notes || ''}
+                      onChange={(e) => updateContactDetails('waterProvider', 'notes', e.target.value)}
+                      placeholder="Notas adicionales"
+                      rows={2}
+                    />
+                  </div>
                 </div>
                 
                 {/* Proveedor de electricidad */}
@@ -580,6 +605,16 @@ const PropertyEdit = () => {
                       placeholder="Sitio web"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label>Notas</Label>
+                    <Textarea
+                      value={property.electricityProviderDetails?.notes || ''}
+                      onChange={(e) => updateContactDetails('electricityProvider', 'notes', e.target.value)}
+                      placeholder="Notas adicionales"
+                      rows={2}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -615,10 +650,20 @@ const PropertyEdit = () => {
                         id="mortgage-payment"
                         type="number"
                         value={property.mortgage?.monthlyPayment || 0}
-                        onChange={(e) => setProperty({
-                          ...property,
-                          mortgage: { ...property.mortgage || {}, monthlyPayment: parseFloat(e.target.value) }
-                        })}
+                        onChange={(e) => {
+                          const monthlyPayment = parseFloat(e.target.value);
+                          setProperty({
+                            ...property,
+                            mortgage: { ...property.mortgage || {}, monthlyPayment }
+                          });
+                          
+                          // Recalculate expenses and net income
+                          setTimeout(() => {
+                            const expenses = calculateTotalExpenses();
+                            const netIncome = property.rent - expenses;
+                            setProperty(prev => ({ ...prev, expenses, netIncome }));
+                          }, 0);
+                        }}
                         placeholder="0"
                       />
                     </div>
@@ -646,10 +691,20 @@ const PropertyEdit = () => {
                       <Input
                         type="number"
                         value={property.homeInsurance?.cost || 0}
-                        onChange={(e) => setProperty({
-                          ...property,
-                          homeInsurance: { ...property.homeInsurance || {}, cost: parseFloat(e.target.value) }
-                        })}
+                        onChange={(e) => {
+                          const cost = parseFloat(e.target.value);
+                          setProperty({
+                            ...property,
+                            homeInsurance: { ...property.homeInsurance || {}, cost }
+                          });
+                          
+                          // Recalculate expenses and net income
+                          setTimeout(() => {
+                            const expenses = calculateTotalExpenses();
+                            const netIncome = property.rent - expenses;
+                            setProperty(prev => ({ ...prev, expenses, netIncome }));
+                          }, 0);
+                        }}
                         placeholder="0"
                       />
                     </div>
@@ -659,10 +714,41 @@ const PropertyEdit = () => {
                       <Input
                         type="number"
                         value={property.lifeInsurance?.cost || 0}
-                        onChange={(e) => setProperty({
-                          ...property,
-                          lifeInsurance: { ...property.lifeInsurance || {}, cost: parseFloat(e.target.value) }
-                        })}
+                        onChange={(e) => {
+                          const cost = parseFloat(e.target.value);
+                          setProperty({
+                            ...property,
+                            lifeInsurance: { ...property.lifeInsurance || {}, cost }
+                          });
+                          
+                          // Recalculate expenses and net income
+                          setTimeout(() => {
+                            const expenses = calculateTotalExpenses();
+                            const netIncome = property.rent - expenses;
+                            setProperty(prev => ({ ...prev, expenses, netIncome }));
+                          }, 0);
+                        }}
+                        placeholder="0"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="ibi">IBI Anual (€)</Label>
+                      <Input
+                        id="ibi"
+                        type="number"
+                        value={property.ibi || 0}
+                        onChange={(e) => {
+                          const ibi = parseInt(e.target.value);
+                          setProperty({ ...property, ibi });
+                          
+                          // Recalculate expenses and net income
+                          setTimeout(() => {
+                            const expenses = calculateTotalExpenses();
+                            const netIncome = property.rent - expenses;
+                            setProperty(prev => ({ ...prev, expenses, netIncome }));
+                          }, 0);
+                        }}
                         placeholder="0"
                       />
                     </div>
