@@ -1,4 +1,9 @@
+
 import { Property } from '@/types/property';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { formatCurrency, formatPercentage } from '@/lib/formatters';
+import { Link } from 'react-router-dom';
 
 export interface FinancialMetricsProps {
   properties: Property[];

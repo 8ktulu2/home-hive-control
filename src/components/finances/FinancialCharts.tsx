@@ -1,4 +1,27 @@
+
 import { Property } from '@/types/property';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { formatCurrency } from '@/lib/formatters';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  Legend, 
+  Tooltip, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid,
+  LineChart,
+  Line
+} from 'recharts';
+import { Link } from 'react-router-dom';
 
 export interface FinancialChartsProps {
   properties: Property[];

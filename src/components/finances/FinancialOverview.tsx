@@ -1,4 +1,8 @@
+
 import { Property } from '@/types/property';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/formatters';
+import { Calendar, DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
 
 export interface FinancialOverviewProps {
   properties: Property[];
