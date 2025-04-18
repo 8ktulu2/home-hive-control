@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Property, MonthlyExpense } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +33,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
   const currentYear = currentDate.getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   
-  // Calculate financial values
   const monthlyRevenue = property.rent;
   const monthlyExpenses = property.expenses;
   const netIncome = property.netIncome;
@@ -42,7 +40,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
   const ibi = property.ibi || 0;
   const mortgagePayment = property.mortgage?.monthlyPayment || 0;
 
-  // Expense categories
   const expenseCategories = [
     { id: 'utilities', name: 'Suministros' },
     { id: 'community', name: 'Comunidad' },
@@ -53,19 +50,16 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     { id: 'other', name: 'Otros' }
   ];
 
-  // Get monthly expenses for current month
   const currentMonthExpenses = property.monthlyExpenses?.filter(
     expense => expense.month === currentMonth && expense.year === currentYear
   ) || [];
 
-  // Calculate the expense items - start with fixed ones
   const fixedExpenseItems = [
     { id: 'mortgage', name: 'Hipoteca', value: mortgagePayment, isPaid: false, category: 'mortgage' },
     { id: 'ibi', name: 'IBI (anual)', value: ibi / 12, isPaid: false, category: 'taxes' },
     { id: 'community', name: 'Comunidad', value: property.expenses - mortgagePayment - (ibi / 12), isPaid: false, category: 'community' },
   ];
 
-  // Add home insurance if exists
   if (property.homeInsurance?.cost) {
     fixedExpenseItems.push({
       id: 'home-insurance',
@@ -76,7 +70,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     });
   }
 
-  // Add life insurance if exists
   if (property.lifeInsurance?.cost) {
     fixedExpenseItems.push({
       id: 'life-insurance',
@@ -87,7 +80,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     });
   }
 
-  // Combine fixed expenses with monthly expenses
   const allExpenses = [
     ...fixedExpenseItems,
     ...currentMonthExpenses.map(expense => ({
@@ -99,7 +91,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     }))
   ];
 
-  // Calculate total expenses - only using the current month's expenses plus fixed costs
   const totalExpensesCalculated = allExpenses.reduce((sum, expense) => sum + expense.value, 0);
   const totalPaidExpenses = allExpenses.filter(expense => expense.isPaid)
     .reduce((sum, expense) => sum + expense.value, 0);
@@ -122,30 +113,23 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     const expense = allExpenses.find(e => e.id === expenseId);
     
     if (expense) {
-      // Handle the built-in expense types
       if (expenseId === 'home-insurance') {
-        // Update the home insurance isPaid status
         const updatedHomeInsurance = { ...property.homeInsurance, isPaid: !isPaid };
-        // Here you'd call a prop method to update the property
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
         return;
       }
       
       if (expenseId === 'life-insurance') {
-        // Update the life insurance isPaid status
         const updatedLifeInsurance = { ...property.lifeInsurance, isPaid: !isPaid };
-        // Here you'd call a prop method to update the property
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
         return;
       }
       
       if (['mortgage', 'ibi', 'community'].includes(expenseId)) {
-        // These are fixed expenses that don't have individual records
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
         return;
       }
       
-      // For regular monthly expenses
       if (onExpenseUpdate) {
         onExpenseUpdate(expenseId, { isPaid: !isPaid });
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
@@ -276,7 +260,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
         </Dialog>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Tarjetas de resumen financiero */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="bg-primary/10 rounded-lg p-4">
             <div className="flex items-center justify-between">
@@ -308,7 +291,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
           </div>
         </div>
 
-        {/* Desglose de gastos */}
         <div>
           <h3 className="text-sm font-medium mb-3">Desglose de gastos</h3>
           <div className="space-y-2">

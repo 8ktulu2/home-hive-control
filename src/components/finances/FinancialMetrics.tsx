@@ -1,15 +1,12 @@
-
 import { Property } from '@/types/property';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatCurrency, formatPercentage } from '@/lib/formatters';
-import { Link } from 'react-router-dom';
 
-interface FinancialMetricsProps {
+export interface FinancialMetricsProps {
   properties: Property[];
+  selectedMonth: Date;
+  showAllProperties: boolean;
 }
 
-const FinancialMetrics = ({ properties }: FinancialMetricsProps) => {
+const FinancialMetrics = ({ properties, selectedMonth, showAllProperties }: FinancialMetricsProps) => {
   // Calculamos métricas básicas para cada propiedad
   const propertyMetrics = properties.map(property => {
     const annualRent = property.rent * 12;

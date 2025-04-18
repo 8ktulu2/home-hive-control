@@ -1,28 +1,12 @@
-
 import { Property } from '@/types/property';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
-  Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  ResponsiveContainer,
-  Legend,
-  Tooltip
-} from 'recharts';
 
-interface FinancialChartsProps {
+export interface FinancialChartsProps {
   properties: Property[];
+  selectedMonth: Date;
+  showAllProperties: boolean;
 }
 
-const FinancialCharts = ({ properties }: FinancialChartsProps) => {
+const FinancialCharts = ({ properties, selectedMonth, showAllProperties }: FinancialChartsProps) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
   
   // Datos para el gráfico de pastel de distribución de ingresos

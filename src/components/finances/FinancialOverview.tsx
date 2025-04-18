@@ -1,15 +1,17 @@
+import { Property } from '@/types/property';
 
-import { Property, FinancialSummary } from '@/types/property';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, DollarSign, Wallet, Calendar } from 'lucide-react';
-import { formatCurrency } from '@/lib/formatters';
-
-interface FinancialOverviewProps {
+export interface FinancialOverviewProps {
   properties: Property[];
-  summary: FinancialSummary;
+  summary: {
+    totalRent: number;
+    totalExpenses: number;
+    netIncome: number;
+  };
+  selectedMonth: Date;
+  showAllProperties: boolean;
 }
 
-const FinancialOverview = ({ properties, summary }: FinancialOverviewProps) => {
+const FinancialOverview = ({ properties, summary, selectedMonth, showAllProperties }: FinancialOverviewProps) => {
   // Calcular estadísticas adicionales
   const propertiesWithIncome = properties.filter(p => p.netIncome > 0).length;
   const propertiesWithLoss = properties.filter(p => p.netIncome < 0).length;
@@ -18,8 +20,8 @@ const FinancialOverview = ({ properties, summary }: FinancialOverviewProps) => {
     ? Math.round((rentPaidCount / properties.length) * 100) 
     : 0;
   
-  const currentMonth = new Date().toLocaleString('es-ES', { month: 'long' });
-  const currentYear = new Date().getFullYear();
+  const currentMonth = selectedMonth.toLocaleString('es-ES', { month: 'long' });
+  const currentYear = selectedMonth.getFullYear();
 
   return (
     <div className="space-y-6">

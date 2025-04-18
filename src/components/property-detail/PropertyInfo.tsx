@@ -1,14 +1,25 @@
 
+import { useState } from 'react';
 import { Property } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap, Shield } from 'lucide-react';
-import ContactDetails from '@/components/properties/ContactDetails';
+import { Button } from '@/components/ui/button';
+import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
 
 interface PropertyInfoProps {
   property: Property;
 }
 
 const PropertyInfo = ({ property }: PropertyInfoProps) => {
+  const [selectedContact, setSelectedContact] = useState<{
+    title: string;
+    details: any;
+  } | null>(null);
+
+  const handleContactClick = (title: string, details: any) => {
+    setSelectedContact({ title, details });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -51,45 +62,78 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
             </div>
           </div>
           
-          <div className="flex items-start gap-2">
+          <Button
+            variant="ghost"
+            className="w-full flex items-start gap-2 justify-start h-auto py-2"
+            onClick={() => handleContactClick(
+              'Compañía de Seguros',
+              property.insuranceDetails
+            )}
+          >
             <Shield className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <ContactDetails 
-              label="Compañía de Seguros"
-              value={property.insuranceCompany || 'No especificado'} 
-              details={property.insuranceDetails}
-            />
-          </div>
+            <div className="text-left">
+              <p className="text-sm font-medium">Compañía de Seguros</p>
+              <p className="text-sm text-muted-foreground">{property.insuranceCompany || 'No especificado'}</p>
+            </div>
+          </Button>
         </div>
         
         <div className="space-y-3">
-          <div className="flex items-start gap-2">
+          <Button
+            variant="ghost"
+            className="w-full flex items-start gap-2 justify-start h-auto py-2"
+            onClick={() => handleContactClick(
+              'Administrador Comunidad',
+              property.communityManagerDetails
+            )}
+          >
             <Building className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <ContactDetails 
-              label="Administrador Comunidad"
-              value={property.communityManager || 'No especificado'} 
-              details={property.communityManagerDetails}
-            />
-          </div>
+            <div className="text-left">
+              <p className="text-sm font-medium">Administrador Comunidad</p>
+              <p className="text-sm text-muted-foreground">{property.communityManager || 'No especificado'}</p>
+            </div>
+          </Button>
           
-          <div className="flex items-start gap-2">
+          <Button
+            variant="ghost"
+            className="w-full flex items-start gap-2 justify-start h-auto py-2"
+            onClick={() => handleContactClick(
+              'Proveedor de Agua',
+              property.waterProviderDetails
+            )}
+          >
             <Droplet className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <ContactDetails 
-              label="Proveedor de Agua"
-              value={property.waterProvider || 'No especificado'} 
-              details={property.waterProviderDetails}
-            />
-          </div>
+            <div className="text-left">
+              <p className="text-sm font-medium">Proveedor de Agua</p>
+              <p className="text-sm text-muted-foreground">{property.waterProvider || 'No especificado'}</p>
+            </div>
+          </Button>
           
-          <div className="flex items-start gap-2">
+          <Button
+            variant="ghost"
+            className="w-full flex items-start gap-2 justify-start h-auto py-2"
+            onClick={() => handleContactClick(
+              'Proveedor de Electricidad',
+              property.electricityProviderDetails
+            )}
+          >
             <Zap className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <ContactDetails 
-              label="Proveedor de Electricidad"
-              value={property.electricityProvider || 'No especificado'} 
-              details={property.electricityProviderDetails}
-            />
-          </div>
+            <div className="text-left">
+              <p className="text-sm font-medium">Proveedor de Electricidad</p>
+              <p className="text-sm text-muted-foreground">{property.electricityProvider || 'No especificado'}</p>
+            </div>
+          </Button>
         </div>
       </CardContent>
+
+      {selectedContact && (
+        <ContactDetailsDialog
+          isOpen={true}
+          onClose={() => setSelectedContact(null)}
+          title={selectedContact.title}
+          details={selectedContact.details}
+        />
+      )}
     </Card>
   );
 };

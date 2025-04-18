@@ -1,16 +1,12 @@
-
 import { Property } from '@/types/property';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatCurrency } from '@/lib/formatters';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
-interface RentHistoryProps {
+export interface RentHistoryProps {
   properties: Property[];
+  selectedMonth: Date;
+  showAllProperties: boolean;
 }
 
-const RentHistory = ({ properties }: RentHistoryProps) => {
+const RentHistory = ({ properties, selectedMonth, showAllProperties }: RentHistoryProps) => {
   // Generamos un historial de pagos ficticio para demostración
   // En una app real, esto vendría de la base de datos
   const generateDummyHistory = () => {
