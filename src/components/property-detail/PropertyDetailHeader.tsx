@@ -95,8 +95,8 @@ const PropertyDetailHeader = ({
               
               <div className="flex items-center gap-1">
                 {rentPaid ? <>
-                    <Check className="h-4 w-4 text-success" />
-                    <span className="text-sm font-medium text-success">Pagado</span>
+                    
+                    
                   </> : <>
                     
                     
