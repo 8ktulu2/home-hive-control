@@ -17,7 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CheckCircle2, CircleDashed, XCircle, CalendarDays } from 'lucide-react';
+import { CheckCircle2, CircleDashed, XCircle, CalendarDays, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MonthlyPaymentStatusProps {
@@ -70,11 +70,26 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
     return payment ? new Date(payment.date) : null;
   };
   
+  const getPaymentNotes = (month: number) => {
+    if (!property.paymentHistory) return null;
+    
+    const payment = property.paymentHistory.find(
+      p => p.month === month && p.year === currentYear
+    );
+    
+    return payment?.notes || null;
+  };
+  
   const handleOpenDialog = (month: number, year: number, action: 'mark-paid' | 'mark-unpaid') => {
     setSelectedMonth(month);
     setSelectedYear(year);
     setDialogAction(action);
-    setPaymentNotes('');
+    
+    // Pre-populate notes if they exist
+    const existingPayment = property.paymentHistory?.find(
+      p => p.month === month && p.year === year
+    );
+    setPaymentNotes(existingPayment?.notes || '');
   };
   
   const handleConfirmPayment = () => {
@@ -133,6 +148,7 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
           {months.map((month) => {
             const status = getPaymentStatus(month.index);
             const paymentDate = getPaymentDate(month.index);
+            const paymentNotes = getPaymentNotes(month.index);
             const isPastOrCurrent = month.index <= currentMonth;
             
             return (
@@ -155,6 +171,14 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
                     {paymentDate && (
                       <div className="text-xs text-center">
                         {format(paymentDate, 'dd/MM')}
+                      </div>
+                    )}
+                    {paymentNotes && (
+                      <div className="flex items-center mt-1 text-xs">
+                        <FileText className="h-3 w-3 mr-1" />
+                        <span className="truncate w-full max-w-[80px]" title={paymentNotes}>
+                          {paymentNotes.length > 10 ? paymentNotes.substring(0, 10) + '...' : paymentNotes}
+                        </span>
                       </div>
                     )}
                   </div>

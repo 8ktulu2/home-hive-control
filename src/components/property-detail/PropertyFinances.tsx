@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { Property, MonthlyExpense } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart2, TrendingUp, TrendingDown, DollarSign, Plus, Check, Wallet, Calendar, Banknote } from 'lucide-react';
+import { BarChart2, TrendingUp, TrendingDown, DollarSign, Plus, Check, Wallet, Calendar, Banknote, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface PropertyFinancesProps {
   property: Property;
@@ -21,6 +23,7 @@ interface PropertyFinancesProps {
 
 const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyFinancesProps) => {
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+  const [showExpenseDetails, setShowExpenseDetails] = useState(false);
   const [newExpense, setNewExpense] = useState<Partial<MonthlyExpense>>({
     name: '',
     amount: 0,
@@ -34,11 +37,8 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   
   const monthlyRevenue = property.rent;
-  const monthlyExpenses = property.expenses;
-  const netIncome = property.netIncome;
-  const annualIncome = netIncome * 12;
-  const ibi = property.ibi || 0;
   const mortgagePayment = property.mortgage?.monthlyPayment || 0;
+  const ibi = property.ibi || 0;
 
   const expenseCategories = [
     { id: 'utilities', name: 'Suministros' },
@@ -91,9 +91,17 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     }))
   ];
 
-  const totalExpensesCalculated = allExpenses.reduce((sum, expense) => sum + expense.value, 0);
-  const totalPaidExpenses = allExpenses.filter(expense => expense.isPaid)
+  // Calculate totals - only count unpaid expenses for the total
+  const totalExpensesCalculated = allExpenses
+    .filter(expense => !expense.isPaid)
     .reduce((sum, expense) => sum + expense.value, 0);
+    
+  const totalPaidExpenses = allExpenses
+    .filter(expense => expense.isPaid)
+    .reduce((sum, expense) => sum + expense.value, 0);
+    
+  // Net income is rent minus unpaid expenses
+  const netIncome = monthlyRevenue - totalExpensesCalculated;
   
   const handleAddExpense = () => {
     if (onExpenseAdd && newExpense.name && newExpense.amount) {
@@ -114,13 +122,11 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
     
     if (expense) {
       if (expenseId === 'home-insurance') {
-        const updatedHomeInsurance = { ...property.homeInsurance, isPaid: !isPaid };
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
         return;
       }
       
       if (expenseId === 'life-insurance') {
-        const updatedLifeInsurance = { ...property.lifeInsurance, isPaid: !isPaid };
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
         return;
       }
@@ -135,6 +141,12 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
       }
     }
+  };
+  
+  const handleExportToGoogleSheets = () => {
+    toast.success("Exportando datos a Google Sheets...", {
+      description: "Esta función estará disponible próximamente"
+    });
   };
 
   const getCategoryBadge = (category: string) => {
@@ -165,99 +177,110 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
           <BarChart2 className="h-5 w-5" />
           <span>Finanzas {monthName}</span>
         </CardTitle>
-        <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Plus className="h-4 w-4" />
-              <span>Añadir Gasto</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Añadir Nuevo Gasto</DialogTitle>
-              <DialogDescription>
-                Introduce los detalles del gasto para {property.name}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="expense-name" className="text-right">
-                  Concepto
-                </Label>
-                <Input
-                  id="expense-name"
-                  value={newExpense.name}
-                  onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
-                  className="col-span-3"
-                  placeholder="Ej: Factura de luz"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="expense-amount" className="text-right">
-                  Importe
-                </Label>
-                <Input
-                  id="expense-amount"
-                  type="number"
-                  value={newExpense.amount?.toString()}
-                  onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) })}
-                  className="col-span-3"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="expense-category" className="text-right">
-                  Categoría
-                </Label>
-                <Select 
-                  value={newExpense.category}
-                  onValueChange={(value) => setNewExpense({ ...newExpense, category: value })}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {expenseCategories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div className="text-right">
-                  <Label htmlFor="expense-paid" className="text-right">
-                    Pagado
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1"
+            onClick={handleExportToGoogleSheets}
+          >
+            <FileDown className="h-4 w-4" />
+            <span>Exportar</span>
+          </Button>
+          <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Plus className="h-4 w-4" />
+                <span>Añadir Gasto</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Añadir Nuevo Gasto</DialogTitle>
+                <DialogDescription>
+                  Introduce los detalles del gasto para {property.name}.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="expense-name" className="text-right">
+                    Concepto
                   </Label>
-                </div>
-                <div className="col-span-3 flex items-center space-x-2">
-                  <Checkbox 
-                    id="expense-paid" 
-                    checked={newExpense.isPaid}
-                    onCheckedChange={(checked) => setNewExpense({ ...newExpense, isPaid: Boolean(checked) })}
+                  <Input
+                    id="expense-name"
+                    value={newExpense.name}
+                    onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
+                    className="col-span-3"
+                    placeholder="Ej: Factura de luz"
                   />
-                  <label
-                    htmlFor="expense-paid"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="expense-amount" className="text-right">
+                    Importe
+                  </Label>
+                  <Input
+                    id="expense-amount"
+                    type="number"
+                    value={newExpense.amount?.toString()}
+                    onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) })}
+                    className="col-span-3"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="expense-category" className="text-right">
+                    Categoría
+                  </Label>
+                  <Select 
+                    value={newExpense.category}
+                    onValueChange={(value) => setNewExpense({ ...newExpense, category: value })}
                   >
-                    Marcar como pagado
-                  </label>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="text-right">
+                    <Label htmlFor="expense-paid" className="text-right">
+                      Pagado
+                    </Label>
+                  </div>
+                  <div className="col-span-3 flex items-center space-x-2">
+                    <Checkbox 
+                      id="expense-paid" 
+                      checked={newExpense.isPaid}
+                      onCheckedChange={(checked) => setNewExpense({ ...newExpense, isPaid: Boolean(checked) })}
+                    />
+                    <label
+                      htmlFor="expense-paid"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Marcar como pagado
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsExpenseDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleAddExpense}>
-                Añadir Gasto
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsExpenseDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleAddExpense}>
+                  Añadir Gasto
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -284,51 +307,65 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
               <h3 className="text-sm font-medium">Beneficio</h3>
               <DollarSign className="h-5 w-5 text-secondary" />
             </div>
-            <p className={`text-2xl font-bold mt-2 ${monthlyRevenue - totalExpensesCalculated >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {(monthlyRevenue - totalExpensesCalculated).toFixed(0)}€<span className="text-xs text-muted-foreground ml-1">/mes</span>
+            <p className={`text-2xl font-bold mt-2 ${netIncome >= 0 ? 'text-success' : 'text-destructive'}`}>
+              {netIncome.toFixed(0)}€<span className="text-xs text-muted-foreground ml-1">/mes</span>
             </p>
-            <p className="text-xs text-muted-foreground mt-1">{(monthlyRevenue - totalExpensesCalculated) * 12}€ al año</p>
+            <p className="text-xs text-muted-foreground mt-1">{(netIncome * 12).toFixed(0)}€ al año</p>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-sm font-medium mb-3">Desglose de gastos</h3>
-          <div className="space-y-2">
-            {allExpenses.map((item) => (
-              <div 
-                key={item.id} 
-                className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-md"
-              >
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-6 w-6 p-0 rounded-full ${item.isPaid ? 'text-success' : 'text-muted-foreground'}`}
-                    onClick={() => handleToggleExpensePaid(item.id, item.isPaid)}
-                    title={item.isPaid ? 'Marcar como no pagado' : 'Marcar como pagado'}
-                  >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <div className="flex flex-col">
-                    <span className={`text-sm ${item.isPaid ? 'line-through text-muted-foreground' : 'font-medium'}`}>
-                      {item.name}
-                    </span>
-                    <div className="mt-0.5">
-                      {getCategoryBadge(item.category)}
+        <Collapsible 
+          open={showExpenseDetails}
+          onOpenChange={setShowExpenseDetails}
+          className="border rounded-md p-2"
+        >
+          <CollapsibleTrigger asChild>
+            <div className="flex justify-between items-center w-full cursor-pointer p-2 hover:bg-muted/20 rounded">
+              <h3 className="text-sm font-medium">Desglose de gastos</h3>
+              {showExpenseDetails ? 
+                <ChevronUp className="h-4 w-4 text-muted-foreground" /> : 
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              }
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <div className="space-y-2">
+              {allExpenses.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-md"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`h-6 w-6 p-0 rounded-full ${item.isPaid ? 'text-success' : 'text-muted-foreground'}`}
+                      onClick={() => handleToggleExpensePaid(item.id, item.isPaid)}
+                      title={item.isPaid ? 'Marcar como no pagado' : 'Marcar como pagado'}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <div className="flex flex-col">
+                      <span className={`text-sm ${item.isPaid ? 'line-through text-muted-foreground' : 'font-medium'}`}>
+                        {item.name}
+                      </span>
+                      <div className="mt-0.5">
+                        {getCategoryBadge(item.category)}
+                      </div>
                     </div>
                   </div>
+                  <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
+                    {item.value.toFixed(0)}€/mes
+                  </span>
                 </div>
-                <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
-                  {item.value.toFixed(0)}€/mes
-                </span>
+              ))}
+              <div className="flex items-center justify-between border-t pt-2 mt-2">
+                <span className="font-medium">Total</span>
+                <span className="font-medium text-destructive">{totalExpensesCalculated.toFixed(0)}€/mes</span>
               </div>
-            ))}
-            <div className="flex items-center justify-between border-t pt-2 mt-2">
-              <span className="font-medium">Total</span>
-              <span className="font-medium text-destructive">{totalExpensesCalculated.toFixed(0)}€/mes</span>
             </div>
-          </div>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );

@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
-import { Property } from '@/types/property';
+import { Property, Tenant, ContactDetails } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap, Shield } from 'lucide-react';
+import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap, Shield, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface PropertyInfoProps {
   property: Property;
@@ -15,9 +16,15 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
     title: string;
     details: any;
   } | null>(null);
+  
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
 
   const handleContactClick = (title: string, details: any) => {
     setSelectedContact({ title, details });
+  };
+  
+  const handleTenantClick = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
   };
 
   return (
@@ -53,7 +60,15 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
               {property.tenants && property.tenants.length > 0 ? (
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {property.tenants.map(tenant => (
-                    <li key={tenant.id}>{tenant.name}</li>
+                    <li key={tenant.id}>
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto text-sm text-muted-foreground hover:text-primary"
+                        onClick={() => handleTenantClick(tenant)}
+                      >
+                        {tenant.name}
+                      </Button>
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -133,6 +148,47 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
           title={selectedContact.title}
           details={selectedContact.details}
         />
+      )}
+      
+      {selectedTenant && (
+        <Dialog open={!!selectedTenant} onOpenChange={() => setSelectedTenant(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{selectedTenant.name}</DialogTitle>
+              <DialogDescription>
+                Información de contacto del inquilino
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {selectedTenant.phone && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="text-right font-medium flex items-center justify-end gap-2">
+                    <Phone className="h-4 w-4" />
+                    <span>Teléfono:</span>
+                  </div>
+                  <span className="col-span-3">{selectedTenant.phone}</span>
+                </div>
+              )}
+              
+              {selectedTenant.email && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="text-right font-medium flex items-center justify-end gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span>Email:</span>
+                  </div>
+                  <span className="col-span-3">{selectedTenant.email}</span>
+                </div>
+              )}
+              
+              {selectedTenant.identificationNumber && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <span className="text-right font-medium">DNI/NIE:</span>
+                  <span className="col-span-3">{selectedTenant.identificationNumber}</span>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </Card>
   );

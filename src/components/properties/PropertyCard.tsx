@@ -2,12 +2,11 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Property, PaymentRecord } from '@/types/property';
+import { Property } from '@/types/property';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,10 +26,11 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
   const currentYear = currentDate.getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   
-  const handleRentPaidToggle = (checked: boolean) => {
-    if (checked) {
+  const handleRentPaidToggle = () => {
+    if (!property.rentPaid) {
       setIsDialogOpen(true);
     } else {
+      // Only ask for confirmation if marking as unpaid
       onPaymentUpdate(property.id, currentMonth, currentYear, false);
       toast.success(`Alquiler de ${property.name} marcado como pendiente`);
     }
@@ -83,11 +83,22 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Switch 
-            checked={property.rentPaid}
-            onCheckedChange={handleRentPaidToggle}
-          />
+        
+        <div 
+          onClick={handleRentPaidToggle}
+          className={`cursor-pointer px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${property.rentPaid ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}
+        >
+          {property.rentPaid ? (
+            <>
+              <CheckCircle className="h-3 w-3" />
+              <span>Pagado</span>
+            </>
+          ) : (
+            <>
+              <XCircle className="h-3 w-3" />
+              <span>Pendiente</span>
+            </>
+          )}
         </div>
         
         <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
