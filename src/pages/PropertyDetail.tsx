@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -20,7 +19,6 @@ const PropertyDetail = () => {
   const [property, setProperty] = useState<Property | null>(null);
 
   useEffect(() => {
-    // Simular la obtención de datos del servidor
     const foundProperty = mockProperties.find(p => p.id === id);
     if (foundProperty) {
       setProperty(foundProperty);
@@ -101,7 +99,6 @@ const PropertyDetail = () => {
       let updatedPayments: PaymentRecord[];
       
       if (existingPaymentIndex >= 0) {
-        // Update existing payment record
         updatedPayments = [...existingPayments];
         updatedPayments[existingPaymentIndex] = {
           ...updatedPayments[existingPaymentIndex],
@@ -110,7 +107,6 @@ const PropertyDetail = () => {
           notes: notes || updatedPayments[existingPaymentIndex].notes
         };
       } else {
-        // Create new payment record
         const newPayment: PaymentRecord = {
           id: `payment-${Date.now()}`,
           date: new Date().toISOString(),
@@ -123,7 +119,6 @@ const PropertyDetail = () => {
         updatedPayments = [...existingPayments, newPayment];
       }
       
-      // Update current month's payment status in property
       const currentDate = new Date();
       const currentMonth = currentDate.getMonth();
       const currentYear = currentDate.getFullYear();
@@ -165,18 +160,15 @@ const PropertyDetail = () => {
         expense.id === expenseId ? { ...expense, ...updates } : expense
       );
       
-      // Recalculate total expenses and net income
       let totalExpenses = property.expenses;
       const updatedExpense = updates.isPaid !== undefined ? updates : null;
       
       if (updatedExpense && updatedExpense.isPaid) {
-        // If expense is marked as paid, remove from total expenses
         const expense = property.monthlyExpenses.find(e => e.id === expenseId);
         if (expense && !expense.isPaid) {
           totalExpenses -= expense.amount;
         }
       } else if (updatedExpense && !updatedExpense.isPaid) {
-        // If expense is marked as unpaid, add to total expenses
         const expense = property.monthlyExpenses.find(e => e.id === expenseId);
         if (expense && expense.isPaid) {
           totalExpenses += expense.amount;
@@ -196,10 +188,19 @@ const PropertyDetail = () => {
   
   const handleExportToGoogleSheets = () => {
     toast.success('Preparando exportación a Google Sheets...');
-    // En una aplicación real, aquí se conectaría con la API de Google Sheets
     setTimeout(() => {
       toast.success('Datos exportados correctamente a Google Sheets');
     }, 1500);
+  };
+
+  const handleRentPaidChange = (isPaid: boolean) => {
+    if (property) {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      
+      handlePaymentUpdate(currentMonth, currentYear, isPaid);
+    }
   };
 
   if (!property) {
@@ -218,6 +219,7 @@ const PropertyDetail = () => {
         <div className="flex justify-between items-start">
           <PropertyDetailHeader 
             property={property}
+            onRentPaidChange={handleRentPaidChange}
           />
           
           <Button 
