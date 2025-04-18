@@ -1,16 +1,7 @@
-
 import { useState } from 'react';
 import { Property, PaymentRecord } from '@/types/property';
 import { Button } from '@/components/ui/button';
-import { 
-  Check, 
-  ArrowLeft, 
-  Edit, 
-  Trash, 
-  AlertTriangle, 
-  X,
-  CalendarDays
-} from 'lucide-react';
+import { Check, ArrowLeft, Edit, Trash, AlertTriangle, X, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
@@ -18,22 +9,23 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatDate } from '@/lib/formatters';
-
 interface PropertyDetailHeaderProps {
   property: Property;
   onRentPaidChange: (paid: boolean) => void;
 }
-
-const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHeaderProps) => {
+const PropertyDetailHeader = ({
+  property,
+  onRentPaidChange
+}: PropertyDetailHeaderProps) => {
   const [rentPaid, setRentPaid] = useState(property.rentPaid);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [paymentNote, setPaymentNote] = useState('');
-
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
-  const monthName = new Date(currentYear, currentMonth).toLocaleString('es-ES', { month: 'long' });
-
+  const monthName = new Date(currentYear, currentMonth).toLocaleString('es-ES', {
+    month: 'long'
+  });
   const handleRentPaidChange = (checked: boolean) => {
     if (checked) {
       // Al marcar como pagado, abrimos el diálogo para registrar el pago
@@ -46,7 +38,6 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
       toast.warning('Alquiler marcado como pendiente');
     }
   };
-
   const handleConfirmPayment = () => {
     // Creamos un nuevo registro de pago
     const newPayment: PaymentRecord = {
@@ -58,18 +49,16 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
       month: currentMonth,
       year: currentYear
     };
-    
+
     // Actualizamos el estado
     onRentPaidChange(true);
-    
+
     // Cerramos el diálogo y mostramos un mensaje de éxito
     setIsDialogOpen(false);
     setPaymentNote('');
     toast.success('Pago registrado correctamente');
   };
-
-  return (
-    <div className="flex flex-col gap-4">
+  return <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Link to="/">
           <Button variant="ghost" size="sm" className="flex gap-1 items-center text-muted-foreground">
@@ -101,24 +90,17 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
         </div>
         <div className="flex items-center gap-4 pt-2 sm:pt-0">
           <div className="flex flex-col items-start gap-1">
-            <div className="text-sm font-medium">Alquiler {monthName}</div>
+            
             <div className="flex items-center gap-2">
-              <Switch 
-                checked={rentPaid}
-                onCheckedChange={handleRentPaidChange}
-              />
+              
               <div className="flex items-center gap-1">
-                {rentPaid ? (
-                  <>
+                {rentPaid ? <>
                     <Check className="h-4 w-4 text-success" />
                     <span className="text-sm font-medium text-success">Pagado</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="h-4 w-4 text-warning" />
-                    <span className="text-sm font-medium text-warning">Pendiente</span>
-                  </>
-                )}
+                  </> : <>
+                    
+                    
+                  </>}
               </div>
             </div>
           </div>
@@ -135,37 +117,19 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
                   <Label htmlFor="amount" className="text-right">
                     Importe
                   </Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    defaultValue={property.rent}
-                    className="col-span-3"
-                    readOnly
-                  />
+                  <Input id="amount" type="number" defaultValue={property.rent} className="col-span-3" readOnly />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="date" className="text-right">
                     Fecha
                   </Label>
-                  <Input
-                    id="date"
-                    type="text"
-                    value={formatDate(new Date().toISOString())}
-                    className="col-span-3"
-                    readOnly
-                  />
+                  <Input id="date" type="text" value={formatDate(new Date().toISOString())} className="col-span-3" readOnly />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="notes" className="text-right">
                     Notas
                   </Label>
-                  <Input
-                    id="notes"
-                    placeholder="Opcional: añade notas sobre este pago"
-                    className="col-span-3"
-                    value={paymentNote}
-                    onChange={(e) => setPaymentNote(e.target.value)}
-                  />
+                  <Input id="notes" placeholder="Opcional: añade notas sobre este pago" className="col-span-3" value={paymentNote} onChange={e => setPaymentNote(e.target.value)} />
                 </div>
               </div>
               <DialogFooter>
@@ -180,8 +144,6 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
           </Dialog>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PropertyDetailHeader;
