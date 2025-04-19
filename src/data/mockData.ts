@@ -1,4 +1,3 @@
-
 import { Property } from '@/types/property';
 
 export const mockProperties: Property[] = [
@@ -53,14 +52,17 @@ export const mockProperties: Property[] = [
         title: 'Revisar caldera',
         description: 'Llamar al técnico para revisión anual',
         completed: false,
-        dueDate: '2025-05-20'
+        dueDate: '2025-05-20',
+        createdDate: '2025-01-15'
       },
       {
         id: '2',
         title: 'Pintar salón',
         description: 'Pintura blanca para paredes',
         completed: true,
-        dueDate: '2025-03-10'
+        dueDate: '2025-03-10',
+        createdDate: '2025-02-01',
+        completedDate: '2025-03-10'
       }
     ]
   },
@@ -115,7 +117,8 @@ export const mockProperties: Property[] = [
         title: 'Arreglar jardín',
         description: 'Contactar con jardinero para poda',
         completed: false,
-        dueDate: '2025-05-30'
+        dueDate: '2025-05-30',
+        createdDate: '2025-03-15'
       }
     ]
   },
