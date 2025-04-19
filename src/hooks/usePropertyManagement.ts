@@ -70,52 +70,28 @@ export function usePropertyManagement(initialProperty: Property | null) {
   };
 
   const createNewProperty = (propertyData: Partial<Property>): Property => {
-    // Asegurar que todos los campos obligatorios estén presentes
+    // Create a new property with default values for required fields
     const newProperty: Property = {
       id: `property-${Date.now()}`,
       name: propertyData.name || "Nueva Propiedad",
       address: propertyData.address || "",
+      image: propertyData.image || "/placeholder.svg", // Changed from imageUrl to image
       rent: propertyData.rent || 0,
       expenses: propertyData.expenses || 0,
-      imageUrl: propertyData.imageUrl || "/placeholder.svg",
       rentPaid: false,
       netIncome: (propertyData.rent || 0) - (propertyData.expenses || 0),
-      propertyTax: propertyData.propertyTax || 0,
+      // Removed propertyTax as it's not in the Property interface
       cadastralReference: propertyData.cadastralReference || "",
-      communityManager: propertyData.communityManager || {
-        name: "",
-        phone: "",
-        email: ""
-      },
+      communityManager: propertyData.communityManager || "", // Changed to string as per the Property type
+      waterProvider: propertyData.waterProvider || "", // Changed to string as per the Property type
+      electricityProvider: propertyData.electricityProvider || "", // Changed to string as per the Property type
+      // Removed insuranceProvider as it's not in the Property interface
       tenants: propertyData.tenants || [],
-      waterProvider: propertyData.waterProvider || {
-        name: "",
-        phone: "",
-        email: "",
-        website: "",
-        accountNumber: ""
-      },
-      electricityProvider: propertyData.electricityProvider || {
-        name: "",
-        phone: "",
-        email: "",
-        website: "",
-        accountNumber: ""
-      },
-      insuranceProvider: propertyData.insuranceProvider || {
-        name: "",
-        phone: "",
-        email: "",
-        website: "",
-        policyNumber: "",
-        coverageDetails: "",
-        expiryDate: ""
-      },
       monthlyExpenses: propertyData.monthlyExpenses || [],
       paymentHistory: propertyData.paymentHistory || [],
       documents: propertyData.documents || [],
       tasks: propertyData.tasks || [],
-      notes: propertyData.notes || []
+      // Removed notes as it's not in the Property interface
     };
 
     return newProperty;
