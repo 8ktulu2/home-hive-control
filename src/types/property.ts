@@ -68,6 +68,8 @@ export interface Task {
   description?: string;
   completed: boolean;
   dueDate?: string;
+  createdDate: string;
+  completedDate?: string;
   notification?: TaskNotification;
 }
 
