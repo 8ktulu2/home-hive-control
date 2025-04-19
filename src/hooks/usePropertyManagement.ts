@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Property, Task, PaymentRecord, MonthlyExpense, InventoryItem } from '@/types/property';
 import { toast } from 'sonner';
@@ -11,7 +10,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
       const updatedTasks = property.tasks.map(task => {
         if (task.id === taskId) {
           const updatedTask = { ...task, completed };
-          // Añadir o eliminar la fecha de completado
           if (completed) {
             updatedTask.completedDate = new Date().toISOString();
           } else {
@@ -29,7 +27,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      // Guardar en localStorage para persistencia
       if (property.id) {
         const savedProperties = localStorage.getItem('properties');
         if (savedProperties) {
@@ -65,7 +62,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      // Guardar en localStorage para persistencia
       if (property.id) {
         const savedProperties = localStorage.getItem('properties');
         if (savedProperties) {
@@ -88,7 +84,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      // Guardar en localStorage para persistencia
       if (property.id) {
         const savedProperties = localStorage.getItem('properties');
         if (savedProperties) {
@@ -115,7 +110,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      // Guardar en localStorage para persistencia
       if (property.id) {
         const savedProperties = localStorage.getItem('properties');
         if (savedProperties) {
@@ -138,7 +132,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      // Guardar en localStorage para persistencia
       if (property.id) {
         const savedProperties = localStorage.getItem('properties');
         if (savedProperties) {
@@ -166,7 +159,28 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
+    }
+  };
+
+  const updatePropertyImage = (imageUrl: string) => {
+    if (property) {
+      const updatedProperty = {
+        ...property,
+        image: imageUrl
+      };
+      
+      setProperty(updatedProperty);
+      
       if (property.id) {
         const savedProperties = localStorage.getItem('properties');
         if (savedProperties) {
@@ -181,7 +195,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
   };
 
   const createNewProperty = (propertyData: Partial<Property>): Property => {
-    // Create a new property with default values for required fields
     const newPropertyId = `property-${Date.now()}`;
     const newProperty: Property = {
       id: newPropertyId,
@@ -202,9 +215,9 @@ export function usePropertyManagement(initialProperty: Property | null) {
       documents: propertyData.documents || [],
       tasks: propertyData.tasks || [],
       inventory: propertyData.inventory || [],
+      communityFee: propertyData.communityFee || 0,
     };
     
-    // Guardar en localStorage para persistencia
     const savedProperties = localStorage.getItem('properties');
     let allProperties = [];
     
@@ -231,5 +244,6 @@ export function usePropertyManagement(initialProperty: Property | null) {
     handleDocumentDelete,
     handleAddInventoryItem,
     createNewProperty,
+    updatePropertyImage,
   };
 }

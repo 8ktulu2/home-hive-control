@@ -16,6 +16,7 @@ export interface Property {
   tenants?: Tenant[];
   mortgage?: Mortgage;
   ibi?: number;
+  communityFee?: number; // Nuevo campo para gastos de comunidad
   documents?: Document[];
   tasks?: Task[];
   paymentHistory?: PaymentRecord[];

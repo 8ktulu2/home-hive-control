@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -14,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trash, Plus, Upload, User } from 'lucide-react';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
+import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 
 const PropertyEdit = () => {
   const { id } = useParams();
@@ -24,9 +24,10 @@ const PropertyEdit = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const isNewProperty = id === 'new';
   
+  const { updatePropertyImage } = usePropertyManagement(property);
+  
   useEffect(() => {
     if (isNewProperty) {
-      // Crear una nueva propiedad con valores predeterminados
       setProperty({
         id: `property-${Date.now()}`,
         name: '',
@@ -44,7 +45,6 @@ const PropertyEdit = () => {
       });
       setLoading(false);
     } else {
-      // Buscar la propiedad existente en localStorage primero
       const savedProperties = localStorage.getItem('properties');
       let foundProperty = null;
       
@@ -53,7 +53,6 @@ const PropertyEdit = () => {
         foundProperty = properties.find((p: Property) => p.id === id);
       }
       
-      // Si no se encuentra en localStorage, buscar en mockData
       if (!foundProperty) {
         foundProperty = mockProperties.find(p => p.id === id);
       }
@@ -77,11 +76,24 @@ const PropertyEdit = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && property) {
-      // En una aplicación real, aquí subirías la imagen a un servidor
-      // Para esta demo, vamos a simular que se ha subido y creamos una URL temporal
       const imageUrl = URL.createObjectURL(file);
+      
       setProperty({ ...property, image: imageUrl });
+      updatePropertyImage(imageUrl);
+      
       toast.success('Imagen subida correctamente');
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (property.id) {
+          const savedImages = localStorage.getItem('propertyImages') || '{}';
+          const images = JSON.parse(savedImages);
+          images[property.id] = base64String;
+          localStorage.setItem('propertyImages', JSON.stringify(images));
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -141,31 +153,25 @@ const PropertyEdit = () => {
     }
   };
 
-  // Calculate total expenses from all expense sources
   const calculateTotalExpenses = () => {
     let total = 0;
     
-    // Add mortgage payment if exists
     if (property?.mortgage?.monthlyPayment) {
       total += property.mortgage.monthlyPayment;
     }
     
-    // Add IBI (divided by 12 for monthly amount)
     if (property?.ibi) {
       total += property.ibi / 12;
     }
     
-    // Add home insurance (divided by 12 for monthly amount)
     if (property?.homeInsurance?.cost) {
       total += property.homeInsurance.cost / 12;
     }
     
-    // Add life insurance (divided by 12 for monthly amount)
     if (property?.lifeInsurance?.cost) {
       total += property.lifeInsurance.cost / 12;
     }
     
-    // Add any other monthly expenses
     if (property?.monthlyExpenses) {
       property.monthlyExpenses.forEach(expense => {
         if (!expense.isPaid) {
@@ -180,7 +186,6 @@ const PropertyEdit = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (property) {
-      // Calculate expenses and net income
       const expenses = calculateTotalExpenses();
       const netIncome = property.rent - expenses;
       
@@ -190,16 +195,13 @@ const PropertyEdit = () => {
         netIncome
       };
       
-      // Guardar la propiedad en localStorage
       const savedProperties = localStorage.getItem('properties');
       if (savedProperties) {
         const properties = JSON.parse(savedProperties);
         
-        // Si es una propiedad nueva, añadirla al array
         if (isNewProperty) {
           properties.push(updatedProperty);
         } else {
-          // Si es una propiedad existente, actualizarla
           const index = properties.findIndex((p: Property) => p.id === property.id);
           if (index >= 0) {
             properties[index] = updatedProperty;
@@ -210,7 +212,6 @@ const PropertyEdit = () => {
         
         localStorage.setItem('properties', JSON.stringify(properties));
       } else {
-        // Si no hay propiedades guardadas, crear un nuevo array
         localStorage.setItem('properties', JSON.stringify([updatedProperty]));
       }
       
@@ -445,7 +446,6 @@ const PropertyEdit = () => {
                 <CardTitle>Contactos y Proveedores</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Administrador de la comunidad */}
                 <div className="space-y-4">
                   <h3 className="font-medium">Administrador de la Comunidad</h3>
                   
@@ -497,7 +497,6 @@ const PropertyEdit = () => {
                   </div>
                 </div>
                 
-                {/* Aseguradora */}
                 <div className="space-y-4">
                   <h3 className="font-medium">Compañía de Seguros</h3>
                   
@@ -505,7 +504,7 @@ const PropertyEdit = () => {
                     <Label>Nombre</Label>
                     <Input
                       value={property.insuranceCompany || ''}
-                      onChange={(e) => setProperty({ ...property, insuranceCompany: e.target.value })}
+                      onChange={(e) => updateContactDetails('insuranceCompany', 'name', e.target.value)}
                       placeholder="Nombre de la aseguradora"
                     />
                   </div>
@@ -549,7 +548,6 @@ const PropertyEdit = () => {
                   </div>
                 </div>
                 
-                {/* Proveedor de agua */}
                 <div className="space-y-4">
                   <h3 className="font-medium">Proveedor de Agua</h3>
                   
@@ -601,7 +599,6 @@ const PropertyEdit = () => {
                   </div>
                 </div>
                 
-                {/* Proveedor de electricidad */}
                 <div className="space-y-4">
                   <h3 className="font-medium">Proveedor de Electricidad</h3>
                   
@@ -663,7 +660,6 @@ const PropertyEdit = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Hipoteca */}
                   <div className="space-y-4">
                     <h3 className="font-medium">Hipoteca</h3>
                     
@@ -693,7 +689,6 @@ const PropertyEdit = () => {
                             mortgage: { ...property.mortgage || {}, monthlyPayment }
                           });
                           
-                          // Recalculate expenses and net income
                           setTimeout(() => {
                             const expenses = calculateTotalExpenses();
                             const netIncome = property.rent - expenses;
@@ -716,9 +711,31 @@ const PropertyEdit = () => {
                         })}
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="community-fee">Gastos de Comunidad Anual (€)</Label>
+                      <Input
+                        id="community-fee"
+                        type="number"
+                        value={property.communityFee || 0}
+                        onChange={(e) => {
+                          const communityFee = parseFloat(e.target.value);
+                          setProperty({
+                            ...property,
+                            communityFee
+                          });
+                          
+                          setTimeout(() => {
+                            const expenses = calculateTotalExpenses();
+                            const netIncome = property.rent - expenses;
+                            setProperty(prev => ({ ...prev, expenses, netIncome }));
+                          }, 0);
+                        }}
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
                   
-                  {/* Seguros */}
                   <div className="space-y-4">
                     <h3 className="font-medium">Seguros</h3>
                     
@@ -734,7 +751,6 @@ const PropertyEdit = () => {
                             homeInsurance: { ...property.homeInsurance || {}, cost }
                           });
                           
-                          // Recalculate expenses and net income
                           setTimeout(() => {
                             const expenses = calculateTotalExpenses();
                             const netIncome = property.rent - expenses;
@@ -757,7 +773,6 @@ const PropertyEdit = () => {
                             lifeInsurance: { ...property.lifeInsurance || {}, cost }
                           });
                           
-                          // Recalculate expenses and net income
                           setTimeout(() => {
                             const expenses = calculateTotalExpenses();
                             const netIncome = property.rent - expenses;
@@ -775,10 +790,9 @@ const PropertyEdit = () => {
                         type="number"
                         value={property.ibi || 0}
                         onChange={(e) => {
-                          const ibi = parseInt(e.target.value);
+                          const ibi = parseFloat(e.target.value);
                           setProperty({ ...property, ibi });
                           
-                          // Recalculate expenses and net income
                           setTimeout(() => {
                             const expenses = calculateTotalExpenses();
                             const netIncome = property.rent - expenses;

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Property, Tenant, ContactDetails, InventoryItem } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/lib/formatters';
+import { FileBarChart, Building } from 'lucide-react';
 
 interface PropertyInfoProps {
   property: Property;
@@ -68,8 +69,6 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
   };
   
   const handleAddInventoryItem = () => {
-    // En una aplicación real, aquí guardaríamos el item en la base de datos
-    // Para esta demo, solo mostraremos un toast
     toast.success(`Añadido "${newInventoryItem.name}" al inventario`);
     setIsInventoryDialogOpen(false);
     setNewInventoryItem({
@@ -94,6 +93,7 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="contacts">Contactos</TabsTrigger>
             <TabsTrigger value="inventory">Inventario</TabsTrigger>
+            <TabsTrigger value="community">Comunidad</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -241,10 +241,31 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
               )}
             </div>
           </TabsContent>
+          
+          <TabsContent value="community" className="space-y-4">
+            <div className="flex items-start gap-2">
+              <Building className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium">Gastos de Comunidad Anual</p>
+                <p className="text-sm text-muted-foreground">
+                  {property.communityFee ? formatCurrency(property.communityFee) : 'No especificado'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-2">
+              <FileBarChart className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium">Gastos Mensuales</p>
+                <p className="text-sm text-muted-foreground">
+                  {property.communityFee ? formatCurrency(property.communityFee / 12) : '€0,00'}
+                </p>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </CardContent>
 
-      {/* Dialogs */}
       {selectedContact && (
         <ContactDetailsDialog
           isOpen={true}
@@ -295,7 +316,6 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
         </Dialog>
       )}
       
-      {/* Dialog para añadir item al inventario */}
       <Dialog open={isInventoryDialogOpen} onOpenChange={setIsInventoryDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -49,6 +48,17 @@ const PropertyDetail = () => {
     if (savedProperties) {
       const properties = JSON.parse(savedProperties);
       foundProperty = properties.find((p: Property) => p.id === id);
+      
+      // Si encontramos la propiedad, verificamos si hay una imagen guardada
+      if (foundProperty) {
+        const savedImages = localStorage.getItem('propertyImages');
+        if (savedImages && foundProperty.id) {
+          const images = JSON.parse(savedImages);
+          if (images[foundProperty.id]) {
+            foundProperty.image = images[foundProperty.id];
+          }
+        }
+      }
     }
     
     // Si no se encuentra en localStorage, usamos las propiedades mockadas
