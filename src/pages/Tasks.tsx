@@ -8,24 +8,54 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Task } from '@/types/property';
-import { Check, Clock, Plus } from 'lucide-react';
+import { Task, Property } from '@/types/property';
+import { Check, Clock, Plus, Search, Filter, CalendarCheck } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Extender el tipo Task para incluir información adicional
+interface ExtendedTask extends Task {
+  propertyName: string;
+  propertyId: string;
+  completedDate?: string;
+  createdDate: string;
+}
 
 const Tasks = () => {
   const [filter, setFilter] = useState('all'); // 'all', 'pending', 'completed'
   const [searchTerm, setSearchTerm] = useState('');
+  const [propertyFilter, setPropertyFilter] = useState('all');
+  const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [dialogAction, setDialogAction] = useState<'complete' | 'incomplete'>('complete');
+  const [properties, setProperties] = useState<Property[]>(() => {
+    const savedProperties = localStorage.getItem('properties');
+    return savedProperties ? JSON.parse(savedProperties) : mockProperties;
+  });
   
   // Recopilar todas las tareas de todas las propiedades
-  const allTasks = mockProperties.reduce((tasks, property) => {
+  const allTasks: ExtendedTask[] = properties.reduce((tasks, property) => {
     const propertyTasks = property.tasks?.map(task => ({
       ...task,
       propertyName: property.name,
-      propertyId: property.id
+      propertyId: property.id,
+      createdDate: task.createdDate || new Date().toISOString() // Usar fecha existente o crear una nueva
     })) || [];
     return [...tasks, ...propertyTasks];
-  }, [] as Array<any>);
+  }, [] as ExtendedTask[]);
+  
+  // Obtener lista única de propiedades para el filtro
+  const uniqueProperties = Array.from(
+    new Set(properties.map(property => property.id))
+  ).map(id => {
+    const property = properties.find(p => p.id === id);
+    return { id, name: property?.name || 'Unknown' };
+  });
 
-  // Filtrar tareas según el estado seleccionado y el término de búsqueda
+  // Filtrar tareas según los criterios seleccionados
   const filteredTasks = allTasks.filter(task => {
     const matchesFilter = 
       filter === 'all' || 
@@ -34,10 +64,70 @@ const Tasks = () => {
     
     const matchesSearch = 
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      task.propertyName.toLowerCase().includes(searchTerm.toLowerCase());
+      task.propertyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesFilter && matchesSearch;
+    const matchesPropertyFilter = 
+      propertyFilter === 'all' || task.propertyId === propertyFilter;
+    
+    return matchesFilter && matchesSearch && matchesPropertyFilter;
   });
+  
+  const handleTaskToggle = (task: ExtendedTask) => {
+    setSelectedTask(task);
+    setDialogAction(task.completed ? 'incomplete' : 'complete');
+    setIsConfirmDialogOpen(true);
+  };
+  
+  const handleConfirmTaskToggle = () => {
+    if (!selectedTask) return;
+    
+    const updatedProperties = properties.map(property => {
+      if (property.id === selectedTask.propertyId) {
+        const updatedTasks = property.tasks?.map(task => {
+          if (task.id === selectedTask.id) {
+            const updatedTask = { 
+              ...task, 
+              completed: !task.completed
+            };
+            
+            // Añadir o eliminar la fecha de completado
+            if (!task.completed) {
+              updatedTask.completedDate = new Date().toISOString();
+            } else {
+              delete updatedTask.completedDate;
+            }
+            
+            return updatedTask;
+          }
+          return task;
+        });
+        
+        return {
+          ...property,
+          tasks: updatedTasks
+        };
+      }
+      return property;
+    });
+    
+    setProperties(updatedProperties);
+    localStorage.setItem('properties', JSON.stringify(updatedProperties));
+    
+    const actionText = selectedTask.completed ? 'pendiente' : 'completada';
+    toast.success(`Tarea marcada como ${actionText}`);
+    
+    setIsConfirmDialogOpen(false);
+  };
+  
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'No disponible';
+    try {
+      return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: es });
+    } catch (e) {
+      return 'Fecha inválida';
+    }
+  };
 
   return (
     <Layout>
@@ -49,18 +139,37 @@ const Tasks = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between mb-6">
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar tareas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-4"
+            className="pl-9"
           />
         </div>
-        <Button className="w-full sm:w-auto flex gap-2">
-          <Plus className="h-4 w-4" />
-          <span>Nueva Tarea</span>
-        </Button>
+        
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Select value={propertyFilter} onValueChange={setPropertyFilter}>
+            <SelectTrigger className="w-full sm:w-[180px] gap-2">
+              <Filter className="h-4 w-4" />
+              <SelectValue placeholder="Filtrar por propiedad" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las propiedades</SelectItem>
+              {uniqueProperties.map(property => (
+                <SelectItem key={property.id} value={property.id}>
+                  {property.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Button className="w-full sm:w-auto flex gap-2">
+            <Plus className="h-4 w-4" />
+            <span>Nueva Tarea</span>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="all" onValueChange={setFilter} value={filter}>
@@ -97,18 +206,36 @@ const Tasks = () => {
                     <TableHead className="w-[50px]">Estado</TableHead>
                     <TableHead>Tarea</TableHead>
                     <TableHead>Propiedad</TableHead>
-                    <TableHead>Fecha</TableHead>
+                    <TableHead>Creada</TableHead>
+                    <TableHead>Completada</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredTasks.map(task => (
                     <TableRow key={task.id}>
                       <TableCell>
-                        <Checkbox checked={task.completed} />
+                        <Checkbox 
+                          checked={task.completed} 
+                          onClick={() => handleTaskToggle(task)}
+                        />
                       </TableCell>
-                      <TableCell>{task.title}</TableCell>
+                      <TableCell>
+                        <div>
+                          <div className={task.completed ? "line-through text-muted-foreground" : ""}>
+                            {task.title}
+                          </div>
+                          {task.description && (
+                            <p className="text-sm text-muted-foreground mt-1 truncate max-w-xs">
+                              {task.description}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{task.propertyName}</TableCell>
-                      <TableCell>{task.dueDate || 'Sin fecha'}</TableCell>
+                      <TableCell>{formatDate(task.createdDate)}</TableCell>
+                      <TableCell>
+                        {task.completedDate ? formatDate(task.completedDate) : '-'}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -117,6 +244,29 @@ const Tasks = () => {
           </CardContent>
         </Card>
       </Tabs>
+      
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {dialogAction === 'complete' 
+                ? 'Completar Tarea' 
+                : 'Marcar Tarea como Pendiente'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {dialogAction === 'complete' 
+                ? '¿Confirmas que has completado esta tarea?' 
+                : '¿Confirmas que quieres marcar esta tarea como pendiente?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmTaskToggle}>
+              {dialogAction === 'complete' ? 'Completar' : 'Marcar como Pendiente'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };

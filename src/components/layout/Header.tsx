@@ -1,13 +1,26 @@
+
 import { Link } from 'react-router-dom';
 import { Bell, Settings, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
 interface HeaderProps {
   toggleSidebar: () => void;
 }
+
 const Header = ({
   toggleSidebar
 }: HeaderProps) => {
-  return <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+  return (
+    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar}>
@@ -18,10 +31,35 @@ const Header = ({
           </Link>
         </div>
         <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">3</Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <span>Pago de alquiler pendiente - Apartamento Centro</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <span>Tarea pendiente - Revisar caldera</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <span>Documento caducado - Contrato Inquilino</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
-          
+          <Button variant="ghost" size="icon">
+            <Settings className="h-5 w-5" />
+          </Button>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;

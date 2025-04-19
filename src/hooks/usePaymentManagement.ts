@@ -1,5 +1,6 @@
 
 import { Property, PaymentRecord } from '@/types/property';
+import { toast } from 'sonner';
 
 export function usePaymentManagement(
   property: Property | null,
@@ -39,11 +40,26 @@ export function usePaymentManagement(
       
       const isCurrentMonth = month === currentMonth && year === currentYear;
       
-      setProperty({
+      const updatedProperty = {
         ...property,
         paymentHistory: updatedPayments,
         rentPaid: isCurrentMonth ? isPaid : property.rentPaid
-      });
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          toast.success(`Estado de pago actualizado para ${month + 1}/${year}`);
+        }
+      }
     }
   };
 

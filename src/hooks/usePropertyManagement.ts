@@ -8,13 +8,38 @@ export function usePropertyManagement(initialProperty: Property | null) {
 
   const handleTaskToggle = (taskId: string, completed: boolean) => {
     if (property && property.tasks) {
-      const updatedTasks = property.tasks.map(task => 
-        task.id === taskId ? { ...task, completed } : task
-      );
-      setProperty({
+      const updatedTasks = property.tasks.map(task => {
+        if (task.id === taskId) {
+          const updatedTask = { ...task, completed };
+          // Añadir o eliminar la fecha de completado
+          if (completed) {
+            updatedTask.completedDate = new Date().toISOString();
+          } else {
+            delete updatedTask.completedDate;
+          }
+          return updatedTask;
+        }
+        return task;
+      });
+      
+      const updatedProperty = {
         ...property,
         tasks: updatedTasks
-      });
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
     }
   };
 
@@ -26,25 +51,54 @@ export function usePropertyManagement(initialProperty: Property | null) {
         description: newTask.description,
         completed: false,
         dueDate: undefined,
+        createdDate: new Date().toISOString(),
         notification: newTask.notification ? {
           enabled: newTask.notification.enabled,
           date: newTask.notification.date,
         } : undefined
       };
       
-      setProperty({
+      const updatedProperty = {
         ...property,
         tasks: [...(property.tasks || []), task]
-      });
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
     }
   };
 
   const handleTaskDelete = (taskId: string) => {
     if (property && property.tasks) {
-      setProperty({
+      const updatedProperty = {
         ...property,
         tasks: property.tasks.filter(task => task.id !== taskId)
-      });
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
     }
   };
 
@@ -53,19 +107,48 @@ export function usePropertyManagement(initialProperty: Property | null) {
       const updatedTasks = property.tasks.map(task => 
         task.id === taskId ? { ...task, ...updates } : task
       );
-      setProperty({
+      
+      const updatedProperty = {
         ...property,
         tasks: updatedTasks
-      });
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
     }
   };
 
   const handleDocumentDelete = (documentId: string) => {
     if (property && property.documents) {
-      setProperty({
+      const updatedProperty = {
         ...property,
         documents: property.documents.filter(doc => doc.id !== documentId)
-      });
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
     }
   };
 
@@ -75,24 +158,29 @@ export function usePropertyManagement(initialProperty: Property | null) {
       id: `property-${Date.now()}`,
       name: propertyData.name || "Nueva Propiedad",
       address: propertyData.address || "",
-      image: propertyData.image || "/placeholder.svg", // Changed from imageUrl to image
+      image: propertyData.image || "/placeholder.svg",
       rent: propertyData.rent || 0,
       expenses: propertyData.expenses || 0,
       rentPaid: false,
       netIncome: (propertyData.rent || 0) - (propertyData.expenses || 0),
-      // Removed propertyTax as it's not in the Property interface
       cadastralReference: propertyData.cadastralReference || "",
-      communityManager: propertyData.communityManager || "", // Changed to string as per the Property type
-      waterProvider: propertyData.waterProvider || "", // Changed to string as per the Property type
-      electricityProvider: propertyData.electricityProvider || "", // Changed to string as per the Property type
-      // Removed insuranceProvider as it's not in the Property interface
+      communityManager: propertyData.communityManager || "",
+      waterProvider: propertyData.waterProvider || "",
+      electricityProvider: propertyData.electricityProvider || "",
       tenants: propertyData.tenants || [],
       monthlyExpenses: propertyData.monthlyExpenses || [],
       paymentHistory: propertyData.paymentHistory || [],
       documents: propertyData.documents || [],
       tasks: propertyData.tasks || [],
-      // Removed notes as it's not in the Property interface
     };
+    
+    // Guardar en localStorage para persistencia
+    const savedProperties = localStorage.getItem('properties');
+    if (savedProperties) {
+      const properties = JSON.parse(savedProperties);
+      properties.push(newProperty);
+      localStorage.setItem('properties', JSON.stringify(properties));
+    }
 
     return newProperty;
   };

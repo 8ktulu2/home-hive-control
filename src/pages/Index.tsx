@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import PropertyGrid from '@/components/properties/PropertyGrid';
 import { mockProperties } from '@/data/mockData';
@@ -9,7 +9,16 @@ import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Index = () => {
-  const [properties, setProperties] = useState<Property[]>(mockProperties);
+  // Intentar cargar propiedades desde localStorage o usar mockProperties como respaldo
+  const [properties, setProperties] = useState<Property[]>(() => {
+    const savedProperties = localStorage.getItem('properties');
+    return savedProperties ? JSON.parse(savedProperties) : mockProperties;
+  });
+  
+  // Guardar propiedades en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem('properties', JSON.stringify(properties));
+  }, [properties]);
   
   const handlePropertiesUpdate = (updatedProperties: Property[]) => {
     setProperties(updatedProperties);

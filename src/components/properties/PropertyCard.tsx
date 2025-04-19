@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Property } from '@/types/property';
@@ -26,11 +26,26 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
   const currentYear = currentDate.getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   
+  // Verificar el estado real de pago basado en el historial de pagos
+  const [actualPaymentStatus, setActualPaymentStatus] = useState(property.rentPaid);
+  
+  useEffect(() => {
+    // Buscar el pago del mes actual en el historial
+    const currentMonthPayment = property.paymentHistory?.find(
+      payment => payment.month === currentMonth && payment.year === currentYear
+    );
+    
+    // Si existe un registro para el mes actual, usar su estado
+    // De lo contrario, usar el valor de rentPaid de la propiedad
+    const isPaid = currentMonthPayment ? currentMonthPayment.isPaid : property.rentPaid;
+    setActualPaymentStatus(isPaid);
+  }, [property, currentMonth, currentYear]);
+  
   const handleRentPaidToggle = () => {
-    if (!property.rentPaid) {
+    if (!actualPaymentStatus) {
       setIsDialogOpen(true);
     } else {
-      // Only ask for confirmation if marking as unpaid
+      // Solo pedir confirmación si se marca como no pagado
       onPaymentUpdate(property.id, currentMonth, currentYear, false);
       toast.success(`Alquiler de ${property.name} marcado como pendiente`);
     }
@@ -76,7 +91,7 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
           <span className="text-sm">Neto: <span className="font-semibold">{property.netIncome}€/mes</span></span>
           <div className="flex items-center gap-1">
             <span className="text-xs capitalize">{monthName}:</span>
-            {property.rentPaid ? (
+            {actualPaymentStatus ? (
               <CheckCircle2 className="h-4 w-4 text-success" />
             ) : (
               <XCircle className="h-4 w-4 text-destructive" />
@@ -86,9 +101,9 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
         
         <div 
           onClick={handleRentPaidToggle}
-          className={`cursor-pointer px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${property.rentPaid ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}
+          className={`cursor-pointer px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${actualPaymentStatus ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}
         >
-          {property.rentPaid ? (
+          {actualPaymentStatus ? (
             <>
               <CheckCircle className="h-3 w-3" />
               <span>Pagado</span>
