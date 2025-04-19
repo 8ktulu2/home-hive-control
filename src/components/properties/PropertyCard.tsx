@@ -58,6 +58,16 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
     toast.success(`Alquiler de ${property.name} marcado como pagado`);
   };
 
+  // Helper function para formatear monedas con 2 decimales
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
       <Link to={`/property/${property.id}`}>
@@ -75,11 +85,11 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
           <p className="text-sm text-muted-foreground truncate mb-2">{property.address}</p>
           <div className="text-sm flex justify-between">
             <span className="font-medium">Alquiler:</span>
-            <span className="font-bold">{property.rent}€/mes</span>
+            <span className="font-bold">{formatCurrency(property.rent)}</span>
           </div>
           <div className="text-sm flex justify-between">
             <span className="font-medium">Gastos:</span>
-            <span className="font-medium text-destructive">-{property.expenses}€/mes</span>
+            <span className="font-medium text-destructive">-{formatCurrency(property.expenses)}</span>
           </div>
         </CardContent>
       </Link>
@@ -88,7 +98,7 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
         property.netIncome > 0 ? "text-success" : "text-destructive"
       )}>
         <div className="flex flex-col items-start gap-1">
-          <span className="text-sm">Neto: <span className="font-semibold">{property.netIncome}€/mes</span></span>
+          <span className="text-sm">Neto: <span className="font-semibold">{formatCurrency(property.netIncome)}</span></span>
           <div className="flex items-center gap-1">
             <span className="text-xs capitalize">{monthName}:</span>
             {actualPaymentStatus ? (

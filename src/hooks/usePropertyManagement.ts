@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Property, Task, PaymentRecord, MonthlyExpense } from '@/types/property';
+import { Property, Task, PaymentRecord, MonthlyExpense, InventoryItem } from '@/types/property';
 import { toast } from 'sonner';
 
 export function usePropertyManagement(initialProperty: Property | null) {
@@ -152,10 +152,39 @@ export function usePropertyManagement(initialProperty: Property | null) {
     }
   };
 
+  const handleAddInventoryItem = (item: Omit<InventoryItem, 'id'>) => {
+    if (property) {
+      const newItem: InventoryItem = {
+        ...item,
+        id: `inventory-${Date.now()}`
+      };
+      
+      const updatedProperty = {
+        ...property,
+        inventory: [...(property.inventory || []), newItem]
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage para persistencia
+      if (property.id) {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      }
+    }
+  };
+
   const createNewProperty = (propertyData: Partial<Property>): Property => {
     // Create a new property with default values for required fields
+    const newPropertyId = `property-${Date.now()}`;
     const newProperty: Property = {
-      id: `property-${Date.now()}`,
+      id: newPropertyId,
       name: propertyData.name || "Nueva Propiedad",
       address: propertyData.address || "",
       image: propertyData.image || "/placeholder.svg",
@@ -172,15 +201,22 @@ export function usePropertyManagement(initialProperty: Property | null) {
       paymentHistory: propertyData.paymentHistory || [],
       documents: propertyData.documents || [],
       tasks: propertyData.tasks || [],
+      inventory: propertyData.inventory || [],
     };
     
     // Guardar en localStorage para persistencia
     const savedProperties = localStorage.getItem('properties');
+    let allProperties = [];
+    
     if (savedProperties) {
-      const properties = JSON.parse(savedProperties);
-      properties.push(newProperty);
-      localStorage.setItem('properties', JSON.stringify(properties));
+      allProperties = JSON.parse(savedProperties);
+      allProperties.push(newProperty);
+    } else {
+      allProperties = [newProperty];
     }
+    
+    localStorage.setItem('properties', JSON.stringify(allProperties));
+    toast.success(`Propiedad "${newProperty.name}" creada correctamente`);
 
     return newProperty;
   };
@@ -193,6 +229,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
     handleTaskDelete,
     handleTaskUpdate,
     handleDocumentDelete,
+    handleAddInventoryItem,
     createNewProperty,
   };
 }

@@ -27,6 +27,7 @@ export interface Property {
   homeInsurance?: Insurance;
   lifeInsurance?: Insurance;
   monthlyExpenses?: MonthlyExpense[];
+  inventory?: InventoryItem[];
 }
 
 export interface Tenant {
@@ -123,4 +124,13 @@ export interface MonthlyExpense {
   propertyId: string;
   month: number;
   year: number;
+}
+
+export interface InventoryItem {
+  id: string;
+  type: 'furniture' | 'appliance' | 'other';
+  name: string;
+  condition: 'new' | 'good' | 'fair' | 'poor';
+  acquisitionDate?: string;
+  notes?: string;
 }
