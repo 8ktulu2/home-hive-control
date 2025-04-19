@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Property, PaymentRecord } from '@/types/property';
@@ -31,6 +31,7 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [dialogAction, setDialogAction] = useState<'mark-paid' | 'mark-unpaid' | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<Record<number, 'paid' | 'unpaid' | 'future'>>({});
   
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -46,19 +47,37 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
     };
   });
   
+  // Update payment status whenever property changes
+  useEffect(() => {
+    updatePaymentStatus();
+  }, [property]);
+  
   // Get payment status for each month
-  const getPaymentStatus = (month: number) => {
-    if (!property.paymentHistory) return 'future';
+  const updatePaymentStatus = () => {
+    const newStatus: Record<number, 'paid' | 'unpaid' | 'future'> = {};
     
-    const payment = property.paymentHistory.find(
-      p => p.month === month && p.year === currentYear
-    );
-    
-    if (!payment) {
-      return month > currentMonth ? 'future' : 'unpaid';
+    for (let i = 0; i < 12; i++) {
+      if (!property.paymentHistory) {
+        newStatus[i] = i > currentMonth ? 'future' : 'unpaid';
+        continue;
+      }
+      
+      const payment = property.paymentHistory.find(
+        p => p.month === i && p.year === currentYear
+      );
+      
+      if (!payment) {
+        newStatus[i] = i > currentMonth ? 'future' : 'unpaid';
+      } else {
+        newStatus[i] = payment.isPaid ? 'paid' : 'unpaid';
+      }
     }
     
-    return payment.isPaid ? 'paid' : 'unpaid';
+    setPaymentStatus(newStatus);
+  };
+  
+  const getPaymentStatus = (month: number) => {
+    return paymentStatus[month] || (month > currentMonth ? 'future' : 'unpaid');
   };
   
   const getPaymentDate = (month: number) => {
@@ -97,6 +116,12 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
     if (selectedMonth === null || selectedYear === null || !dialogAction) return;
     
     onPaymentUpdate(selectedMonth, selectedYear, dialogAction === 'mark-paid', paymentNotes);
+    
+    // Update the local status immediately
+    setPaymentStatus(prev => ({
+      ...prev,
+      [selectedMonth]: dialogAction === 'mark-paid' ? 'paid' : 'unpaid'
+    }));
     
     const message = dialogAction === 'mark-paid' 
       ? `Pago de ${months[selectedMonth].name} marcado como realizado` 
@@ -149,7 +174,7 @@ const MonthlyPaymentStatus = ({ property, onPaymentUpdate }: MonthlyPaymentStatu
           {months.map((month) => {
             const status = getPaymentStatus(month.index);
             const paymentDate = getPaymentDate(month.index);
-            const paymentNotes = getPaymentNotes(month.index);
+            const notes = getPaymentNotes(month.index);
             const isPastOrCurrent = month.index <= currentMonth;
             
             return (

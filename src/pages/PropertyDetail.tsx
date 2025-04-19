@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHeader';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePaymentManagement } from '@/hooks/usePaymentManagement';
 import { useExpenseManagement } from '@/hooks/useExpenseManagement';
+import { Property } from '@/types/property';
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -41,7 +42,20 @@ const PropertyDetail = () => {
   } = useExpenseManagement(property, setProperty);
 
   useEffect(() => {
-    const foundProperty = mockProperties.find(p => p.id === id);
+    // Intentamos cargar la propiedad desde localStorage primero
+    const savedProperties = localStorage.getItem('properties');
+    let foundProperty: Property | undefined;
+    
+    if (savedProperties) {
+      const properties = JSON.parse(savedProperties);
+      foundProperty = properties.find((p: Property) => p.id === id);
+    }
+    
+    // Si no se encuentra en localStorage, usamos las propiedades mockadas
+    if (!foundProperty) {
+      foundProperty = mockProperties.find(p => p.id === id);
+    }
+    
     if (foundProperty) {
       setProperty(foundProperty);
     } else {
@@ -49,6 +63,28 @@ const PropertyDetail = () => {
       navigate('/');
     }
   }, [id, navigate, setProperty]);
+  
+  // Este efecto se ejecuta cuando cambia la ruta para recargar la propiedad
+  useEffect(() => {
+    const handleRouteChange = () => {
+      // Volvemos a cargar la propiedad desde localStorage
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties && id) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperty = properties.find((p: Property) => p.id === id);
+        if (updatedProperty) {
+          setProperty(updatedProperty);
+        }
+      }
+    };
+
+    // Escucha eventos de cambio de ruta
+    window.addEventListener('popstate', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, [id, setProperty]);
 
   const handleExportToGoogleSheets = () => {
     toast.success('Preparando exportación a Google Sheets...');

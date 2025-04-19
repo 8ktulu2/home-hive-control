@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -43,8 +44,20 @@ const PropertyEdit = () => {
       });
       setLoading(false);
     } else {
-      // Buscar la propiedad existente
-      const foundProperty = mockProperties.find(p => p.id === id);
+      // Buscar la propiedad existente en localStorage primero
+      const savedProperties = localStorage.getItem('properties');
+      let foundProperty = null;
+      
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        foundProperty = properties.find((p: Property) => p.id === id);
+      }
+      
+      // Si no se encuentra en localStorage, buscar en mockData
+      if (!foundProperty) {
+        foundProperty = mockProperties.find(p => p.id === id);
+      }
+      
       if (foundProperty) {
         setProperty(foundProperty);
       } else {
@@ -177,7 +190,30 @@ const PropertyEdit = () => {
         netIncome
       };
       
-      // Aquí se guardaría la propiedad en una base de datos real
+      // Guardar la propiedad en localStorage
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        
+        // Si es una propiedad nueva, añadirla al array
+        if (isNewProperty) {
+          properties.push(updatedProperty);
+        } else {
+          // Si es una propiedad existente, actualizarla
+          const index = properties.findIndex((p: Property) => p.id === property.id);
+          if (index >= 0) {
+            properties[index] = updatedProperty;
+          } else {
+            properties.push(updatedProperty);
+          }
+        }
+        
+        localStorage.setItem('properties', JSON.stringify(properties));
+      } else {
+        // Si no hay propiedades guardadas, crear un nuevo array
+        localStorage.setItem('properties', JSON.stringify([updatedProperty]));
+      }
+      
       toast.success(isNewProperty ? 'Propiedad creada con éxito' : 'Propiedad actualizada con éxito');
       navigate(`/property/${property.id}`);
     }
