@@ -1,6 +1,6 @@
 
 import { Task } from '@/types/property';
-import { CheckCircle, Circle, Bell, BellOff, Trash } from 'lucide-react';
+import { CheckCircle, Circle, Bell, BellOff, Trash, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TaskItemProps {
