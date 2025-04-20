@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Property, Task, PaymentRecord, MonthlyExpense, InventoryItem } from '@/types/property';
 import { toast } from 'sonner';
@@ -194,7 +195,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
     }
   };
 
-  const createNewProperty = (propertyData: Partial<Property>): Property => {
+  const createNewProperty = (propertyData: Partial<Property> = {}): Property => {
     const newPropertyId = `property-${Date.now()}`;
     const newProperty: Property = {
       id: newPropertyId,
@@ -216,6 +217,35 @@ export function usePropertyManagement(initialProperty: Property | null) {
       tasks: propertyData.tasks || [],
       inventory: propertyData.inventory || [],
       communityFee: propertyData.communityFee || 0,
+      insuranceCompany: propertyData.insuranceCompany || "",
+      insuranceDetails: propertyData.insuranceDetails || {
+        phone: "",
+        email: "",
+        website: "",
+        contactPerson: "",
+        notes: ""
+      },
+      communityManagerDetails: propertyData.communityManagerDetails || {
+        phone: "",
+        email: "",
+        website: "",
+        contactPerson: "",
+        notes: ""
+      },
+      waterProviderDetails: propertyData.waterProviderDetails || {
+        phone: "",
+        email: "",
+        website: "",
+        contactPerson: "",
+        notes: ""
+      },
+      electricityProviderDetails: propertyData.electricityProviderDetails || {
+        phone: "",
+        email: "",
+        website: "",
+        contactPerson: "",
+        notes: ""
+      }
     };
     
     const savedProperties = localStorage.getItem('properties');

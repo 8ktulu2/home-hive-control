@@ -11,7 +11,6 @@ import { mockProperties } from '@/data/mockData';
 import { Property, Tenant, ContactDetails } from '@/types/property';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trash, Plus, Upload, User } from 'lucide-react';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 
@@ -24,25 +23,12 @@ const PropertyEdit = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const isNewProperty = id === 'new';
   
-  const { updatePropertyImage } = usePropertyManagement(property);
+  const { createNewProperty, updatePropertyImage } = usePropertyManagement(property);
   
   useEffect(() => {
     if (isNewProperty) {
-      setProperty({
-        id: `property-${Date.now()}`,
-        name: '',
-        address: '',
-        image: '/placeholder.svg',
-        rent: 0,
-        rentPaid: false,
-        expenses: 0,
-        netIncome: 0,
-        tasks: [],
-        documents: [],
-        tenants: [],
-        paymentHistory: [],
-        monthlyExpenses: [],
-      });
+      const newProperty = createNewProperty();
+      setProperty(newProperty);
       setLoading(false);
     } else {
       const savedProperties = localStorage.getItem('properties');
@@ -65,7 +51,7 @@ const PropertyEdit = () => {
       }
       setLoading(false);
     }
-  }, [id, isNewProperty, navigate]);
+  }, [id, isNewProperty, navigate, createNewProperty]);
 
   const handleImageUpload = () => {
     if (imageInputRef.current) {
@@ -487,6 +473,15 @@ const PropertyEdit = () => {
                   </div>
                   
                   <div className="space-y-2">
+                    <Label>Persona de contacto</Label>
+                    <Input
+                      value={property.communityManagerDetails?.contactPerson || ''}
+                      onChange={(e) => updateContactDetails('communityManager', 'contactPerson', e.target.value)}
+                      placeholder="Persona de contacto"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
                     <Label>Notas</Label>
                     <Textarea
                       value={property.communityManagerDetails?.notes || ''}
@@ -525,6 +520,15 @@ const PropertyEdit = () => {
                       onChange={(e) => updateContactDetails('insuranceCompany', 'email', e.target.value)}
                       placeholder="Email de contacto"
                       type="email"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Sitio web</Label>
+                    <Input
+                      value={property.insuranceDetails?.website || ''}
+                      onChange={(e) => updateContactDetails('insuranceCompany', 'website', e.target.value)}
+                      placeholder="Sitio web"
                     />
                   </div>
                   
@@ -587,6 +591,15 @@ const PropertyEdit = () => {
                       placeholder="Sitio web"
                     />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Persona de contacto</Label>
+                    <Input
+                      value={property.waterProviderDetails?.contactPerson || ''}
+                      onChange={(e) => updateContactDetails('waterProvider', 'contactPerson', e.target.value)}
+                      placeholder="Persona de contacto"
+                    />
+                  </div>
 
                   <div className="space-y-2">
                     <Label>Notas</Label>
@@ -636,6 +649,15 @@ const PropertyEdit = () => {
                       value={property.electricityProviderDetails?.website || ''}
                       onChange={(e) => updateContactDetails('electricityProvider', 'website', e.target.value)}
                       placeholder="Sitio web"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Persona de contacto</Label>
+                    <Input
+                      value={property.electricityProviderDetails?.contactPerson || ''}
+                      onChange={(e) => updateContactDetails('electricityProvider', 'contactPerson', e.target.value)}
+                      placeholder="Persona de contacto"
                     />
                   </div>
 

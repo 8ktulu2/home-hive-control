@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -40,6 +41,7 @@ const PropertyDetail = () => {
     handleExpenseUpdate 
   } = useExpenseManagement(property, setProperty);
 
+  // Este efecto ahora actualiza el estado de pago desde los datos guardados
   useEffect(() => {
     // Intentamos cargar la propiedad desde localStorage primero
     const savedProperties = localStorage.getItem('properties');

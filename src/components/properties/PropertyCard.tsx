@@ -110,7 +110,11 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
         </div>
         
         <div 
-          onClick={handleRentPaidToggle}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleRentPaidToggle();
+          }}
           className={`cursor-pointer px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${actualPaymentStatus ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}
         >
           {actualPaymentStatus ? (
