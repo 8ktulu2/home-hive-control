@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { Property, Tenant, ContactDetails, InventoryItem } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, MapPin, FileBarChart, Users, Building, Droplet, Zap, Shield, Phone, Mail, Sofa, Refrigerator, Plus } from 'lucide-react';
+import { Home, MapPin, Users, Droplet, Zap, Shield, Phone, Mail, Sofa, Refrigerator, Plus, FileBarChart, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -13,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/formatters';
-import { FileBarChart, Building } from 'lucide-react';
 
 interface PropertyInfoProps {
   property: Property;
