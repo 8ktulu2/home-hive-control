@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Property, MonthlyExpense } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -282,16 +283,7 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="bg-primary/10 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Ingresos</h3>
-              <TrendingUp className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-2xl font-bold mt-2">{monthlyRevenue}€<span className="text-xs text-muted-foreground ml-1">/mes</span></p>
-            <p className="text-xs text-muted-foreground mt-1">{monthlyRevenue * 12}€ al año</p>
-          </div>
-
+        <div className="grid grid-cols-1 gap-4">
           <div 
             className="bg-destructive/10 rounded-lg p-4 cursor-pointer hover:bg-destructive/15 transition-colors"
             onClick={() => setShowExpenseDetails(!showExpenseDetails)}
@@ -312,7 +304,7 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
             {showExpenseDetails && (
               <div className="mt-3 pt-3 border-t border-destructive/20 space-y-2">
                 <h4 className="text-xs font-medium mb-2">Desglose de gastos</h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div className="space-y-2 max-h-80 overflow-y-auto">
                   {allExpenses.map((item) => (
                     <div 
                       key={item.id} 
@@ -354,15 +346,26 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
             )}
           </div>
 
-          <div className="bg-secondary/10 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Beneficio</h3>
-              <DollarSign className="h-5 w-5 text-secondary" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-primary/10 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">Ingresos</h3>
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-2xl font-bold mt-2">{monthlyRevenue}€<span className="text-xs text-muted-foreground ml-1">/mes</span></p>
+              <p className="text-xs text-muted-foreground mt-1">{monthlyRevenue * 12}€ al año</p>
             </div>
-            <p className={`text-2xl font-bold mt-2 ${netIncome >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {netIncome.toFixed(0)}€<span className="text-xs text-muted-foreground ml-1">/mes</span>
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">{(netIncome * 12).toFixed(0)}€ al año</p>
+
+            <div className="bg-secondary/10 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">Beneficio</h3>
+                <DollarSign className="h-5 w-5 text-secondary" />
+              </div>
+              <p className={`text-2xl font-bold mt-2 ${netIncome >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {netIncome.toFixed(0)}€<span className="text-xs text-muted-foreground ml-1">/mes</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">{(netIncome * 12).toFixed(0)}€ al año</p>
+            </div>
           </div>
         </div>
       </CardContent>

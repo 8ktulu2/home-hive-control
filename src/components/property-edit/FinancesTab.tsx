@@ -11,6 +11,50 @@ interface FinancesTabProps {
 }
 
 const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: FinancesTabProps) => {
+  // Helper para actualizar valores numéricos y recalcular gastos
+  const updateNumericValue = (field: string, subField: string | null, value: number) => {
+    if (subField) {
+      const updatedProperty = {
+        ...property,
+        [field]: { 
+          ...property[field as keyof Property] as object || {}, 
+          [subField]: value 
+        }
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Recalculamos los gastos después de la actualización
+      setTimeout(() => {
+        const expenses = calculateTotalExpenses();
+        const netIncome = property.rent - expenses;
+        setProperty({
+          ...updatedProperty,
+          expenses,
+          netIncome
+        });
+      }, 0);
+    } else {
+      const updatedProperty = {
+        ...property,
+        [field]: value
+      };
+      
+      setProperty(updatedProperty);
+      
+      // Recalculamos los gastos después de la actualización
+      setTimeout(() => {
+        const expenses = calculateTotalExpenses();
+        const netIncome = property.rent - expenses;
+        setProperty({
+          ...updatedProperty,
+          expenses,
+          netIncome
+        });
+      }, 0);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -42,20 +86,7 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                 value={property.mortgage?.monthlyPayment || 0}
                 onChange={(e) => {
                   const monthlyPayment = parseFloat(e.target.value);
-                  setProperty({
-                    ...property,
-                    mortgage: { ...property.mortgage || {}, monthlyPayment }
-                  });
-                  
-                  setTimeout(() => {
-                    const expenses = calculateTotalExpenses();
-                    const netIncome = property.rent - expenses;
-                    setProperty({
-                      ...property,
-                      expenses,
-                      netIncome
-                    });
-                  }, 0);
+                  updateNumericValue('mortgage', 'monthlyPayment', monthlyPayment);
                 }}
                 placeholder="0"
               />
@@ -82,20 +113,7 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                 value={property.communityFee || 0}
                 onChange={(e) => {
                   const communityFee = parseFloat(e.target.value);
-                  setProperty({
-                    ...property,
-                    communityFee
-                  });
-                  
-                  setTimeout(() => {
-                    const expenses = calculateTotalExpenses();
-                    const netIncome = property.rent - expenses;
-                    setProperty({
-                      ...property,
-                      expenses,
-                      netIncome
-                    });
-                  }, 0);
+                  updateNumericValue('communityFee', null, communityFee);
                 }}
                 placeholder="0"
               />
@@ -112,20 +130,7 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                 value={property.homeInsurance?.cost || 0}
                 onChange={(e) => {
                   const cost = parseFloat(e.target.value);
-                  setProperty({
-                    ...property,
-                    homeInsurance: { ...property.homeInsurance || {}, cost }
-                  });
-                  
-                  setTimeout(() => {
-                    const expenses = calculateTotalExpenses();
-                    const netIncome = property.rent - expenses;
-                    setProperty({
-                      ...property,
-                      expenses,
-                      netIncome
-                    });
-                  }, 0);
+                  updateNumericValue('homeInsurance', 'cost', cost);
                 }}
                 placeholder="0"
               />
@@ -138,20 +143,7 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                 value={property.lifeInsurance?.cost || 0}
                 onChange={(e) => {
                   const cost = parseFloat(e.target.value);
-                  setProperty({
-                    ...property,
-                    lifeInsurance: { ...property.lifeInsurance || {}, cost }
-                  });
-                  
-                  setTimeout(() => {
-                    const expenses = calculateTotalExpenses();
-                    const netIncome = property.rent - expenses;
-                    setProperty({
-                      ...property,
-                      expenses,
-                      netIncome
-                    });
-                  }, 0);
+                  updateNumericValue('lifeInsurance', 'cost', cost);
                 }}
                 placeholder="0"
               />
@@ -165,17 +157,7 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                 value={property.ibi || 0}
                 onChange={(e) => {
                   const ibi = parseFloat(e.target.value);
-                  setProperty({ ...property, ibi });
-                  
-                  setTimeout(() => {
-                    const expenses = calculateTotalExpenses();
-                    const netIncome = property.rent - expenses;
-                    setProperty({
-                      ...property,
-                      expenses,
-                      netIncome
-                    });
-                  }, 0);
+                  updateNumericValue('ibi', null, ibi);
                 }}
                 placeholder="0"
               />

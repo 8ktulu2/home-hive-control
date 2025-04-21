@@ -22,37 +22,42 @@ const PropertyEdit = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const imageInputRef = useRef<HTMLInputElement>(null);
   const isNewProperty = id === 'new';
-  const initializeCompleted = useRef(false);
+  const propertyCreatedRef = useRef(false);
   
   const { createNewProperty, updatePropertyImage } = usePropertyManagement(property);
 
   useEffect(() => {
-    if (isNewProperty && !initializeCompleted.current) {
-      initializeCompleted.current = true;
-      const newProperty = createNewProperty();
-      setProperty(newProperty);
-      setLoading(false);
-    } else if (!isNewProperty) {
-      const savedProperties = localStorage.getItem('properties');
-      let foundProperty = null;
-      
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        foundProperty = properties.find((p: Property) => p.id === id);
+    const fetchOrCreateProperty = async () => {
+      if (isNewProperty && !propertyCreatedRef.current) {
+        // Solo creamos una nueva propiedad si no se ha creado antes
+        propertyCreatedRef.current = true;
+        const newProperty = createNewProperty();
+        setProperty(newProperty);
+        setLoading(false);
+      } else if (!isNewProperty) {
+        const savedProperties = localStorage.getItem('properties');
+        let foundProperty = null;
+        
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          foundProperty = properties.find((p: Property) => p.id === id);
+        }
+        
+        if (!foundProperty) {
+          foundProperty = mockProperties.find(p => p.id === id);
+        }
+        
+        if (foundProperty) {
+          setProperty(foundProperty);
+        } else {
+          toast.error('Propiedad no encontrada');
+          navigate('/');
+        }
+        setLoading(false);
       }
-      
-      if (!foundProperty) {
-        foundProperty = mockProperties.find(p => p.id === id);
-      }
-      
-      if (foundProperty) {
-        setProperty(foundProperty);
-      } else {
-        toast.error('Propiedad no encontrada');
-        navigate('/');
-      }
-      setLoading(false);
-    }
+    };
+    
+    fetchOrCreateProperty();
   }, [id, isNewProperty, navigate, createNewProperty]);
 
   const handleImageUpload = () => {
