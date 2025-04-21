@@ -19,9 +19,11 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
       };
       
       const savedProperties = localStorage.getItem('properties');
+      let isNewProperty = true;
+      
       if (savedProperties) {
         const properties = JSON.parse(savedProperties);
-        const isNewProperty = !properties.some((p: Property) => p.id === property.id);
+        isNewProperty = !properties.some((p: Property) => p.id === property.id);
         
         if (isNewProperty) {
           properties.push(updatedProperty);
