@@ -8,7 +8,11 @@ import { mockProperties } from '@/data/mockData';
 import { Property, Tenant } from '@/types/property';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
+import { usePropertyForm } from '@/hooks/usePropertyForm';
+import { usePropertyImage } from '@/hooks/usePropertyImage';
 import PropertyFormHeader from '@/components/property-edit/PropertyFormHeader';
+import PropertyEditLoading from '@/components/property-edit/PropertyEditLoading';
+import PropertyEditError from '@/components/property-edit/PropertyEditError';
 import BasicInfoTab from '@/components/property-edit/BasicInfoTab';
 import TenantsTab from '@/components/property-edit/TenantsTab';
 import ContactsTab from '@/components/property-edit/ContactsTab';
@@ -29,7 +33,6 @@ const PropertyEdit = () => {
   useEffect(() => {
     const fetchOrCreateProperty = async () => {
       if (isNewProperty && !propertyCreatedRef.current) {
-        // Solo creamos una nueva propiedad si no se ha creado antes
         propertyCreatedRef.current = true;
         const newProperty = createNewProperty();
         setProperty(newProperty);
@@ -60,33 +63,43 @@ const PropertyEdit = () => {
     fetchOrCreateProperty();
   }, [id, isNewProperty, navigate, createNewProperty]);
 
-  const handleImageUpload = () => {
-    if (imageInputRef.current) {
-      imageInputRef.current.click();
+  const calculateTotalExpenses = () => {
+    let total = 0;
+    
+    if (property?.mortgage?.monthlyPayment) {
+      total += property.mortgage.monthlyPayment;
     }
+    
+    if (property?.ibi) {
+      total += property.ibi / 12;
+    }
+    
+    if (property?.homeInsurance?.cost) {
+      total += property.homeInsurance.cost / 12;
+    }
+    
+    if (property?.lifeInsurance?.cost) {
+      total += property.lifeInsurance.cost / 12;
+    }
+    
+    if (property?.monthlyExpenses) {
+      property.monthlyExpenses.forEach(expense => {
+        if (!expense.isPaid) {
+          total += expense.amount;
+        }
+      });
+    }
+    
+    return total;
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && property) {
-      const imageUrl = URL.createObjectURL(file);
-      setProperty({ ...property, image: imageUrl });
-      updatePropertyImage(imageUrl);
-      toast.success('Imagen subida correctamente');
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        if (property.id) {
-          const savedImages = localStorage.getItem('propertyImages') || '{}';
-          const images = JSON.parse(savedImages);
-          images[property.id] = base64String;
-          localStorage.setItem('propertyImages', JSON.stringify(images));
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const { handleImageUpload, handleImageChange } = usePropertyImage(
+    property,
+    imageInputRef,
+    updatePropertyImage
+  );
+
+  const { handleSubmit } = usePropertyForm(property, calculateTotalExpenses);
 
   const addTenant = () => {
     if (property) {
@@ -144,91 +157,12 @@ const PropertyEdit = () => {
     }
   };
 
-  const calculateTotalExpenses = () => {
-    let total = 0;
-    
-    if (property?.mortgage?.monthlyPayment) {
-      total += property.mortgage.monthlyPayment;
-    }
-    
-    if (property?.ibi) {
-      total += property.ibi / 12;
-    }
-    
-    if (property?.homeInsurance?.cost) {
-      total += property.homeInsurance.cost / 12;
-    }
-    
-    if (property?.lifeInsurance?.cost) {
-      total += property.lifeInsurance.cost / 12;
-    }
-    
-    if (property?.monthlyExpenses) {
-      property.monthlyExpenses.forEach(expense => {
-        if (!expense.isPaid) {
-          total += expense.amount;
-        }
-      });
-    }
-    
-    return total;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (property) {
-      const expenses = calculateTotalExpenses();
-      const netIncome = property.rent - expenses;
-      
-      const updatedProperty = {
-        ...property,
-        expenses,
-        netIncome
-      };
-      
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        
-        if (isNewProperty) {
-          properties.push(updatedProperty);
-        } else {
-          const index = properties.findIndex((p: Property) => p.id === property.id);
-          if (index >= 0) {
-            properties[index] = updatedProperty;
-          } else {
-            properties.push(updatedProperty);
-          }
-        }
-        
-        localStorage.setItem('properties', JSON.stringify(properties));
-      } else {
-        localStorage.setItem('properties', JSON.stringify([updatedProperty]));
-      }
-      
-      toast.success(isNewProperty ? 'Propiedad creada con éxito' : 'Propiedad actualizada con éxito');
-      navigate(`/property/${property.id}`);
-    }
-  };
-
   if (loading) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-96">
-          <p className="text-xl">Cargando...</p>
-        </div>
-      </Layout>
-    );
+    return <PropertyEditLoading />;
   }
 
   if (!property) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-96">
-          <p className="text-xl text-destructive">Error al cargar la propiedad</p>
-        </div>
-      </Layout>
-    );
+    return <PropertyEditError />;
   }
 
   return (
