@@ -56,17 +56,7 @@ export function usePropertyCreation() {
       }
     };
     
-    const savedProperties = localStorage.getItem('properties');
-    let allProperties = [];
-    
-    if (savedProperties) {
-      allProperties = JSON.parse(savedProperties);
-      allProperties.push(newProperty);
-    } else {
-      allProperties = [newProperty];
-    }
-    
-    localStorage.setItem('properties', JSON.stringify(allProperties));
+    // Don't save the property to localStorage here - only when explicitly requested
     toast.success(`Propiedad "${newProperty.name}" creada correctamente`);
 
     return newProperty;

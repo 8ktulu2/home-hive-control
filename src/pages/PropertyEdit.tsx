@@ -22,15 +22,17 @@ const PropertyEdit = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const imageInputRef = useRef<HTMLInputElement>(null);
   const isNewProperty = id === 'new';
+  const initializeCompleted = useRef(false);
   
   const { createNewProperty, updatePropertyImage } = usePropertyManagement(property);
 
   useEffect(() => {
-    if (isNewProperty) {
+    if (isNewProperty && !initializeCompleted.current) {
+      initializeCompleted.current = true;
       const newProperty = createNewProperty();
       setProperty(newProperty);
       setLoading(false);
-    } else {
+    } else if (!isNewProperty) {
       const savedProperties = localStorage.getItem('properties');
       let foundProperty = null;
       

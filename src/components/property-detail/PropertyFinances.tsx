@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { Property, MonthlyExpense } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart2, TrendingUp, TrendingDown, DollarSign, Plus, Check, Wallet, Calendar, Banknote, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
+import { BarChart2, TrendingUp, TrendingDown, DollarSign, Plus, Check, Calendar, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -13,7 +12,6 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface PropertyFinancesProps {
   property: Property;
@@ -201,6 +199,7 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
                   Introduce los detalles del gasto para {property.name}.
                 </DialogDescription>
               </DialogHeader>
+              
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="expense-name" className="text-right">
@@ -293,13 +292,66 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
             <p className="text-xs text-muted-foreground mt-1">{monthlyRevenue * 12}€ al año</p>
           </div>
 
-          <div className="bg-destructive/10 rounded-lg p-4">
+          <div 
+            className="bg-destructive/10 rounded-lg p-4 cursor-pointer hover:bg-destructive/15 transition-colors"
+            onClick={() => setShowExpenseDetails(!showExpenseDetails)}
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium">Gastos</h3>
-              <TrendingDown className="h-5 w-5 text-destructive" />
+              <div className="flex items-center gap-1">
+                <TrendingDown className="h-5 w-5 text-destructive" />
+                {showExpenseDetails ? 
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" /> : 
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                }
+              </div>
             </div>
             <p className="text-2xl font-bold mt-2">-{totalExpensesCalculated.toFixed(0)}€<span className="text-xs text-muted-foreground ml-1">/mes</span></p>
             <p className="text-xs text-muted-foreground mt-1">Pagados: {totalPaidExpenses.toFixed(0)}€</p>
+            
+            {showExpenseDetails && (
+              <div className="mt-3 pt-3 border-t border-destructive/20 space-y-2">
+                <h4 className="text-xs font-medium mb-2">Desglose de gastos</h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {allExpenses.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="flex items-center justify-between p-2 hover:bg-destructive/10 rounded-md"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 rounded-full ${item.isPaid ? 'text-success' : 'text-muted-foreground'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleExpensePaid(item.id, item.isPaid);
+                          }}
+                          title={item.isPaid ? 'Marcar como no pagado' : 'Marcar como pagado'}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <div className="flex flex-col">
+                          <span className={`text-sm ${item.isPaid ? 'line-through text-muted-foreground' : 'font-medium'}`}>
+                            {item.name}
+                          </span>
+                          <div className="mt-0.5">
+                            {getCategoryBadge(item.category)}
+                          </div>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
+                        {item.value.toFixed(0)}€/mes
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between border-t pt-2 mt-2">
+                    <span className="font-medium">Total</span>
+                    <span className="font-medium text-destructive">{totalExpensesCalculated.toFixed(0)}€/mes</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-secondary/10 rounded-lg p-4">
@@ -313,59 +365,6 @@ const PropertyFinances = ({ property, onExpenseAdd, onExpenseUpdate }: PropertyF
             <p className="text-xs text-muted-foreground mt-1">{(netIncome * 12).toFixed(0)}€ al año</p>
           </div>
         </div>
-
-        <Collapsible 
-          open={showExpenseDetails}
-          onOpenChange={setShowExpenseDetails}
-          className="border rounded-md p-2"
-        >
-          <CollapsibleTrigger asChild>
-            <div className="flex justify-between items-center w-full cursor-pointer p-2 hover:bg-muted/20 rounded">
-              <h3 className="text-sm font-medium">Desglose de gastos</h3>
-              {showExpenseDetails ? 
-                <ChevronUp className="h-4 w-4 text-muted-foreground" /> : 
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              }
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <div className="space-y-2">
-              {allExpenses.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-md"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-6 w-6 p-0 rounded-full ${item.isPaid ? 'text-success' : 'text-muted-foreground'}`}
-                      onClick={() => handleToggleExpensePaid(item.id, item.isPaid)}
-                      title={item.isPaid ? 'Marcar como no pagado' : 'Marcar como pagado'}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <div className="flex flex-col">
-                      <span className={`text-sm ${item.isPaid ? 'line-through text-muted-foreground' : 'font-medium'}`}>
-                        {item.name}
-                      </span>
-                      <div className="mt-0.5">
-                        {getCategoryBadge(item.category)}
-                      </div>
-                    </div>
-                  </div>
-                  <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
-                    {item.value.toFixed(0)}€/mes
-                  </span>
-                </div>
-              ))}
-              <div className="flex items-center justify-between border-t pt-2 mt-2">
-                <span className="font-medium">Total</span>
-                <span className="font-medium text-destructive">{totalExpensesCalculated.toFixed(0)}€/mes</span>
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
       </CardContent>
     </Card>
   );
