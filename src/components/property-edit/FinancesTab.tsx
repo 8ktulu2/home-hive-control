@@ -50,7 +50,11 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                   setTimeout(() => {
                     const expenses = calculateTotalExpenses();
                     const netIncome = property.rent - expenses;
-                    setProperty(prev => ({ ...prev, expenses, netIncome }));
+                    setProperty({
+                      ...property,
+                      expenses,
+                      netIncome
+                    });
                   }, 0);
                 }}
                 placeholder="0"
@@ -86,7 +90,11 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                   setTimeout(() => {
                     const expenses = calculateTotalExpenses();
                     const netIncome = property.rent - expenses;
-                    setProperty(prev => ({ ...prev, expenses, netIncome }));
+                    setProperty({
+                      ...property,
+                      expenses,
+                      netIncome
+                    });
                   }, 0);
                 }}
                 placeholder="0"
@@ -112,7 +120,11 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                   setTimeout(() => {
                     const expenses = calculateTotalExpenses();
                     const netIncome = property.rent - expenses;
-                    setProperty(prev => ({ ...prev, expenses, netIncome }));
+                    setProperty({
+                      ...property,
+                      expenses,
+                      netIncome
+                    });
                   }, 0);
                 }}
                 placeholder="0"
@@ -134,7 +146,11 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                   setTimeout(() => {
                     const expenses = calculateTotalExpenses();
                     const netIncome = property.rent - expenses;
-                    setProperty(prev => ({ ...prev, expenses, netIncome }));
+                    setProperty({
+                      ...property,
+                      expenses,
+                      netIncome
+                    });
                   }, 0);
                 }}
                 placeholder="0"
@@ -154,7 +170,11 @@ const FinancesTab = ({ property, setProperty, calculateTotalExpenses }: Finances
                   setTimeout(() => {
                     const expenses = calculateTotalExpenses();
                     const netIncome = property.rent - expenses;
-                    setProperty(prev => ({ ...prev, expenses, netIncome }));
+                    setProperty({
+                      ...property,
+                      expenses,
+                      netIncome
+                    });
                   }, 0);
                 }}
                 placeholder="0"
