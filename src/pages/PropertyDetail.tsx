@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -6,7 +5,7 @@ import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHea
 import PropertyInfo from '@/components/property-detail/PropertyInfo';
 import PropertyTasks from '@/components/property-detail/PropertyTasks';
 import PropertyDocuments from '@/components/property-detail/PropertyDocuments';
-import PropertyFinances from '@/components/property-detail/PropertyFinances';
+import PropertyFinances from '@/components/property-detail/finances/PropertyFinances';
 import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import { mockProperties } from '@/data/mockData';
 import { FileSpreadsheet } from 'lucide-react';
@@ -41,9 +40,7 @@ const PropertyDetail = () => {
     handleExpenseUpdate 
   } = useExpenseManagement(property, setProperty);
 
-  // Este efecto ahora actualiza el estado de pago desde los datos guardados
   useEffect(() => {
-    // Intentamos cargar la propiedad desde localStorage primero
     const savedProperties = localStorage.getItem('properties');
     let foundProperty: Property | undefined;
     
@@ -51,7 +48,6 @@ const PropertyDetail = () => {
       const properties = JSON.parse(savedProperties);
       foundProperty = properties.find((p: Property) => p.id === id);
       
-      // Si encontramos la propiedad, verificamos si hay una imagen guardada
       if (foundProperty) {
         const savedImages = localStorage.getItem('propertyImages');
         if (savedImages && foundProperty.id) {
@@ -63,13 +59,11 @@ const PropertyDetail = () => {
       }
     }
     
-    // Si no se encuentra en localStorage, usamos las propiedades mockadas
     if (!foundProperty) {
       foundProperty = mockProperties.find(p => p.id === id);
     }
     
     if (foundProperty) {
-      // Aseguramos que la propiedad tenga el estado de pago actualizado
       if (foundProperty.paymentHistory && foundProperty.paymentHistory.length > 0) {
         const currentDate = new Date();
         const currentMonth = currentDate.getMonth();
@@ -95,10 +89,8 @@ const PropertyDetail = () => {
     }
   }, [id, navigate, setProperty]);
   
-  // Este efecto se ejecuta cuando cambia la ruta para recargar la propiedad
   useEffect(() => {
     const handleRouteChange = () => {
-      // Volvemos a cargar la propiedad desde localStorage
       const savedProperties = localStorage.getItem('properties');
       if (savedProperties && id) {
         const properties = JSON.parse(savedProperties);
@@ -109,7 +101,6 @@ const PropertyDetail = () => {
       }
     };
 
-    // Escucha eventos de cambio de ruta
     window.addEventListener('popstate', handleRouteChange);
 
     return () => {
@@ -120,7 +111,6 @@ const PropertyDetail = () => {
   const handleExportToGoogleSheets = () => {
     if (!property) return;
 
-    // Preparamos datos estructurados para exportación
     const propertyData = {
       'Información General': {
         Nombre: property.name,
@@ -166,7 +156,6 @@ const PropertyDetail = () => {
       }))
     };
     
-    // En una aplicación real, aquí enviaríamos los datos a Google Sheets API
     console.log('Datos para exportar a Google Sheets:', propertyData);
     
     toast.success('Preparando exportación a Google Sheets...');
@@ -175,7 +164,6 @@ const PropertyDetail = () => {
     }, 1500);
   };
 
-  // Helper function para formatear monedas con 2 decimales
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
