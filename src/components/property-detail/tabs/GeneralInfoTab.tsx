@@ -1,6 +1,6 @@
 
 import { Property, Tenant } from '@/types/property';
-import { MapPin, Users, FileBarChart } from 'lucide-react';
+import { MapPin, Users, FileBarChart, Bed, Bath, Ruler } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface GeneralInfoTabProps {
@@ -24,6 +24,27 @@ const GeneralInfoTab = ({ property, onTenantClick }: GeneralInfoTabProps) => {
         <div>
           <p className="text-sm font-medium">Referencia Catastral</p>
           <p className="text-sm text-muted-foreground">{property.cadastralReference || 'No especificada'}</p>
+        </div>
+      </div>
+      
+      <div className="flex items-start gap-2">
+        <Ruler className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium">Metros cuadrados</p>
+          <p className="text-sm text-muted-foreground">{property.squareMeters ? `${property.squareMeters} m²` : 'No especificado'}</p>
+        </div>
+      </div>
+      
+      <div className="flex items-start gap-2">
+        <div className="flex gap-4">
+          <div className="flex items-center gap-1">
+            <Bed className="h-5 w-5 text-muted-foreground shrink-0" />
+            <p className="text-sm text-muted-foreground">{property.bedrooms || '?'}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <Bath className="h-5 w-5 text-muted-foreground shrink-0" />
+            <p className="text-sm text-muted-foreground">{property.bathrooms || '?'}</p>
+          </div>
         </div>
       </div>
       

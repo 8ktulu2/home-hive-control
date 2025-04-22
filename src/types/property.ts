@@ -1,9 +1,12 @@
-
 export interface Property {
   id: string;
   name: string;
   address: string;
   image: string;
+  images?: string[];  // Nueva propiedad para múltiples imágenes
+  squareMeters?: number; // Metros cuadrados
+  bedrooms?: number; // Número de habitaciones
+  bathrooms?: number; // Número de baños
   rent: number;
   rentPaid: boolean;
   expenses: number;

@@ -29,4 +29,3 @@ const KPIBar = ({ rent, expenses, netIncome, onExpensesClick }: KPIBarProps) => 
 };
 
 export default KPIBar;
-
