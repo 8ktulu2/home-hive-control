@@ -14,25 +14,27 @@ import Tasks from "./pages/Tasks";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
-          <Route path="/property/edit/:id" element={<PropertyEdit />} />
-          <Route path="/property/:id/edit" element={<PropertyEdit />} />
-          <Route path="/finances" element={<Finances />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/property/:id" element={<PropertyDetail />} />
+            <Route path="/property/edit/:id" element={<PropertyEdit />} />
+            <Route path="/property/:id/edit" element={<PropertyEdit />} />
+            <Route path="/finances" element={<Finances />} />
+            <Route path="/documents" element={<Documents />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
