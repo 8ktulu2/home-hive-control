@@ -25,9 +25,10 @@ const Header = ({
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="icon"
             onClick={toggleSidebar} 
             aria-label="Toggle menu"
+            className="flex items-center justify-center"
           >
             <Menu className="h-5 w-5" />
           </Button>

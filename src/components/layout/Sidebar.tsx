@@ -2,7 +2,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, FileText, CheckSquare, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,12 +12,24 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   
-  // Close sidebar when location changes on mobile only
+  // Close sidebar when location changes on mobile
   useEffect(() => {
     if (window.innerWidth < 768 && isOpen && onClose) {
       onClose();
     }
   }, [location.pathname, isOpen, onClose]);
+
+  // Handle ESC key to close sidebar on mobile
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isOpen && onClose) {
+      onClose();
+    }
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const navItems = [
     { href: '/', icon: <Home className="h-5 w-5" />, label: 'Propiedades' },
@@ -26,19 +38,24 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { href: '/finances', icon: <BarChart2 className="h-5 w-5" />, label: 'Finanzas' },
   ];
 
+  if (!isOpen && window.innerWidth < 768) {
+    return null;
+  }
+
   return (
     <>
       {/* Mobile overlay to capture clicks outside sidebar */}
-      {isOpen && window.innerWidth < 768 && (
+      {isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 md:hidden" 
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
       
       <div
         className={cn(
-          "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 border-r bg-sidebar transition-transform duration-300 md:translate-x-0",
+          "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform duration-300 md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
