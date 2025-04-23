@@ -38,7 +38,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   ];
 
   return (
-    <aside 
+    <div
       className={cn(
         "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 border-r bg-sidebar transition-transform duration-300 md:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full"
@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           ))}
         </nav>
       </div>
-    </aside>
+    </div>
   );
 };
 
