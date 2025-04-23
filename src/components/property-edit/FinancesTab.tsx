@@ -24,9 +24,8 @@ const FinancesTab = ({
     if (!property) return;
     
     if (subField) {
-      // Fix for the spread type error - create a new object properly without spreading
       const currentFieldValue = property[field as keyof Property];
-      // Handle the field value properly based on its type
+      // Crear una copia del objeto asegurando que sea seguro para expandir
       const updatedField = typeof currentFieldValue === 'object' && currentFieldValue !== null
         ? { ...currentFieldValue as Record<string, any>, [subField]: value }
         : { [subField]: value };
