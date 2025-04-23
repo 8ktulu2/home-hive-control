@@ -67,40 +67,48 @@ const Header = ({
   }, [notifications]);
 
   const handleNotificationClick = (notification: Notification) => {
-    // Check if property exists in localStorage
+    // First ensure we have the mock properties loaded
     const savedProperties = localStorage.getItem('properties');
+    let properties = [];
+    
     if (savedProperties) {
-      const properties = JSON.parse(savedProperties);
-      const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
+      properties = JSON.parse(savedProperties);
+    } else {
+      // Load from mock data
+      const { mockProperties } = require('@/data/mockData');
+      properties = mockProperties;
+      // Save to localStorage
+      localStorage.setItem('properties', JSON.stringify(mockProperties));
+    }
+    
+    // Check if property exists
+    const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
+    
+    if (propertyExists) {
+      // Mark notification as read
+      const updatedNotifications = notifications.map(n => 
+        n.id === notification.id ? { ...n, read: true } : n
+      );
+      setNotifications(updatedNotifications);
       
-      if (propertyExists) {
-        // Mark notification as read
-        const updatedNotifications = notifications.map(n => 
-          n.id === notification.id ? { ...n, read: true } : n
-        );
-        setNotifications(updatedNotifications);
-        
-        // Navigate to the appropriate section
-        switch (notification.type) {
-          case 'payment':
-            navigate(`/property/${notification.propertyId}#payment-status`);
-            break;
-          case 'task':
-            navigate(`/property/${notification.propertyId}#tasks`);
-            break;
-          case 'document':
-            navigate(`/property/${notification.propertyId}#documents`);
-            break;
-          default:
-            break;
-        }
-      } else {
-        // Property doesn't exist
-        toast.error('Propiedad no encontrada');
+      // Navigate to the appropriate section with specific anchors
+      switch (notification.type) {
+        case 'payment':
+          navigate(`/property/${notification.propertyId}#payment-status`);
+          break;
+        case 'task':
+          navigate(`/property/${notification.propertyId}#tasks`);
+          break;
+        case 'document':
+          navigate(`/property/${notification.propertyId}#documents`);
+          break;
+        default:
+          navigate(`/property/${notification.propertyId}`);
+          break;
       }
     } else {
-      // No properties saved yet
-      toast.error('No hay propiedades guardadas');
+      // Property doesn't exist
+      toast.error('Propiedad no encontrada');
     }
   };
 

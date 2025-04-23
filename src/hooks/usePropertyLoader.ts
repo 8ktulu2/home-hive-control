@@ -22,11 +22,13 @@ export const usePropertyLoader = (id: string | undefined) => {
         setProperty(newProperty);
         setLoading(false);
       } else if (!isNewProperty) {
+        // First, check localStorage for properties
         const savedProperties = localStorage.getItem('properties');
         let foundProperty = null;
+        let properties = [];
         
         if (savedProperties) {
-          const properties = JSON.parse(savedProperties);
+          properties = JSON.parse(savedProperties);
           foundProperty = properties.find((p: Property) => p.id === id);
         }
         
@@ -36,9 +38,12 @@ export const usePropertyLoader = (id: string | undefined) => {
           
           // If found in mock data but not in localStorage, save it to localStorage
           if (foundProperty) {
-            const properties = savedProperties ? JSON.parse(savedProperties) : [];
-            const updatedProperties = [...properties, foundProperty];
-            localStorage.setItem('properties', JSON.stringify(updatedProperties));
+            properties = savedProperties ? JSON.parse(savedProperties) : [];
+            // Check if property already exists in the array
+            if (!properties.some((p: Property) => p.id === foundProperty?.id)) {
+              const updatedProperties = [...properties, foundProperty];
+              localStorage.setItem('properties', JSON.stringify(updatedProperties));
+            }
           }
         }
         
@@ -53,7 +58,7 @@ export const usePropertyLoader = (id: string | undefined) => {
     };
     
     fetchOrCreateProperty();
-  }, [id, isNewProperty, navigate]);
+  }, [id, isNewProperty, navigate, createNewProperty]);
 
   return { property, setProperty, loading, isNewProperty };
 };

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Task } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckSquare, Plus } from 'lucide-react';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { TaskItem } from './task/TaskItem';
 import { TaskForm } from './task/TaskForm';
 import { TaskNotificationDialog } from './task/TaskNotificationDialog';
+import { useLocation } from 'react-router-dom';
 
 interface PropertyTasksProps {
   tasks: Task[];
@@ -21,6 +22,8 @@ const PropertyTasks = ({ tasks, onTaskToggle, onTaskAdd, onTaskDelete, onTaskUpd
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [isNotificationDialogOpen, setIsNotificationDialogOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
   const handleTaskToggle = (task: Task) => {
     onTaskToggle(task.id, !task.completed);
@@ -55,8 +58,17 @@ const PropertyTasks = ({ tasks, onTaskToggle, onTaskAdd, onTaskDelete, onTaskUpd
     }
   };
 
+  // Scroll to tasks section if hash is present
+  useEffect(() => {
+    if (location.hash === '#tasks' && cardRef.current) {
+      setTimeout(() => {
+        cardRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [location.hash]);
+
   return (
-    <Card>
+    <Card id="tasks" ref={cardRef}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg flex items-center gap-2">
           <CheckSquare className="h-5 w-5" />

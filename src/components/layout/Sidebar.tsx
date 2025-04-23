@@ -32,12 +32,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       
       <aside
         className={cn(
-          "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 transform border-r bg-background transition-transform duration-300",
+          "fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-56 transform border-r bg-background transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-full flex-col p-4">
-          <div className="flex justify-end md:hidden">
+        <div className="flex h-full flex-col p-2">
+          <div className="flex justify-end md:hidden mb-2">
             <Button 
               variant="ghost" 
               size="icon"
@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   location.pathname === item.href && "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
                 onClick={() => {
-                  if (window.innerWidth < 768 && onClose) {
+                  if (onClose) {
                     onClose();
                   }
                 }}

@@ -18,18 +18,17 @@ export const DocumentCategories = ({ activeCategory, onCategoryChange }: Documen
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
+    <div className="grid grid-cols-3 gap-1 mb-4">
       {categories.map(category => (
         <Button
           key={category.id}
           variant={activeCategory === category.id ? "default" : "outline"}
-          className="flex items-center gap-2 justify-center"
+          className="flex items-center justify-center gap-1 px-2 h-9"
           onClick={() => onCategoryChange(category.id)}
+          size="sm"
         >
           {category.icon}
-          <span className="text-xs whitespace-nowrap overflow-hidden text-ellipsis">
-            {category.name}
-          </span>
+          <span className="text-xs">{category.name}</span>
         </Button>
       ))}
     </div>

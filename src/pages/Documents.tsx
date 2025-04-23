@@ -54,15 +54,15 @@ const Documents = () => {
 
   return (
     <Layout>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Documentos</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold mb-2">Documentos</h1>
+        <p className="text-muted-foreground text-sm">
           Administra los documentos de todas tus propiedades
         </p>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar documentos..."
@@ -72,14 +72,14 @@ const Documents = () => {
           />
         </div>
         
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2">
           <Select value={propertyFilter} onValueChange={setPropertyFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] gap-2">
+            <SelectTrigger className="flex-1 gap-1">
               <Filter className="h-4 w-4" />
-              <SelectValue placeholder="Filtrar por propiedad" />
+              <SelectValue placeholder="Propiedad" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las propiedades</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               {uniqueProperties.map(property => (
                 <SelectItem key={property.id} value={property.id}>
                   {property.name}
@@ -89,11 +89,11 @@ const Documents = () => {
           </Select>
           
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filtrar por tipo" />
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {uniqueTypes.map(type => (
                 <SelectItem key={type} value={type}>
                   {type}
@@ -105,49 +105,51 @@ const Documents = () => {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Documentos ({filteredDocuments.length})</CardTitle>
+        <CardHeader className="py-3">
+          <CardTitle className="text-base">Documentos ({filteredDocuments.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 py-1">
           {filteredDocuments.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-6">
               <p className="text-muted-foreground">No hay documentos disponibles</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Propiedad</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="w-[100px]">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDocuments.map(doc => (
-                  <TableRow key={doc.id}>
-                    <TableCell className="flex items-center gap-2">
-                      <FileIcon className="h-4 w-4 text-muted-foreground" />
-                      {doc.name}
-                    </TableCell>
-                    <TableCell>{doc.propertyName}</TableCell>
-                    <TableCell>{doc.type}</TableCell>
-                    <TableCell>{doc.uploadDate}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-auto -mx-2 px-2">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead className="hidden sm:table-cell">Propiedad</TableHead>
+                    <TableHead className="hidden md:table-cell">Tipo</TableHead>
+                    <TableHead className="hidden md:table-cell">Fecha</TableHead>
+                    <TableHead className="w-[80px] text-right">Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredDocuments.map(doc => (
+                    <TableRow key={doc.id}>
+                      <TableCell className="flex items-center gap-2">
+                        <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="truncate">{doc.name}</span>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">{doc.propertyName}</TableCell>
+                      <TableCell className="hidden md:table-cell">{doc.type}</TableCell>
+                      <TableCell className="hidden md:table-cell">{doc.uploadDate}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
