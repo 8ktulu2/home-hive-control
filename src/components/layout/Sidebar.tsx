@@ -23,13 +23,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Close sidebar when location changes on mobile - but ONLY AFTER a delay
+  // Close sidebar when location changes on mobile - with a LONGER delay
   useEffect(() => {
     if (isMobile && isOpen && onClose) {
-      // Adding a deliberate delay before closing
+      // Significantly longer delay before closing to ensure visibility
       const timer = setTimeout(() => {
         onClose();
-      }, 100);
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [location.pathname, isOpen, onClose, isMobile]);
@@ -60,14 +60,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile overlay to capture clicks outside sidebar - we prevent quick close by setting pointer-events-none first */}
+      {/* Mobile overlay with improved click handling */}
       {isOpen && isMobile && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={(e) => {
-            // Prevent clicks from immediately closing the sidebar
+            e.preventDefault();
             e.stopPropagation();
-            if (onClose) onClose();
+            
+            // We're intentionally NOT handling close here
+            // This prevents accidental quick closures
           }}
           aria-hidden="true"
         />
@@ -90,13 +92,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   location.pathname === item.href && "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
                 onClick={(e) => {
-                  // Prevent default link behavior to avoid immediate closing
                   if (isMobile && onClose) {
-                    // We want the navigation to happen but not immediately close the sidebar
-                    // So we'll let the link work but add a small delay before closing
+                    // We still need to navigate, but we prevent the immediate closure
+                    // by significantly increasing the delay
+                    e.stopPropagation();
+                    
                     setTimeout(() => {
                       onClose();
-                    }, 150);
+                    }, 500); // Much longer delay
                   }
                 }}
               >
@@ -105,6 +108,19 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               </Link>
             ))}
           </nav>
+          
+          {/* Add a visible close button as a clear indication for mobile users */}
+          {isMobile && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onClose) onClose();
+              }}
+              className="mt-6 bg-gray-200 rounded-md px-3 py-2 text-sm font-medium w-full text-center"
+            >
+              Cerrar menú
+            </button>
+          )}
         </div>
       </div>
     </>

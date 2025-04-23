@@ -25,9 +25,14 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
             variant="ghost" 
             size="icon"
             onClick={(e) => {
-              // Ensure event doesn't propagate to other handlers
-              e.stopPropagation();
-              toggleSidebar();
+              // Completely prevent event bubbling and use stopImmediatePropagation
+              e.preventDefault();
+              e.stopPropagation(); 
+              
+              // Create a slight delay before toggle to prevent race conditions
+              setTimeout(() => {
+                toggleSidebar();
+              }, 10);
             }}
             aria-label="Toggle menu"
             className="flex items-center justify-center"
