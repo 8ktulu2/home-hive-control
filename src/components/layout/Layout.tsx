@@ -13,7 +13,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   // Handle toggle sidebar
   const toggleSidebar = () => {
-    setSidebarOpen(prev => !prev);
+    setSidebarOpen((prev) => !prev);
   };
   
   // Close sidebar

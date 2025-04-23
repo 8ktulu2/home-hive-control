@@ -26,7 +26,7 @@ const Header = ({
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={toggleSidebar} 
+            onClick={() => toggleSidebar()} 
             aria-label="Toggle menu"
             className="flex items-center justify-center"
           >

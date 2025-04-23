@@ -38,6 +38,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { href: '/finances', icon: <BarChart2 className="h-5 w-5" />, label: 'Finanzas' },
   ];
 
+  // Do not render anything on mobile when closed
   if (!isOpen && window.innerWidth < 768) {
     return null;
   }
