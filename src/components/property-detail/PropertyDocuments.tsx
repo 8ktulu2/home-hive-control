@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Document } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Upload, FileType, Download, Trash, File, FolderOpen, Folder } from 'lucide-react';
@@ -13,6 +13,7 @@ interface PropertyDocumentsProps {
 
 const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const categories = [
     { id: 'all', name: 'Todos', icon: <FolderOpen className="h-4 w-4" /> },
@@ -26,8 +27,18 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
   const filteredDocuments = activeCategory === 'all' 
     ? documents 
     : documents.filter(doc => doc.category === activeCategory);
-  
+
   const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const fileUrl = URL.createObjectURL(file);
+    
+    // In a real app, you would upload the file to a server here
     toast.info('La función de subida de documentos estará disponible próximamente', {
       description: 'Esta característica está en desarrollo',
       duration: 2000
@@ -35,7 +46,18 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
   };
 
   const handleDownload = (document: Document) => {
-    toast.info(`Descargando documento: ${document.name}`, {
+    // In a real application, this would be a real URL to your file
+    const fileUrl = document.url;
+
+    // Create an anchor element and trigger the download
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = document.name; // Set the file name for download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`Descargando ${document.name}`, {
       icon: <Download className="h-4 w-4" />,
       duration: 2000
     });
@@ -70,16 +92,26 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
           <FileText className="h-5 w-5" />
           <span>Documentos</span>
         </CardTitle>
-        <Button 
-          size="sm" 
-          variant="outline" 
-          onClick={handleFileUpload}
-          className="flex items-center gap-1"
-        >
-          <Upload className="h-4 w-4" />
-          <span>Subir</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileInputChange}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleFileUpload}
+            className="flex items-center gap-1"
+          >
+            <Upload className="h-4 w-4" />
+            <span>Subir</span>
+          </Button>
+        </div>
       </CardHeader>
+      
       <CardContent>
         {primaryContract && (
           <div className="mb-4 p-3 bg-primary/10 rounded-lg">
@@ -89,7 +121,12 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
                 <h3 className="font-medium mb-1">Contrato Principal</h3>
                 <p className="text-sm text-muted-foreground mb-2">{primaryContract.name}</p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="text-primary flex items-center gap-1" onClick={() => handleDownload(primaryContract)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-primary flex items-center gap-1"
+                    onClick={() => handleDownload(primaryContract)}
+                  >
                     <Download className="h-3.5 w-3.5" />
                     <span className="text-xs">Descargar</span>
                   </Button>
