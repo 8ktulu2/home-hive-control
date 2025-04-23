@@ -14,11 +14,15 @@ const Layout = ({ children }: LayoutProps) => {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+  
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <main
         className={cn(
           "transition-all duration-300 pt-16 min-h-[calc(100vh-4rem)]",

@@ -1,13 +1,24 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, FileText, CheckSquare, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 
 interface SidebarProps {
   isOpen: boolean;
+  onClose?: () => void;
 }
 
-const Sidebar = ({ isOpen }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+  const location = useLocation();
+  
+  // Close sidebar when location changes
+  useEffect(() => {
+    if (isOpen && onClose) {
+      onClose();
+    }
+  }, [location.pathname, isOpen, onClose]);
+
   const navItems = [
     { href: '/', icon: <Home className="h-5 w-5" />, label: 'Propiedades' },
     { href: '/documents', icon: <FileText className="h-5 w-5" />, label: 'Documentos' },
