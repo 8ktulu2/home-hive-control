@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,9 +68,9 @@ const Documents = () => {
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Select value={propertyFilter} onValueChange={setPropertyFilter}>
-            <SelectTrigger className="flex-1 gap-1">
+            <SelectTrigger className="w-full sm:w-[200px] gap-1">
               <Filter className="h-4 w-4" />
               <SelectValue placeholder="Propiedad" />
             </SelectTrigger>
@@ -84,7 +85,7 @@ const Documents = () => {
           </Select>
           
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="flex-1">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
@@ -103,28 +104,30 @@ const Documents = () => {
         <CardHeader className="py-3">
           <CardTitle className="text-base">Documentos ({filteredDocuments.length})</CardTitle>
         </CardHeader>
-        <CardContent className="px-2 py-1">
+        <CardContent className="p-0">
           {filteredDocuments.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-muted-foreground">No hay documentos disponibles</p>
             </div>
           ) : (
-            <div className="overflow-auto -mx-2 px-2">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Propiedad</TableHead>
-                    <TableHead className="w-[80px] text-right">Acciones</TableHead>
+                    <TableHead className="min-w-[200px]">Nombre</TableHead>
+                    <TableHead className="min-w-[150px]">Propiedad</TableHead>
+                    <TableHead className="w-[100px] text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell>
-                        <span className="truncate font-medium">{doc.name}</span>
+                      <TableCell className="truncate">
+                        {doc.name}
                       </TableCell>
-                      <TableCell>{doc.propertyName}</TableCell>
+                      <TableCell className="truncate">
+                        {doc.propertyName}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8">
