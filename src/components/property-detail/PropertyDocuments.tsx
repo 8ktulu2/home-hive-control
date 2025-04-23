@@ -50,12 +50,13 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
     const fileUrl = document.url;
 
     // Create an anchor element and trigger the download
-    const link = document.createElement('a');
+    // Use window.document to specify we're using the browser's document object
+    const link = window.document.createElement('a');
     link.href = fileUrl;
     link.download = document.name; // Set the file name for download
-    document.body.appendChild(link);
+    window.document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    window.document.body.removeChild(link);
 
     toast.success(`Descargando ${document.name}`, {
       icon: <Download className="h-4 w-4" />,
