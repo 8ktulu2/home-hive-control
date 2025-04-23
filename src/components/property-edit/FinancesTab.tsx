@@ -24,22 +24,29 @@ const FinancesTab = ({
     if (!property) return;
     
     if (subField) {
-      const currentFieldValue = property[field as keyof Property];
-      
-      let updatedField: Record<string, any>;
-      
-      if (typeof currentFieldValue === 'object' && currentFieldValue !== null) {
-        updatedField = { ...(currentFieldValue as Record<string, any>) };
-        updatedField[subField] = value;
+      // Manejar campos anidados (como homeInsurance.cost)
+      if (field === 'homeInsurance' || field === 'lifeInsurance') {
+        const currentValue = property[field] || {};
+        setProperty({
+          ...property,
+          [field]: {
+            ...currentValue,
+            cost: value
+          }
+        });
       } else {
-        updatedField = { [subField]: value };
+        // Para otros campos con subfields
+        const currentFieldValue = property[field as keyof Property] || {};
+        setProperty({
+          ...property,
+          [field]: {
+            ...currentFieldValue as object,
+            [subField]: value
+          }
+        });
       }
-      
-      setProperty({
-        ...property,
-        [field]: updatedField
-      });
     } else {
+      // Manejar campos directos (como ibi)
       setProperty({
         ...property,
         [field]: value
@@ -48,12 +55,12 @@ const FinancesTab = ({
   };
   
   const handleRentChange = (value: string) => {
-    const rent = parseFloat(value);
+    const rent = parseFloat(value) || 0;
     setProperty({
       ...property,
-      rent: isNaN(rent) ? 0 : rent,
+      rent: rent,
       expenses: calculateTotalExpenses(),
-      netIncome: isNaN(rent) ? -calculateTotalExpenses() : rent - calculateTotalExpenses(),
+      netIncome: rent - calculateTotalExpenses(),
     });
   };
   

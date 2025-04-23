@@ -30,9 +30,8 @@ const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }:
           type="number"
           value={property.homeInsurance?.cost || 0}
           onChange={(e) => {
-            const value = e.target.value;
-            const cost = value === '' ? 0 : parseFloat(value);
-            updateNumericValue('homeInsurance', 'cost', cost);
+            const value = parseFloat(e.target.value) || 0;
+            updateNumericValue('homeInsurance', 'cost', value);
           }}
           placeholder="0"
         />
@@ -44,9 +43,8 @@ const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }:
           type="number"
           value={property.lifeInsurance?.cost || 0}
           onChange={(e) => {
-            const value = e.target.value;
-            const cost = value === '' ? 0 : parseFloat(value);
-            updateNumericValue('lifeInsurance', 'cost', cost);
+            const value = parseFloat(e.target.value) || 0;
+            updateNumericValue('lifeInsurance', 'cost', value);
           }}
           placeholder="0"
         />
@@ -59,9 +57,8 @@ const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }:
           type="number"
           value={property.ibi || 0}
           onChange={(e) => {
-            const value = e.target.value;
-            const ibi = value === '' ? 0 : parseFloat(value);
-            updateNumericValue('ibi', null, ibi);
+            const value = parseFloat(e.target.value) || 0;
+            updateNumericValue('ibi', null, value);
           }}
           placeholder="0"
         />
