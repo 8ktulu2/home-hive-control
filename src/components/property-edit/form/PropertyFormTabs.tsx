@@ -21,6 +21,7 @@ interface PropertyFormTabsProps {
   updateTenant: (index: number, field: keyof Tenant, value: string) => void;
   removeTenant: (index: number) => void;
   updateContactDetails: (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany', field: string, value: string) => void;
+  updateInsuranceCompany: (value: string) => void;
 }
 
 const PropertyFormTabs = ({
@@ -35,7 +36,8 @@ const PropertyFormTabs = ({
   addTenant,
   updateTenant,
   removeTenant,
-  updateContactDetails
+  updateContactDetails,
+  updateInsuranceCompany
 }: PropertyFormTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -77,6 +79,7 @@ const PropertyFormTabs = ({
           property={property}
           setProperty={setProperty}
           calculateTotalExpenses={calculateTotalExpenses}
+          updateInsuranceCompany={updateInsuranceCompany}
         />
       </TabsContent>
     </Tabs>
@@ -84,4 +87,3 @@ const PropertyFormTabs = ({
 };
 
 export default PropertyFormTabs;
-

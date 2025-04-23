@@ -6,12 +6,25 @@ import { Label } from '@/components/ui/label';
 interface InsuranceInfoProps {
   property: Property;
   updateNumericValue: (field: string, subField: string | null, value: number) => void;
+  updateInsuranceCompany: (value: string) => void;
 }
 
-const InsuranceInfo = ({ property, updateNumericValue }: InsuranceInfoProps) => {
+const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }: InsuranceInfoProps) => {
   return (
     <div className="space-y-4">
       <h3 className="font-medium">Seguros</h3>
+      
+      <div className="space-y-2">
+        <Label>Compañía de Seguros</Label>
+        <Input
+          type="text"
+          value={property.insuranceCompany || ''}
+          onChange={(e) => {
+            updateInsuranceCompany(e.target.value);
+          }}
+          placeholder="Nombre de la compañía"
+        />
+      </div>
       
       <div className="space-y-2">
         <Label>Seguro del Hogar - Coste Anual (€)</Label>

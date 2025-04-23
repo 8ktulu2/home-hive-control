@@ -84,6 +84,15 @@ const PropertyEdit = () => {
     }
   };
 
+  const updateInsuranceCompany = (value: string) => {
+    if (property) {
+      setProperty({
+        ...property,
+        insuranceCompany: value
+      });
+    }
+  };
+
   const updateContactDetails = (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany', field: string, value: string) => {
     if (property) {
       const detailsField = `${type}Details` as keyof Property;
@@ -123,6 +132,7 @@ const PropertyEdit = () => {
           updateTenant={updateTenant}
           removeTenant={removeTenant}
           updateContactDetails={updateContactDetails}
+          updateInsuranceCompany={updateInsuranceCompany}
         />
 
         <PropertyFormActions isNewProperty={isNewProperty} />
@@ -132,4 +142,3 @@ const PropertyEdit = () => {
 };
 
 export default PropertyEdit;
-
