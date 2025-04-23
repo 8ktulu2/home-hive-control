@@ -3,7 +3,6 @@ import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { mockProperties } from '@/data/mockData';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Trash, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -118,15 +117,15 @@ const Documents = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[45%]">Nombre</TableHead>
-                    <TableHead className="w-[45%]">Propiedad</TableHead>
-                    <TableHead className="w-[10%] text-right">Acciones</TableHead>
+                    <TableHead className="w-[40%] pl-4">Nombre</TableHead>
+                    <TableHead className="w-[40%]">Propiedad</TableHead>
+                    <TableHead className="w-[20%] text-right pr-4">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="max-w-[45%] truncate">
+                      <TableCell className="max-w-[40%] truncate pl-4">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button className="hover:underline text-left">
@@ -149,10 +148,10 @@ const Documents = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </TableCell>
-                      <TableCell className="max-w-[45%] truncate">
+                      <TableCell className="max-w-[40%] truncate">
                         {doc.propertyName}
                       </TableCell>
-                      <TableCell className="w-[10%] text-right">
+                      <TableCell className="w-[20%] text-right pr-4">
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <Trash className="h-4 w-4" />
                         </Button>
