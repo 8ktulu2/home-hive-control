@@ -11,18 +11,14 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Modified toggle function to prevent accidental toggles
+  // Simple and direct toggle function with no side effects
   const toggleSidebar = () => {
-    // Using functional update to ensure we always get the latest state
     setSidebarOpen(prev => !prev);
   };
   
-  // Close sidebar with deliberate action and delay
+  // Clear and deliberate close function with no delay
   const closeSidebar = () => {
-    // We want to avoid quick state changes that might cause flickering
-    setTimeout(() => {
-      setSidebarOpen(false);
-    }, 50);
+    setSidebarOpen(false);
   };
 
   // Close sidebar when window is resized to desktop size

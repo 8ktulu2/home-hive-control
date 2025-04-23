@@ -1,8 +1,9 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, CheckSquare, BarChart2 } from 'lucide-react';
+import { Home, FileText, CheckSquare, BarChart2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,16 +24,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Close sidebar when location changes on mobile - with a LONGER delay
-  useEffect(() => {
-    if (isMobile && isOpen && onClose) {
-      // Significantly longer delay before closing to ensure visibility
-      const timer = setTimeout(() => {
+  // Close sidebar only when a navigation happens and the user clicks a link
+  // But we won't use any automatic closing based just on location changes
+  const handleLinkClick = useCallback(() => {
+    if (isMobile && onClose) {
+      // We'll close on link click but with a small delay to ensure the navigation is visible
+      setTimeout(() => {
         onClose();
-      }, 300);
-      return () => clearTimeout(timer);
+      }, 100);
     }
-  }, [location.pathname, isOpen, onClose, isMobile]);
+  }, [isMobile, onClose]);
 
   // Handle ESC key to close sidebar on mobile
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -60,16 +61,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile overlay with improved click handling */}
+      {/* Mobile overlay - only close when clicked directly */}
       {isOpen && isMobile && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // We're intentionally NOT handling close here
-            // This prevents accidental quick closures
+            // Only close when clicking directly on the overlay
+            if (e.target === e.currentTarget && onClose) {
+              onClose();
+            }
           }}
           aria-hidden="true"
         />
@@ -82,6 +82,21 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         )}
       >
         <div className="flex h-full flex-col p-4">
+          {/* Mobile close button at the top of sidebar */}
+          {isMobile && (
+            <div className="flex justify-end mb-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => onClose && onClose()}
+                className="h-8 w-8"
+                aria-label="Cerrar menú"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
           <nav className="space-y-1">
             {navItems.map((item) => (
               <Link
@@ -91,17 +106,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   location.pathname === item.href && "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
-                onClick={(e) => {
-                  if (isMobile && onClose) {
-                    // We still need to navigate, but we prevent the immediate closure
-                    // by significantly increasing the delay
-                    e.stopPropagation();
-                    
-                    setTimeout(() => {
-                      onClose();
-                    }, 500); // Much longer delay
-                  }
-                }}
+                onClick={handleLinkClick}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -112,11 +117,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           {/* Add a visible close button as a clear indication for mobile users */}
           {isMobile && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onClose) onClose();
-              }}
-              className="mt-6 bg-gray-200 rounded-md px-3 py-2 text-sm font-medium w-full text-center"
+              onClick={() => onClose && onClose()}
+              className="mt-auto mb-4 bg-gray-200 rounded-md px-3 py-2 text-sm font-medium w-full text-center"
             >
               Cerrar menú
             </button>
