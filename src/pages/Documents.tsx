@@ -117,22 +117,22 @@ const Documents = () => {
               <p className="text-muted-foreground">No hay documentos disponibles</p>
             </div>
           ) : (
-            <div className="w-full">
+            <div className="w-full overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[10%] pl-2">Nombre</TableHead>
-                    <TableHead className="w-[15%]">Propiedad</TableHead>
-                    <TableHead className="w-[10%] text-right pr-2">Acciones</TableHead>
+                    <TableHead className="w-[40%] pl-2">Nombre</TableHead>
+                    <TableHead className="w-[40%]">Propiedad</TableHead>
+                    <TableHead className="w-[20%] text-center">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="max-w-[10%] truncate pl-2">
+                      <TableCell className="py-2 pl-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <button className="hover:underline text-left">
+                            <button className="hover:underline text-left truncate max-w-[150px] block">
                               {doc.name}
                             </button>
                           </AlertDialogTrigger>
@@ -152,13 +152,13 @@ const Documents = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </TableCell>
-                      <TableCell className="max-w-[15%] truncate">
+                      <TableCell className="py-2 truncate max-w-[150px]">
                         {doc.propertyName}
                       </TableCell>
-                      <TableCell className="w-[10%] text-right pr-2">
+                      <TableCell className="py-2 text-center">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <button className="text-red-500 hover:bg-red-50 rounded-full p-1">
+                            <button className="text-red-500 hover:bg-red-50 rounded-full p-1 inline-flex">
                               <X size={16} strokeWidth={2} />
                             </button>
                           </AlertDialogTrigger>
