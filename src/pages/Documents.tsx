@@ -121,15 +121,15 @@ const Documents = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[35%] pl-4">Nombre</TableHead>
-                    <TableHead className="w-[35%]">Propiedad</TableHead>
-                    <TableHead className="w-[15%] text-right pr-4">Acciones</TableHead>
+                    <TableHead className="w-[30%] pl-2">Nombre</TableHead>
+                    <TableHead className="w-[40%]">Propiedad</TableHead>
+                    <TableHead className="w-[30%] text-right pr-2">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="max-w-[35%] truncate pl-4">
+                      <TableCell className="max-w-[30%] truncate pl-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button className="hover:underline text-left">
@@ -152,10 +152,10 @@ const Documents = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </TableCell>
-                      <TableCell className="max-w-[35%] truncate">
+                      <TableCell className="max-w-[40%] truncate">
                         {doc.propertyName}
                       </TableCell>
-                      <TableCell className="w-[15%] text-right pr-4">
+                      <TableCell className="w-[30%] text-right pr-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button className="text-red-500 hover:bg-red-50 rounded-full p-1">
