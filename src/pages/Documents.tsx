@@ -51,6 +51,10 @@ const Documents = () => {
     console.log('Downloading:', documentName);
   };
 
+  const handleDelete = (documentId: string, documentName: string) => {
+    console.log('Deleting document:', documentName);
+  };
+
   return (
     <Layout>
       <div className="mb-4">
@@ -117,15 +121,15 @@ const Documents = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[45%] pl-4">Nombre</TableHead>
-                    <TableHead className="w-[45%]">Propiedad</TableHead>
-                    <TableHead className="w-[10%] text-right pr-4">Acciones</TableHead>
+                    <TableHead className="w-[35%] pl-4">Nombre</TableHead>
+                    <TableHead className="w-[35%]">Propiedad</TableHead>
+                    <TableHead className="w-[15%] text-right pr-4">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="max-w-[45%] truncate pl-4">
+                      <TableCell className="max-w-[35%] truncate pl-4">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button className="hover:underline text-left">
@@ -148,16 +152,31 @@ const Documents = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </TableCell>
-                      <TableCell className="max-w-[45%] truncate">
+                      <TableCell className="max-w-[35%] truncate">
                         {doc.propertyName}
                       </TableCell>
-                      <TableCell className="w-[10%] text-right pr-4">
-                        <button 
-                          onClick={() => {/* Implement delete logic */}} 
-                          className="text-red-500 hover:bg-red-50 rounded-full p-1"
-                        >
-                          <X size={16} strokeWidth={2} />
-                        </button>
+                      <TableCell className="w-[15%] text-right pr-4">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="text-red-500 hover:bg-red-50 rounded-full p-1">
+                              <X size={16} strokeWidth={2} />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Eliminar documento</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                ¿Estás seguro de que quieres eliminar el documento "{doc.name}"?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(doc.id, doc.name)}>
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}
