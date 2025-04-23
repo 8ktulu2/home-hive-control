@@ -24,12 +24,16 @@ const FinancesTab = ({
     if (!property) return;
     
     if (subField) {
+      // Fix for the spread type error - create a new object properly without spreading
+      const currentFieldValue = property[field as keyof Property] || {};
+      const updatedField = {
+        ...currentFieldValue,
+        [subField]: value
+      };
+      
       setProperty({
         ...property,
-        [field]: {
-          ...property[field as keyof Property],
-          [subField]: value
-        }
+        [field]: updatedField
       });
     } else {
       setProperty({
@@ -90,6 +94,7 @@ const FinancesTab = ({
             <MortgageInfo
               property={property}
               updateNumericValue={updateNumericValue}
+              setProperty={setProperty}
             />
           </div>
 
