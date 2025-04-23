@@ -110,25 +110,25 @@ const Documents = () => {
               <p className="text-muted-foreground">No hay documentos disponibles</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="w-full">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[200px]">Nombre</TableHead>
-                    <TableHead className="min-w-[150px]">Propiedad</TableHead>
-                    <TableHead className="w-[100px] text-right">Acciones</TableHead>
+                    <TableHead className="w-[35%]">Nombre</TableHead>
+                    <TableHead className="w-[35%]">Propiedad</TableHead>
+                    <TableHead className="w-[30%] text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="truncate">
+                      <TableCell className="max-w-[35%] truncate">
                         {doc.name}
                       </TableCell>
-                      <TableCell className="truncate">
+                      <TableCell className="max-w-[35%] truncate">
                         {doc.propertyName}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="w-[30%] text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <Download className="h-4 w-4" />
