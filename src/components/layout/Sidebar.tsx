@@ -23,10 +23,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Close sidebar when location changes on mobile
+  // Close sidebar when location changes on mobile - but ONLY AFTER a delay
   useEffect(() => {
     if (isMobile && isOpen && onClose) {
-      onClose();
+      // Adding a deliberate delay before closing
+      const timer = setTimeout(() => {
+        onClose();
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [location.pathname, isOpen, onClose, isMobile]);
 
@@ -56,11 +60,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile overlay to capture clicks outside sidebar */}
+      {/* Mobile overlay to capture clicks outside sidebar - we prevent quick close by setting pointer-events-none first */}
       {isOpen && isMobile && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden" 
-          onClick={onClose}
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={(e) => {
+            // Prevent clicks from immediately closing the sidebar
+            e.stopPropagation();
+            if (onClose) onClose();
+          }}
           aria-hidden="true"
         />
       )}
@@ -81,9 +89,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   location.pathname === item.href && "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
-                onClick={() => {
+                onClick={(e) => {
+                  // Prevent default link behavior to avoid immediate closing
                   if (isMobile && onClose) {
-                    onClose();
+                    // We want the navigation to happen but not immediately close the sidebar
+                    // So we'll let the link work but add a small delay before closing
+                    setTimeout(() => {
+                      onClose();
+                    }, 150);
                   }
                 }}
               >

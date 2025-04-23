@@ -24,7 +24,11 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={toggleSidebar}
+            onClick={(e) => {
+              // Ensure event doesn't propagate to other handlers
+              e.stopPropagation();
+              toggleSidebar();
+            }}
             aria-label="Toggle menu"
             className="flex items-center justify-center"
           >
