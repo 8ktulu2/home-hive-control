@@ -1,13 +1,13 @@
-
 import { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { mockProperties } from '@/data/mockData';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download, Trash, Search, Filter } from 'lucide-react';
+import { Trash, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Documents = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,6 +47,10 @@ const Documents = () => {
     
     return matchesSearch && matchesPropertyFilter && matchesTypeFilter;
   });
+
+  const handleDownload = (documentName: string) => {
+    console.log('Downloading:', documentName);
+  };
 
   return (
     <Layout>
@@ -114,29 +118,44 @@ const Documents = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[35%]">Nombre</TableHead>
-                    <TableHead className="w-[35%]">Propiedad</TableHead>
-                    <TableHead className="w-[30%] text-right">Acciones</TableHead>
+                    <TableHead className="w-[45%]">Nombre</TableHead>
+                    <TableHead className="w-[45%]">Propiedad</TableHead>
+                    <TableHead className="w-[10%] text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="max-w-[35%] truncate">
-                        {doc.name}
+                      <TableCell className="max-w-[45%] truncate">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="hover:underline text-left">
+                              {doc.name}
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Descargar documento</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                ¿Quieres descargar el documento "{doc.name}"?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDownload(doc.name)}>
+                                Descargar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
-                      <TableCell className="max-w-[35%] truncate">
+                      <TableCell className="max-w-[45%] truncate">
                         {doc.propertyName}
                       </TableCell>
-                      <TableCell className="w-[30%] text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <TableCell className="w-[10%] text-right">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
