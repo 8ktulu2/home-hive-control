@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -94,7 +95,26 @@ const PropertyEdit = () => {
 
   const updateContactDetails = (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany', field: string, value: string) => {
     if (property) {
-      const detailsField = `${type}Details` as keyof Property;
+      let detailsField: keyof Property;
+      
+      // Map the type to the correct property field name
+      switch (type) {
+        case 'insuranceCompany':
+          detailsField = 'insuranceDetails';
+          break;
+        case 'communityManager':
+          detailsField = 'communityManagerDetails';
+          break;
+        case 'waterProvider':
+          detailsField = 'waterProviderDetails';
+          break;
+        case 'electricityProvider':
+          detailsField = 'electricityProviderDetails';
+          break;
+        default:
+          detailsField = `${type}Details` as keyof Property;
+      }
+      
       const currentDetails = property[detailsField] as ContactDetails || {};
       
       if (field === 'name') {
