@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { toast } from 'sonner';
-import { Property, Tenant } from '@/types/property';
+import { Property, Tenant, ContactDetails } from '@/types/property';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePropertyForm } from '@/hooks/usePropertyForm';
 import { usePropertyImage } from '@/hooks/usePropertyImage';
