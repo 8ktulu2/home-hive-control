@@ -12,11 +12,22 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   
-  // Close sidebar when location changes
+  // Close sidebar when location changes on mobile only
   useEffect(() => {
-    if (isOpen && onClose) {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && isOpen && onClose) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // Close on navigation only on mobile
+    if (window.innerWidth < 768 && isOpen && onClose) {
       onClose();
     }
+    
+    return () => window.removeEventListener('resize', handleResize);
   }, [location.pathname, isOpen, onClose]);
 
   const navItems = [
