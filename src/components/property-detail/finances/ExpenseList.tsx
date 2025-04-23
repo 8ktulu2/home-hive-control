@@ -41,34 +41,67 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
     }
   };
 
+  const currentDate = new Date().toISOString();
   const mortgagePayment = property.mortgage?.monthlyPayment || 0;
   const ibi = property.ibi || 0;
+  
   const fixedExpenseItems = [
-    { id: 'mortgage', name: 'Hipoteca', value: mortgagePayment, isPaid: false, category: 'mortgage' },
-    { id: 'ibi', name: 'IBI (anual)', value: ibi / 12, isPaid: false, category: 'taxes' },
-    { id: 'community', name: 'Comunidad', value: property.expenses - mortgagePayment - (ibi / 12), isPaid: false, category: 'community' },
+    { 
+      id: 'mortgage', 
+      name: 'Hipoteca', 
+      value: mortgagePayment, 
+      isPaid: false, 
+      category: 'mortgage',
+      date: currentDate, // Add default date for fixed expenses
+      paymentDate: undefined // Add default paymentDate as undefined
+    },
+    { 
+      id: 'ibi', 
+      name: 'IBI (anual)', 
+      value: ibi / 12, 
+      isPaid: false, 
+      category: 'taxes',
+      date: currentDate, // Add default date for fixed expenses
+      paymentDate: undefined // Add default paymentDate as undefined
+    },
+    { 
+      id: 'community', 
+      name: 'Comunidad', 
+      value: property.expenses - mortgagePayment - (ibi / 12), 
+      isPaid: false, 
+      category: 'community',
+      date: currentDate, // Add default date for fixed expenses
+      paymentDate: undefined // Add default paymentDate as undefined
+    },
   ];
+  
   if (property.homeInsurance?.cost) {
     fixedExpenseItems.push({
       id: 'home-insurance',
       name: 'Seguro de Hogar',
       value: property.homeInsurance.cost / 12,
       isPaid: property.homeInsurance.isPaid || false,
-      category: 'insurance'
+      category: 'insurance',
+      date: currentDate, // Add default date for fixed expenses
+      paymentDate: property.homeInsurance.isPaid ? currentDate : undefined // Add paymentDate if paid
     });
   }
+  
   if (property.lifeInsurance?.cost) {
     fixedExpenseItems.push({
       id: 'life-insurance',
       name: 'Seguro de Vida',
       value: property.lifeInsurance.cost / 12,
       isPaid: property.lifeInsurance.isPaid || false,
-      category: 'insurance'
+      category: 'insurance',
+      date: currentDate, // Add default date for fixed expenses
+      paymentDate: property.lifeInsurance.isPaid ? currentDate : undefined // Add paymentDate if paid
     });
   }
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
+  
+  const currentMonthDate = new Date();
+  const currentMonth = currentMonthDate.getMonth();
+  const currentYear = currentMonthDate.getFullYear();
   const currentMonthExpenses = property.monthlyExpenses?.filter(
     expense => expense.month === currentMonth && expense.year === currentYear
   ) || [];
