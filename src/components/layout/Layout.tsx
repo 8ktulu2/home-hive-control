@@ -11,9 +11,9 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Handle toggle sidebar
+  // Handle toggle sidebar - simplified to avoid any issues
   const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
+    setSidebarOpen(!sidebarOpen);
   };
   
   // Close sidebar

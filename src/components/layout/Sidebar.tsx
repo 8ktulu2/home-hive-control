@@ -2,7 +2,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, FileText, CheckSquare, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,13 +11,24 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  // Update isMobile state when window resizes
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Close sidebar when location changes on mobile
   useEffect(() => {
-    if (window.innerWidth < 768 && isOpen && onClose) {
+    if (isMobile && isOpen && onClose) {
       onClose();
     }
-  }, [location.pathname, isOpen, onClose]);
+  }, [location.pathname, isOpen, onClose, isMobile]);
 
   // Handle ESC key to close sidebar on mobile
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -38,15 +49,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { href: '/finances', icon: <BarChart2 className="h-5 w-5" />, label: 'Finanzas' },
   ];
 
-  // Do not render anything on mobile when closed
-  if (!isOpen && window.innerWidth < 768) {
+  // Don't render anything when closed on mobile
+  if (isMobile && !isOpen) {
     return null;
   }
 
   return (
     <>
       {/* Mobile overlay to capture clicks outside sidebar */}
-      {isOpen && (
+      {isOpen && isMobile && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 md:hidden" 
           onClick={onClose}
@@ -71,7 +82,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   location.pathname === item.href && "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
                 onClick={() => {
-                  if (window.innerWidth < 768 && onClose) {
+                  if (isMobile && onClose) {
                     onClose();
                   }
                 }}

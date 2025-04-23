@@ -16,9 +16,7 @@ interface HeaderProps {
   toggleSidebar: () => void;
 }
 
-const Header = ({
-  toggleSidebar
-}: HeaderProps) => {
+const Header = ({ toggleSidebar }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
@@ -26,7 +24,7 @@ const Header = ({
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => toggleSidebar()} 
+            onClick={toggleSidebar}
             aria-label="Toggle menu"
             className="flex items-center justify-center"
           >
