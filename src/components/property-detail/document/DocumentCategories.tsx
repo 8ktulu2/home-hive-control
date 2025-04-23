@@ -10,9 +10,9 @@ interface DocumentCategoriesProps {
 export const DocumentCategories = ({ activeCategory, onCategoryChange }: DocumentCategoriesProps) => {
   const categories = [
     { id: 'all', name: 'Todos', icon: <FolderOpen className="h-4 w-4" /> },
-    { id: 'tenant-contract', name: 'Contratos de Alquiler', icon: <FileText className="h-4 w-4" /> },
-    { id: 'supply-contract', name: 'Contratos de Suministros', icon: <FileText className="h-4 w-4" /> },
-    { id: 'insurance', name: 'Contratos de Seguros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'tenant-contract', name: 'C. Alquiler', icon: <FileText className="h-4 w-4" /> },
+    { id: 'supply-contract', name: 'C. Suministros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'insurance', name: 'C. Seguros', icon: <FileText className="h-4 w-4" /> },
     { id: 'invoice', name: 'Facturas', icon: <FileText className="h-4 w-4" /> },
     { id: 'other', name: 'Otros', icon: <Folder className="h-4 w-4" /> }
   ];
