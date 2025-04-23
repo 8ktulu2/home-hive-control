@@ -6,6 +6,7 @@ import { useDocumentManagement } from './useDocumentManagement';
 import { useInventoryManagement } from './useInventoryManagement';
 import { usePropertyImages } from './usePropertyImages';
 import { usePropertyCreation } from './usePropertyCreation';
+import { useExpenseManagement } from './useExpenseManagement';
 
 export function usePropertyManagement(initialProperty: Property | null) {
   const [property, setProperty] = useState<Property | null>(initialProperty);
@@ -15,6 +16,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
   const { handleAddInventoryItem, handleDeleteInventoryItem, handleEditInventoryItem } = useInventoryManagement(property, setProperty);
   const { updatePropertyImage } = usePropertyImages(property, setProperty);
   const { createNewProperty } = usePropertyCreation();
+  const { handleExpenseAdd, handleExpenseUpdate, calculateTotalExpenses } = useExpenseManagement(property, setProperty);
 
   return {
     property,
@@ -29,5 +31,8 @@ export function usePropertyManagement(initialProperty: Property | null) {
     handleEditInventoryItem,
     createNewProperty,
     updatePropertyImage,
+    handleExpenseAdd,
+    handleExpenseUpdate,
+    calculateTotalExpenses
   };
 }

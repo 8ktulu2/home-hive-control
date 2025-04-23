@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Upload, FileType, Download, Trash, File, FolderOpen, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PropertyDocumentsProps {
   documents: Document[];
@@ -17,9 +16,9 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
   
   const categories = [
     { id: 'all', name: 'Todos', icon: <FolderOpen className="h-4 w-4" /> },
-    { id: 'tenant-contract', name: 'Contratos de Inquilino', icon: <FileText className="h-4 w-4" /> },
+    { id: 'tenant-contract', name: 'Contratos de Alquiler', icon: <FileText className="h-4 w-4" /> },
     { id: 'supply-contract', name: 'Contratos de Suministros', icon: <FileText className="h-4 w-4" /> },
-    { id: 'insurance', name: 'Seguros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'insurance', name: 'Contratos de Seguros', icon: <FileText className="h-4 w-4" /> },
     { id: 'invoice', name: 'Facturas', icon: <FileText className="h-4 w-4" /> },
     { id: 'other', name: 'Otros', icon: <Folder className="h-4 w-4" /> }
   ];
@@ -30,19 +29,21 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
   
   const handleFileUpload = () => {
     toast.info('La función de subida de documentos estará disponible próximamente', {
-      description: 'Esta característica está en desarrollo'
+      description: 'Esta característica está en desarrollo',
+      duration: 2000
     });
   };
 
   const handleDownload = (document: Document) => {
     toast.info(`Descargando documento: ${document.name}`, {
-      icon: <Download className="h-4 w-4" />
+      icon: <Download className="h-4 w-4" />,
+      duration: 2000
     });
   };
 
   const handleDelete = (documentId: string) => {
     onDocumentDelete(documentId);
-    toast.success('Documento eliminado');
+    toast.success('Documento eliminado', { duration: 2000 });
   };
 
   const getDocumentIcon = (type: string) => {
@@ -98,7 +99,7 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
           {categories.map(category => (
             <Button
               key={category.id}

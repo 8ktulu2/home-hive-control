@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { MonthlyExpense } from '@/types/property';
 import { expenseCategories } from './ExpenseCategories';
 import { useExpenseDialog } from '@/hooks/useExpenseDialog';
@@ -25,7 +25,10 @@ export const AddExpenseDialog = ({ onExpenseAdd }: AddExpenseDialogProps) => {
 
   const handleAddExpense = () => {
     if (onExpenseAdd && newExpense.name && newExpense.amount) {
-      onExpenseAdd(newExpense);
+      onExpenseAdd({
+        ...newExpense,
+        paymentDate: newExpense.isPaid ? new Date().toISOString() : undefined
+      });
       setIsExpenseDialogOpen(false);
       resetExpenseForm();
     }
@@ -115,6 +118,22 @@ export const AddExpenseDialog = ({ onExpenseAdd }: AddExpenseDialogProps) => {
               </label>
             </div>
           </div>
+          
+          {newExpense.isPaid && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div className="text-right flex items-center justify-end">
+                <Calendar className="h-4 w-4 mr-2" />
+                <Label htmlFor="payment-date">
+                  Fecha de pago
+                </Label>
+              </div>
+              <div className="col-span-3">
+                <p className="text-sm text-muted-foreground">
+                  Se registrará la fecha actual como fecha de pago
+                </p>
+              </div>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsExpenseDialogOpen(false)}>

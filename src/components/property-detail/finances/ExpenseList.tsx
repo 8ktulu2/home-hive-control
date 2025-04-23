@@ -1,10 +1,12 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, Calendar } from 'lucide-react';
 import { Property } from '@/types/property';
 import { getCategoryBadge } from './ExpenseCategories';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface ExpenseListProps {
   property: Property;
@@ -20,13 +22,22 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
     const expense = allExpenses.find(e => e.id === expenseId);
     if (expense) {
       if (expenseId === 'home-insurance' || expenseId === 'life-insurance' || ['mortgage', 'ibi', 'community'].includes(expenseId)) {
-        toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
+        toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`, { duration: 2000 });
         return;
       }
       if (onExpenseUpdate) {
         onExpenseUpdate(expenseId, { isPaid: !isPaid });
-        toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`);
+        toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`, { duration: 2000 });
       }
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '---';
+    try {
+      return format(new Date(dateString), 'dd/MM/yyyy', { locale: es });
+    } catch (e) {
+      return '---';
     }
   };
 
@@ -61,6 +72,7 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
   const currentMonthExpenses = property.monthlyExpenses?.filter(
     expense => expense.month === currentMonth && expense.year === currentYear
   ) || [];
+  
   const allExpenses = [
     ...fixedExpenseItems,
     ...currentMonthExpenses.map(expense => ({
@@ -68,9 +80,12 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
       name: expense.name,
       value: expense.amount,
       isPaid: expense.isPaid,
-      category: expense.category
+      category: expense.category,
+      date: expense.date,
+      paymentDate: expense.paymentDate
     }))
   ];
+  
   const totalExpensesCalculated = allExpenses
     .filter(expense => !expense.isPaid)
     .reduce((sum, expense) => sum + expense.value, 0);
@@ -112,9 +127,23 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
                   </div>
                 </div>
               </div>
-              <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
-                {item.value.toFixed(0)}€/mes
-              </span>
+              <div className="flex flex-col items-end">
+                <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
+                  {item.value.toFixed(0)}€/mes
+                </span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    <span title="Fecha de creación">{formatDate(item.date)}</span>
+                  </div>
+                  {item.isPaid && (
+                    <div className="flex items-center">
+                      <Check className="h-3 w-3 mr-1 text-success" />
+                      <span title="Fecha de pago">{formatDate(item.paymentDate)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
           <div className="flex items-center justify-between border-t pt-2 mt-2">
@@ -167,9 +196,23 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
                     </div>
                   </div>
                 </div>
-                <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
-                  {item.value.toFixed(0)}€/mes
-                </span>
+                <div className="flex flex-col items-end">
+                  <span className={`text-sm font-medium ${item.isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
+                    {item.value.toFixed(0)}€/mes
+                  </span>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      <span title="Fecha de creación">{formatDate(item.date)}</span>
+                    </div>
+                    {item.isPaid && (
+                      <div className="flex items-center">
+                        <Check className="h-3 w-3 mr-1 text-success" />
+                        <span title="Fecha de pago">{formatDate(item.paymentDate)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
             <div className="flex items-center justify-between border-t pt-2 mt-2">
@@ -183,4 +226,3 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
     </div>
   );
 };
-

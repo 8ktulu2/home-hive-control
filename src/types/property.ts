@@ -1,3 +1,4 @@
+
 export interface Property {
   id: string;
   name: string;
@@ -123,7 +124,8 @@ export interface MonthlyExpense {
   name: string;
   amount: number;
   isPaid: boolean;
-  date?: string;
+  date: string;
+  paymentDate?: string; // Nueva propiedad para la fecha de pago
   category: string;
   propertyId: string;
   month: number;
