@@ -31,7 +31,15 @@ export const usePropertyLoader = (id: string | undefined) => {
         }
         
         if (!foundProperty) {
+          // Look for the property in mockData
           foundProperty = mockProperties.find(p => p.id === id);
+          
+          // If found in mock data but not in localStorage, save it to localStorage
+          if (foundProperty) {
+            const properties = savedProperties ? JSON.parse(savedProperties) : [];
+            const updatedProperties = [...properties, foundProperty];
+            localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          }
         }
         
         if (foundProperty) {
