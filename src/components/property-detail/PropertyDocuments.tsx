@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { Document } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Upload } from 'lucide-react';
+import { FileText, Upload, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { DocumentCategories } from './document/DocumentCategories';
