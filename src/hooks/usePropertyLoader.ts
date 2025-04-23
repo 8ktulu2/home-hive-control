@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Property } from '@/types/property';
 import { mockProperties } from '@/data/mockData';
 import { toast } from 'sonner';
+import { usePropertyCreation } from './usePropertyCreation';
 
 export const usePropertyLoader = (id: string | undefined) => {
   const [property, setProperty] = useState<Property | null>(null);
@@ -11,6 +12,7 @@ export const usePropertyLoader = (id: string | undefined) => {
   const propertyCreatedRef = useRef(false);
   const isNewProperty = id === 'new';
   const navigate = useNavigate();
+  const { createNewProperty } = usePropertyCreation();
 
   useEffect(() => {
     const fetchOrCreateProperty = async () => {
@@ -47,4 +49,3 @@ export const usePropertyLoader = (id: string | undefined) => {
 
   return { property, setProperty, loading, isNewProperty };
 };
-

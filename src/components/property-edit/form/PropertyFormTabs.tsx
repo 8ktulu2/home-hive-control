@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Property } from '@/types/property';
+import { Property, Tenant } from '@/types/property';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BasicInfoTab from '../BasicInfoTab';
 import TenantsTab from '../TenantsTab';
