@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Document } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +37,6 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
 
     const fileUrl = URL.createObjectURL(file);
     
-    // In a real app, you would upload the file to a server here
     toast.info('La función de subida de documentos estará disponible próximamente', {
       description: 'Esta característica está en desarrollo',
       duration: 2000
@@ -46,14 +44,11 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
   };
 
   const handleDownload = (document: Document) => {
-    // In a real application, this would be a real URL to your file
     const fileUrl = document.url;
 
-    // Create an anchor element and trigger the download
-    // Use window.document to specify we're using the browser's document object
     const link = window.document.createElement('a');
     link.href = fileUrl;
-    link.download = document.name; // Set the file name for download
+    link.download = document.name;
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
