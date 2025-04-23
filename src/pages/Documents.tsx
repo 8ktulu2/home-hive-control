@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ const Documents = () => {
   const [propertyFilter, setPropertyFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   
-  // Recopilar todos los documentos de todas las propiedades
   const allDocuments = mockProperties.reduce((documents, property) => {
     const propertyDocuments = property.documents?.map(doc => ({
       ...doc,
@@ -24,7 +22,6 @@ const Documents = () => {
     return [...documents, ...propertyDocuments];
   }, [] as Array<any>);
   
-  // Obtener lista única de propiedades para el filtro
   const uniqueProperties = Array.from(
     new Set(mockProperties.map(property => property.id))
   ).map(id => {
@@ -32,12 +29,10 @@ const Documents = () => {
     return { id, name: property?.name || 'Unknown' };
   });
   
-  // Obtener lista única de tipos de documentos para el filtro
   const uniqueTypes = Array.from(
     new Set(allDocuments.map(doc => doc.type))
   );
   
-  // Filtrar documentos según los criterios seleccionados
   const filteredDocuments = allDocuments.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -119,21 +114,17 @@ const Documents = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nombre</TableHead>
-                    <TableHead className="hidden sm:table-cell">Propiedad</TableHead>
-                    <TableHead className="hidden md:table-cell">Tipo</TableHead>
-                    <TableHead className="hidden md:table-cell">Fecha</TableHead>
+                    <TableHead>Propiedad</TableHead>
                     <TableHead className="w-[80px] text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
-                      <TableCell className="flex items-center gap-2">
+                      <TableCell>
                         <span className="truncate font-medium">{doc.name}</span>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">{doc.propertyName}</TableCell>
-                      <TableCell className="hidden md:table-cell">{doc.type}</TableCell>
-                      <TableCell className="hidden md:table-cell">{doc.uploadDate}</TableCell>
+                      <TableCell>{doc.propertyName}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -157,4 +148,3 @@ const Documents = () => {
 };
 
 export default Documents;
-
