@@ -14,6 +14,17 @@ interface ExpenseListProps {
   onlyDetails?: boolean; // si true, solo muestra desglose, NO KPIs arriba
 }
 
+// Define a consistent expense item type to use throughout the component
+interface ExpenseItem {
+  id: string;
+  name: string;
+  value: number;
+  isPaid: boolean;
+  category: string;
+  date: string;
+  paymentDate?: string;
+}
+
 export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: ExpenseListProps) => {
   // Solo expandibles si es "dashboard", no en modo desglose
   const [showExpenseDetails, setShowExpenseDetails] = useState(onlyDetails);
@@ -45,15 +56,15 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
   const mortgagePayment = property.mortgage?.monthlyPayment || 0;
   const ibi = property.ibi || 0;
   
-  const fixedExpenseItems = [
+  const fixedExpenseItems: ExpenseItem[] = [
     { 
       id: 'mortgage', 
       name: 'Hipoteca', 
       value: mortgagePayment, 
       isPaid: false, 
       category: 'mortgage',
-      date: currentDate, // Add default date for fixed expenses
-      paymentDate: undefined // Add default paymentDate as undefined
+      date: currentDate,
+      paymentDate: undefined
     },
     { 
       id: 'ibi', 
@@ -61,8 +72,8 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
       value: ibi / 12, 
       isPaid: false, 
       category: 'taxes',
-      date: currentDate, // Add default date for fixed expenses
-      paymentDate: undefined // Add default paymentDate as undefined
+      date: currentDate,
+      paymentDate: undefined
     },
     { 
       id: 'community', 
@@ -70,8 +81,8 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
       value: property.expenses - mortgagePayment - (ibi / 12), 
       isPaid: false, 
       category: 'community',
-      date: currentDate, // Add default date for fixed expenses
-      paymentDate: undefined // Add default paymentDate as undefined
+      date: currentDate,
+      paymentDate: undefined
     },
   ];
   
@@ -82,8 +93,8 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
       value: property.homeInsurance.cost / 12,
       isPaid: property.homeInsurance.isPaid || false,
       category: 'insurance',
-      date: currentDate, // Add default date for fixed expenses
-      paymentDate: property.homeInsurance.isPaid ? currentDate : undefined // Add paymentDate if paid
+      date: currentDate,
+      paymentDate: property.homeInsurance.isPaid ? currentDate : undefined
     });
   }
   
@@ -94,8 +105,8 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
       value: property.lifeInsurance.cost / 12,
       isPaid: property.lifeInsurance.isPaid || false,
       category: 'insurance',
-      date: currentDate, // Add default date for fixed expenses
-      paymentDate: property.lifeInsurance.isPaid ? currentDate : undefined // Add paymentDate if paid
+      date: currentDate,
+      paymentDate: property.lifeInsurance.isPaid ? currentDate : undefined
     });
   }
   
@@ -106,7 +117,7 @@ export const ExpenseList = ({ property, onExpenseUpdate, onlyDetails = false }: 
     expense => expense.month === currentMonth && expense.year === currentYear
   ) || [];
   
-  const allExpenses = [
+  const allExpenses: ExpenseItem[] = [
     ...fixedExpenseItems,
     ...currentMonthExpenses.map(expense => ({
       id: expense.id,
