@@ -30,10 +30,9 @@ const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }:
           type="number"
           value={property.homeInsurance?.cost || 0}
           onChange={(e) => {
-            const cost = parseFloat(e.target.value);
-            if (!isNaN(cost)) {
-              updateNumericValue('homeInsurance', 'cost', cost);
-            }
+            const value = e.target.value;
+            const cost = value === '' ? 0 : parseFloat(value);
+            updateNumericValue('homeInsurance', 'cost', cost);
           }}
           placeholder="0"
         />
@@ -45,10 +44,9 @@ const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }:
           type="number"
           value={property.lifeInsurance?.cost || 0}
           onChange={(e) => {
-            const cost = parseFloat(e.target.value);
-            if (!isNaN(cost)) {
-              updateNumericValue('lifeInsurance', 'cost', cost);
-            }
+            const value = e.target.value;
+            const cost = value === '' ? 0 : parseFloat(value);
+            updateNumericValue('lifeInsurance', 'cost', cost);
           }}
           placeholder="0"
         />
@@ -61,10 +59,9 @@ const InsuranceInfo = ({ property, updateNumericValue, updateInsuranceCompany }:
           type="number"
           value={property.ibi || 0}
           onChange={(e) => {
-            const ibi = parseFloat(e.target.value);
-            if (!isNaN(ibi)) {
-              updateNumericValue('ibi', null, ibi);
-            }
+            const value = e.target.value;
+            const ibi = value === '' ? 0 : parseFloat(value);
+            updateNumericValue('ibi', null, ibi);
           }}
           placeholder="0"
         />

@@ -25,10 +25,15 @@ const FinancesTab = ({
     
     if (subField) {
       const currentFieldValue = property[field as keyof Property];
-      // Crear una copia del objeto asegurando que sea seguro para expandir
-      const updatedField = typeof currentFieldValue === 'object' && currentFieldValue !== null
-        ? { ...currentFieldValue as Record<string, any>, [subField]: value }
-        : { [subField]: value };
+      
+      let updatedField: Record<string, any>;
+      
+      if (typeof currentFieldValue === 'object' && currentFieldValue !== null) {
+        updatedField = { ...(currentFieldValue as Record<string, any>) };
+        updatedField[subField] = value;
+      } else {
+        updatedField = { [subField]: value };
+      }
       
       setProperty({
         ...property,
