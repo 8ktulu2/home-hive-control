@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { mockProperties } from '@/data/mockData';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { FileIcon, Download, Trash, Search, Filter } from 'lucide-react';
+import { Download, Trash, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -129,8 +129,7 @@ const Documents = () => {
                   {filteredDocuments.map(doc => (
                     <TableRow key={doc.id}>
                       <TableCell className="flex items-center gap-2">
-                        <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate">{doc.name}</span>
+                        <span className="truncate font-medium">{doc.name}</span>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">{doc.propertyName}</TableCell>
                       <TableCell className="hidden md:table-cell">{doc.type}</TableCell>
@@ -158,3 +157,4 @@ const Documents = () => {
 };
 
 export default Documents;
+
