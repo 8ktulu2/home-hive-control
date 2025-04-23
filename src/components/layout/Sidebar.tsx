@@ -14,20 +14,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   
   // Close sidebar when location changes on mobile only
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768 && isOpen && onClose) {
-        onClose();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    
-    // Close on navigation only on mobile
     if (window.innerWidth < 768 && isOpen && onClose) {
       onClose();
     }
-    
-    return () => window.removeEventListener('resize', handleResize);
   }, [location.pathname, isOpen, onClose]);
 
   const navItems = [
@@ -51,6 +40,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               key={item.href}
               to={item.href}
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              onClick={() => {
+                if (window.innerWidth < 768 && onClose) {
+                  onClose();
+                }
+              }}
             >
               {item.icon}
               <span>{item.label}</span>
