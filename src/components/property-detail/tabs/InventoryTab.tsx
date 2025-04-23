@@ -1,15 +1,17 @@
 
 import { Property, InventoryItem } from '@/types/property';
-import { Plus, Sofa, Refrigerator, Home } from 'lucide-react';
+import { Plus, Sofa, Refrigerator, Home, Pencil, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface InventoryTabProps {
   property: Property;
   onAddInventoryClick: () => void;
+  onEditInventoryItem: (item: InventoryItem) => void;
+  onDeleteInventoryItem: (itemId: string) => void;
 }
 
-const InventoryTab = ({ property, onAddInventoryClick }: InventoryTabProps) => {
+const InventoryTab = ({ property, onAddInventoryClick, onEditInventoryItem, onDeleteInventoryItem }: InventoryTabProps) => {
   const getInventoryIcon = (type: string) => {
     switch(type) {
       case 'furniture':
@@ -59,11 +61,29 @@ const InventoryTab = ({ property, onAddInventoryClick }: InventoryTabProps) => {
                   {getInventoryIcon(item.type)}
                   <span className="font-medium text-sm">{item.name}</span>
                 </div>
-                <Badge className={getConditionColor(item.condition)}>
-                  {item.condition === 'new' ? 'Nuevo' :
-                   item.condition === 'good' ? 'Bueno' :
-                   item.condition === 'fair' ? 'Regular' : 'Deteriorado'}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <Badge className={getConditionColor(item.condition)}>
+                    {item.condition === 'new' ? 'Nuevo' :
+                    item.condition === 'good' ? 'Bueno' :
+                    item.condition === 'fair' ? 'Regular' : 'Deteriorado'}
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 w-7 p-0" 
+                    onClick={() => onEditInventoryItem(item)}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 w-7 p-0 text-destructive hover:text-destructive/90"
+                    onClick={() => onDeleteInventoryItem(item.id)}
+                  >
+                    <Trash className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
               {item.notes && <p className="text-xs text-muted-foreground">{item.notes}</p>}
             </div>

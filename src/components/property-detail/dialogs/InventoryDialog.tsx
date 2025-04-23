@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { InventoryItem } from '@/types/property';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -12,15 +12,29 @@ interface InventoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (item: Omit<InventoryItem, 'id'>) => void;
+  initialItem?: InventoryItem | null;
 }
 
-const InventoryDialog = ({ isOpen, onClose, onSave }: InventoryDialogProps) => {
+const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDialogProps) => {
   const [newItem, setNewItem] = useState<Partial<InventoryItem>>({
     type: 'furniture',
     name: '',
     condition: 'good',
     notes: ''
   });
+
+  useEffect(() => {
+    if (initialItem) {
+      setNewItem(initialItem);
+    } else {
+      setNewItem({
+        type: 'furniture',
+        name: '',
+        condition: 'good',
+        notes: ''
+      });
+    }
+  }, [initialItem, isOpen]);
 
   const handleSave = () => {
     onSave(newItem as Omit<InventoryItem, 'id'>);
@@ -32,13 +46,18 @@ const InventoryDialog = ({ isOpen, onClose, onSave }: InventoryDialogProps) => {
     });
   };
 
+  const isEditing = !!initialItem;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Añadir a Inventario</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar' : 'Añadir a'} Inventario</DialogTitle>
           <DialogDescription>
-            Registra muebles, electrodomésticos u otros elementos en la propiedad.
+            {isEditing 
+              ? 'Modifica los detalles del elemento seleccionado.'
+              : 'Registra muebles, electrodomésticos u otros elementos en la propiedad.'
+            }
           </DialogDescription>
         </DialogHeader>
         
@@ -103,14 +122,14 @@ const InventoryDialog = ({ isOpen, onClose, onSave }: InventoryDialogProps) => {
               id="item-notes"
               placeholder="Detalles adicionales..."
               className="col-span-3"
-              value={newItem.notes}
+              value={newItem.notes || ''}
               onChange={(e) => setNewItem({...newItem, notes: e.target.value})}
             />
           </div>
         </div>
         
         <DialogFooter>
-          <Button onClick={handleSave}>Añadir al Inventario</Button>
+          <Button onClick={handleSave}>{isEditing ? 'Guardar Cambios' : 'Añadir al Inventario'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

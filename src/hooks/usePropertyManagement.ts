@@ -12,7 +12,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
 
   const { handleTaskToggle, handleTaskAdd, handleTaskDelete, handleTaskUpdate } = useTaskManagement(property, setProperty);
   const { handleDocumentDelete } = useDocumentManagement(property, setProperty);
-  const { handleAddInventoryItem } = useInventoryManagement(property, setProperty);
+  const { handleAddInventoryItem, handleDeleteInventoryItem, handleEditInventoryItem } = useInventoryManagement(property, setProperty);
   const { updatePropertyImage } = usePropertyImages(property, setProperty);
   const { createNewProperty } = usePropertyCreation();
 
@@ -25,6 +25,8 @@ export function usePropertyManagement(initialProperty: Property | null) {
     handleTaskUpdate,
     handleDocumentDelete,
     handleAddInventoryItem,
+    handleDeleteInventoryItem,
+    handleEditInventoryItem,
     createNewProperty,
     updatePropertyImage,
   };

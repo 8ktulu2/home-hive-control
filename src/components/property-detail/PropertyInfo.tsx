@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Property, Tenant, ContactDetails, InventoryItem } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,31 +12,59 @@ import GeneralInfoTab from './tabs/GeneralInfoTab';
 import ContactsTab from './tabs/ContactsTab';
 import InventoryTab from './tabs/InventoryTab';
 import CommunityTab from './tabs/CommunityTab';
+import { useInventoryManagement } from '@/hooks/useInventoryManagement';
+
 interface PropertyInfoProps {
   property: Property;
 }
+
 const PropertyInfo = ({
-  property
+  property: initialProperty
 }: PropertyInfoProps) => {
+  const [property, setProperty] = useState<Property>(initialProperty);
   const [selectedContact, setSelectedContact] = useState<{
     title: string;
     details: any;
   } | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isInventoryDialogOpen, setIsInventoryDialogOpen] = useState(false);
+  const [editingInventoryItem, setEditingInventoryItem] = useState<InventoryItem | null>(null);
+
+  const { handleAddInventoryItem, handleDeleteInventoryItem, handleEditInventoryItem } = useInventoryManagement(
+    property,
+    setProperty
+  );
+
   const handleContactClick = (title: string, details: any) => {
     setSelectedContact({
       title,
       details
     });
   };
+
   const handleTenantClick = (tenant: Tenant) => {
     setSelectedTenant(tenant);
   };
-  const handleAddInventoryItem = (newItem: Omit<InventoryItem, 'id'>) => {
-    toast.success(`Añadido "${newItem.name}" al inventario`);
+
+  const handleInventoryItemSave = (item: Omit<InventoryItem, 'id'>) => {
+    if (editingInventoryItem) {
+      const updatedItem = {
+        ...item,
+        id: editingInventoryItem.id
+      };
+      handleEditInventoryItem(updatedItem);
+    } else {
+      handleAddInventoryItem(item);
+    }
     setIsInventoryDialogOpen(false);
+    setEditingInventoryItem(null);
   };
+
+  const handleEditInventoryItemClick = (item: InventoryItem) => {
+    setEditingInventoryItem(item);
+    setIsInventoryDialogOpen(true);
+  };
+
   return <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
@@ -61,7 +90,15 @@ const PropertyInfo = ({
           </TabsContent>
           
           <TabsContent value="inventory">
-            <InventoryTab property={property} onAddInventoryClick={() => setIsInventoryDialogOpen(true)} />
+            <InventoryTab 
+              property={property} 
+              onAddInventoryClick={() => {
+                setEditingInventoryItem(null);
+                setIsInventoryDialogOpen(true);
+              }}
+              onEditInventoryItem={handleEditInventoryItemClick}
+              onDeleteInventoryItem={handleDeleteInventoryItem}
+            />
           </TabsContent>
           
           <TabsContent value="community">
@@ -74,7 +111,15 @@ const PropertyInfo = ({
       
       <TenantDialog tenant={selectedTenant} onClose={() => setSelectedTenant(null)} />
       
-      <InventoryDialog isOpen={isInventoryDialogOpen} onClose={() => setIsInventoryDialogOpen(false)} onSave={handleAddInventoryItem} />
+      <InventoryDialog 
+        isOpen={isInventoryDialogOpen} 
+        onClose={() => {
+          setIsInventoryDialogOpen(false);
+          setEditingInventoryItem(null);
+        }} 
+        onSave={handleInventoryItemSave}
+        initialItem={editingInventoryItem} 
+      />
     </Card>;
 };
 export default PropertyInfo;
