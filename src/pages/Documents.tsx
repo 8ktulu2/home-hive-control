@@ -3,15 +3,13 @@ import { useState, useRef } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { mockProperties } from '@/data/mockData';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { X, Search, Filter, Upload } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 import { Document, Property } from '@/types/property';
+import { DocumentSearchBar } from '@/components/documents/DocumentSearchBar';
+import { DocumentFilters } from '@/components/documents/DocumentFilters';
+import { DocumentTable } from '@/components/documents/DocumentTable';
 import { toast } from 'sonner';
+import { FileText } from 'lucide-react';
+import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 
 const Documents = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,6 +32,9 @@ const Documents = () => {
     return getAllDocuments();
   });
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { handleFileUpload, isUploading } = useDocumentUpload();
+  
   // Get all properties from localStorage or use mock data
   const properties = (() => {
     const savedProperties = localStorage.getItem('properties');
@@ -47,21 +48,6 @@ const Documents = () => {
     }
     return mockProperties;
   })();
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { handleFileUpload, isUploading } = useDocumentUpload();
-  
-  // Function to get all documents from mock data
-  function getAllDocuments() {
-    return mockProperties.reduce((documents, property) => {
-      const propertyDocuments = property.documents?.map(doc => ({
-        ...doc,
-        propertyName: property.name,
-        propertyId: property.id
-      })) || [];
-      return [...documents, ...propertyDocuments];
-    }, [] as Array<any>);
-  }
   
   const uniqueProperties = Array.from(
     new Set([...properties.map((property: Property) => property.id)])
@@ -88,7 +74,19 @@ const Documents = () => {
     return matchesSearch && matchesPropertyFilter && matchesTypeFilter;
   });
 
-  const handleDocumentUpload = () => {
+  // Function to get all documents from mock data
+  function getAllDocuments() {
+    return mockProperties.reduce((documents, property) => {
+      const propertyDocuments = property.documents?.map(doc => ({
+        ...doc,
+        propertyName: property.name,
+        propertyId: property.id
+      })) || [];
+      return [...documents, ...propertyDocuments];
+    }, [] as Array<any>);
+  }
+
+  const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -115,27 +113,6 @@ const Documents = () => {
       };
       
       setDocuments(prev => [...prev, documentWithProperty]);
-      
-      // Save to localStorage
-      try {
-        const savedProperties = localStorage.getItem('properties');
-        if (savedProperties) {
-          const propertiesArray = JSON.parse(savedProperties);
-          const updatedProperties = propertiesArray.map((p: any) => {
-            if (p.id === property.id) {
-              return {
-                ...p,
-                documents: [...(p.documents || []), newDoc]
-              };
-            }
-            return p;
-          });
-          localStorage.setItem('properties', JSON.stringify(updatedProperties));
-        }
-      } catch (e) {
-        console.error("Error saving to localStorage:", e);
-        toast.error("No se pudo guardar el documento debido a un error de almacenamiento");
-      }
     }
     
     // Reset file input
@@ -194,144 +171,43 @@ const Documents = () => {
       </div>
       
       <div className="flex flex-col gap-3 mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar documentos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <DocumentSearchBar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
         
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Select value={propertyFilter} onValueChange={setPropertyFilter}>
-            <SelectTrigger className="w-full sm:w-[200px] gap-1">
-              <Filter className="h-4 w-4" />
-              <SelectValue placeholder="Propiedad" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {uniqueProperties.map(property => (
-                <SelectItem key={property.id} value={property.id}>
-                  {property.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {uniqueTypes.map(type => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <div className="flex justify-end sm:flex-1">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            />
-            <Button 
-              onClick={handleDocumentUpload} 
-              variant="outline"
-              className="flex items-center gap-1"
-              disabled={isUploading}
-            >
-              <Upload className="h-4 w-4" />
-              <span>{isUploading ? 'Subiendo...' : 'Subir documento'}</span>
-            </Button>
-          </div>
-        </div>
+        <DocumentFilters
+          propertyFilter={propertyFilter}
+          typeFilter={typeFilter}
+          onPropertyFilterChange={setPropertyFilter}
+          onTypeFilterChange={setTypeFilter}
+          onUploadClick={handleUploadClick}
+          properties={uniqueProperties}
+          uniqueTypes={uniqueTypes}
+          isUploading={isUploading}
+        />
       </div>
 
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-base">Documentos ({filteredDocuments.length})</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Documentos ({filteredDocuments.length})</span>
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {filteredDocuments.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground">No hay documentos disponibles</p>
-            </div>
-          ) : (
-            <div className="w-full overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40%] pl-2">Nombre</TableHead>
-                    <TableHead className="w-[40%]">Propiedad</TableHead>
-                    <TableHead className="w-[20%] text-center">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDocuments.map(doc => (
-                    <TableRow key={doc.id}>
-                      <TableCell className="py-2 pl-2">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button className="hover:underline text-left truncate max-w-[150px] block">
-                              {doc.name}
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Descargar documento</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                ¿Quieres descargar el documento "{doc.name}"?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDownload(doc.name)}>
-                                Descargar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                      <TableCell className="py-2 truncate max-w-[150px]">
-                        {doc.propertyName || 'Sin propiedad'}
-                      </TableCell>
-                      <TableCell className="py-2 text-center">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button className="text-red-500 hover:bg-red-50 rounded-full p-1 inline-flex">
-                              <X size={16} strokeWidth={2} />
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Eliminar documento</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                ¿Estás seguro de que quieres eliminar el documento "{doc.name}"?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(doc.id, doc.name)}>
-                                Eliminar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          />
+          <DocumentTable 
+            documents={filteredDocuments}
+            onDownload={handleDownload}
+            onDelete={handleDelete}
+          />
         </CardContent>
       </Card>
     </Layout>
