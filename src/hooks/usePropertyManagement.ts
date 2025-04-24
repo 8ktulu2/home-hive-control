@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Property } from '@/types/property';
+import { Property, Document } from '@/types/property';
 import { useTaskManagement } from './useTaskManagement';
 import { useDocumentManagement } from './useDocumentManagement';
 import { useInventoryManagement } from './useInventoryManagement';
@@ -18,6 +18,27 @@ export function usePropertyManagement(initialProperty: Property | null) {
   const { createNewProperty } = usePropertyCreation();
   const { handleExpenseAdd, handleExpenseUpdate, calculateTotalExpenses } = useExpenseManagement(property, setProperty);
 
+  // New function to add documents
+  const handleDocumentAdd = (document: Document) => {
+    if (property) {
+      const updatedProperty = {
+        ...property,
+        documents: [...(property.documents || []), document]
+      };
+      
+      setProperty(updatedProperty);
+      
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperties = properties.map((p: Property) => 
+          p.id === property.id ? updatedProperty : p
+        );
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      }
+    }
+  };
+
   return {
     property,
     setProperty,
@@ -26,6 +47,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
     handleTaskDelete,
     handleTaskUpdate,
     handleDocumentDelete,
+    handleDocumentAdd,
     handleAddInventoryItem,
     handleDeleteInventoryItem,
     handleEditInventoryItem,

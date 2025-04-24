@@ -9,23 +9,29 @@ import { DocumentCategories } from './document/DocumentCategories';
 import { DocumentCard } from './document/DocumentCard';
 import { PrimaryContract } from './document/PrimaryContract';
 import { useLocation } from 'react-router-dom';
+import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 
 interface PropertyDocumentsProps {
   documents: Document[];
   onDocumentDelete: (documentId: string) => void;
+  onDocumentAdd?: (document: Document) => void;
 }
 
-const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsProps) => {
+const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: PropertyDocumentsProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   
+  const { handleFileUpload, isUploading } = useDocumentUpload({
+    onAddDocument: onDocumentAdd
+  });
+  
   const filteredDocuments = activeCategory === 'all' 
     ? documents 
     : documents.filter(doc => doc.category === activeCategory);
 
-  const handleFileUpload = () => {
+  const handleFileUploadClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -33,10 +39,12 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
     const file = event.target.files?.[0];
     if (!file) return;
     
-    toast.info('La función de subida de documentos estará disponible próximamente', {
-      description: 'Esta característica está en desarrollo',
-      duration: 2000
-    });
+    handleFileUpload(file, activeCategory !== 'all' ? activeCategory : 'other');
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleDownload = (document: Document) => {
@@ -89,11 +97,12 @@ const PropertyDocuments = ({ documents, onDocumentDelete }: PropertyDocumentsPro
           <Button 
             size="sm" 
             variant="outline" 
-            onClick={handleFileUpload}
+            onClick={handleFileUploadClick}
             className="flex items-center gap-1"
+            disabled={isUploading}
           >
             <Upload className="h-4 w-4" />
-            <span>Subir</span>
+            <span>{isUploading ? 'Subiendo...' : 'Subir'}</span>
           </Button>
         </div>
       </CardHeader>

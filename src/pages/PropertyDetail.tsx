@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -14,7 +15,7 @@ import { toast } from 'sonner';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePaymentManagement } from '@/hooks/usePaymentManagement';
 import { useExpenseManagement } from '@/hooks/useExpenseManagement';
-import { Property } from '@/types/property';
+import { Document, Property } from '@/types/property';
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -28,6 +29,7 @@ const PropertyDetail = () => {
     handleTaskDelete,
     handleTaskUpdate,
     handleDocumentDelete,
+    handleDocumentAdd
   } = usePropertyManagement(null);
 
   const { 
@@ -227,6 +229,7 @@ const PropertyDetail = () => {
           <PropertyDocuments 
             documents={property.documents || []}
             onDocumentDelete={handleDocumentDelete}
+            onDocumentAdd={handleDocumentAdd}
           />
         </div>
       </div>
