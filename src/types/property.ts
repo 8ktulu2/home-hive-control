@@ -1,4 +1,3 @@
-
 export interface Property {
   id: string;
   name: string;
@@ -66,6 +65,8 @@ export interface Document {
   uploadDate: string;
   category?: 'tenant-contract' | 'supply-contract' | 'insurance' | 'invoice' | 'other';
   isPrimary?: boolean;
+  propertyName?: string; // Added property name for referencing in the Documents page
+  propertyId?: string;   // Added property id for referencing in the Documents page
 }
 
 export interface Task {
