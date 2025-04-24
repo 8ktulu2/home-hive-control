@@ -54,16 +54,25 @@ export function useDocumentUpload({ property, setProperty, onAddDocument }: UseD
       setProperty(updatedProperty);
       
       // Update in localStorage
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: Property) => 
-          p.id === property.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      try {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+        toast.success(`Documento "${file.name}" subido con éxito`);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+          toast.error("No se pudo guardar el documento: cuota de almacenamiento excedida");
+          console.error("LocalStorage quota exceeded:", error);
+        } else {
+          toast.error("Error al guardar el documento");
+          console.error("Error saving document:", error);
+        }
       }
-
-      toast.success(`Documento "${file.name}" subido con éxito`);
     } 
     
     // Or use the callback if provided

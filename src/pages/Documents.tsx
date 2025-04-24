@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
-import { Document } from '@/types/property';
+import { Document, Property } from '@/types/property';
 import { toast } from 'sonner';
 
 const Documents = () => {
@@ -34,6 +34,20 @@ const Documents = () => {
     return getAllDocuments();
   });
   
+  // Get all properties from localStorage or use mock data
+  const properties = (() => {
+    const savedProperties = localStorage.getItem('properties');
+    if (savedProperties) {
+      try {
+        return JSON.parse(savedProperties);
+      } catch (e) {
+        console.error("Error parsing properties from localStorage", e);
+        return mockProperties;
+      }
+    }
+    return mockProperties;
+  })();
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { handleFileUpload, isUploading } = useDocumentUpload();
   
@@ -50,9 +64,9 @@ const Documents = () => {
   }
   
   const uniqueProperties = Array.from(
-    new Set([...mockProperties.map(property => property.id)])
+    new Set([...properties.map((property: Property) => property.id)])
   ).map(id => {
-    const property = mockProperties.find(p => p.id === id);
+    const property = properties.find((p: Property) => p.id === id);
     return { id, name: property?.name || 'Unknown' };
   });
   
@@ -63,7 +77,7 @@ const Documents = () => {
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      doc.propertyName.toLowerCase().includes(searchTerm.toLowerCase());
+      (doc.propertyName?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
     const matchesPropertyFilter = 
       propertyFilter === 'all' || doc.propertyId === propertyFilter;
@@ -84,7 +98,7 @@ const Documents = () => {
 
     // Get selected property
     const propertyId = propertyFilter !== 'all' ? propertyFilter : uniqueProperties[0]?.id;
-    const property = mockProperties.find(p => p.id === propertyId);
+    const property = properties.find((p: Property) => p.id === propertyId);
     
     if (!property) {
       toast.error("Selecciona una propiedad para subir documentos");
@@ -103,19 +117,24 @@ const Documents = () => {
       setDocuments(prev => [...prev, documentWithProperty]);
       
       // Save to localStorage
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: any) => {
-          if (p.id === property.id) {
-            return {
-              ...p,
-              documents: [...(p.documents || []), newDoc]
-            };
-          }
-          return p;
-        });
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      try {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const propertiesArray = JSON.parse(savedProperties);
+          const updatedProperties = propertiesArray.map((p: any) => {
+            if (p.id === property.id) {
+              return {
+                ...p,
+                documents: [...(p.documents || []), newDoc]
+              };
+            }
+            return p;
+          });
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      } catch (e) {
+        console.error("Error saving to localStorage:", e);
+        toast.error("No se pudo guardar el documento debido a un error de almacenamiento");
       }
     }
     
@@ -143,19 +162,23 @@ const Documents = () => {
     setDocuments(prev => prev.filter(doc => doc.id !== documentId));
     
     // Update localStorage
-    const savedProperties = localStorage.getItem('properties');
-    if (savedProperties) {
-      const properties = JSON.parse(savedProperties);
-      const updatedProperties = properties.map((p: any) => {
-        if (p.documents?.some((d: any) => d.id === documentId)) {
-          return {
-            ...p,
-            documents: p.documents.filter((d: any) => d.id !== documentId)
-          };
-        }
-        return p;
-      });
-      localStorage.setItem('properties', JSON.stringify(updatedProperties));
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperties = properties.map((p: any) => {
+          if (p.documents?.some((d: any) => d.id === documentId)) {
+            return {
+              ...p,
+              documents: p.documents.filter((d: any) => d.id !== documentId)
+            };
+          }
+          return p;
+        });
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      }
+    } catch (e) {
+      console.error("Error updating localStorage:", e);
     }
     
     toast.success(`Documento "${documentName}" eliminado`);
@@ -278,7 +301,7 @@ const Documents = () => {
                         </AlertDialog>
                       </TableCell>
                       <TableCell className="py-2 truncate max-w-[150px]">
-                        {doc.propertyName}
+                        {doc.propertyName || 'Sin propiedad'}
                       </TableCell>
                       <TableCell className="py-2 text-center">
                         <AlertDialog>

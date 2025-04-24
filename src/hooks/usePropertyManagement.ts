@@ -7,6 +7,7 @@ import { useInventoryManagement } from './useInventoryManagement';
 import { usePropertyImages } from './usePropertyImages';
 import { usePropertyCreation } from './usePropertyCreation';
 import { useExpenseManagement } from './useExpenseManagement';
+import { toast } from 'sonner';
 
 export function usePropertyManagement(initialProperty: Property | null) {
   const [property, setProperty] = useState<Property | null>(initialProperty);
@@ -28,13 +29,24 @@ export function usePropertyManagement(initialProperty: Property | null) {
       
       setProperty(updatedProperty);
       
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: Property) => 
-          p.id === property.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      try {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
+      } catch (error) {
+        // Handle localStorage quota exceeded error
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+          toast.error("No se pudo guardar el documento: cuota de almacenamiento excedida");
+          console.error("LocalStorage quota exceeded:", error);
+        } else {
+          toast.error("Error al guardar el documento");
+          console.error("Error saving document:", error);
+        }
       }
     }
   };
