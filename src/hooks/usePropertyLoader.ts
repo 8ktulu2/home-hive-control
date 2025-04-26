@@ -1,64 +1,68 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Property } from '@/types/property';
 import { mockProperties } from '@/data/mockData';
 import { toast } from 'sonner';
-import { usePropertyCreation } from './usePropertyCreation';
 
 export const usePropertyLoader = (id: string | undefined) => {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const propertyCreatedRef = useRef(false);
-  const isNewProperty = id === 'new';
   const navigate = useNavigate();
-  const { createNewProperty } = usePropertyCreation();
 
   useEffect(() => {
-    const fetchOrCreateProperty = async () => {
-      if (isNewProperty && !propertyCreatedRef.current) {
-        propertyCreatedRef.current = true;
-        const newProperty = createNewProperty();
-        setProperty(newProperty);
-        setLoading(false);
-      } else if (!isNewProperty) {
-        // First, check localStorage for properties
-        const savedProperties = localStorage.getItem('properties');
-        let foundProperty = null;
-        let properties = [];
+    const loadProperty = () => {
+      const savedProperties = localStorage.getItem('properties');
+      let foundProperty: Property | undefined;
+      
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        foundProperty = properties.find((p: Property) => p.id === id);
         
-        if (savedProperties) {
-          properties = JSON.parse(savedProperties);
-          foundProperty = properties.find((p: Property) => p.id === id);
-        }
-        
-        if (!foundProperty) {
-          // Look for the property in mockData
-          foundProperty = mockProperties.find(p => p.id === id);
-          
-          // If found in mock data but not in localStorage, save it to localStorage
-          if (foundProperty) {
-            properties = savedProperties ? JSON.parse(savedProperties) : [];
-            // Check if property already exists in the array
-            if (!properties.some((p: Property) => p.id === foundProperty?.id)) {
-              const updatedProperties = [...properties, foundProperty];
-              localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        if (foundProperty) {
+          const savedImages = localStorage.getItem('propertyImages');
+          if (savedImages && foundProperty.id) {
+            const images = JSON.parse(savedImages);
+            if (images[foundProperty.id]) {
+              foundProperty.image = images[foundProperty.id];
             }
           }
         }
+      }
+      
+      if (!foundProperty) {
+        foundProperty = mockProperties.find(p => p.id === id);
+      }
+      
+      if (foundProperty) {
+        if (foundProperty.paymentHistory && foundProperty.paymentHistory.length > 0) {
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+          
+          const currentMonthPayment = foundProperty.paymentHistory.find(
+            payment => payment.month === currentMonth && payment.year === currentYear
+          );
+          
+          if (currentMonthPayment) {
+            foundProperty.rentPaid = currentMonthPayment.isPaid;
+          }
+        }
         
-        if (foundProperty) {
-          setProperty(foundProperty);
+        setProperty(foundProperty);
+      } else {
+        if (id === 'new') {
+          navigate('/property/edit/new');
         } else {
           toast.error('Propiedad no encontrada');
           navigate('/');
         }
-        setLoading(false);
       }
+      setLoading(false);
     };
-    
-    fetchOrCreateProperty();
-  }, [id, isNewProperty, navigate, createNewProperty]);
 
-  return { property, setProperty, loading, isNewProperty };
+    loadProperty();
+  }, [id, navigate]);
+
+  return { property, setProperty, loading };
 };
