@@ -35,6 +35,7 @@ export const ExpenseList = ({
   const mortgagePayment = property.mortgage?.monthlyPayment || 0;
   const ibi = property.ibi || 0;
   
+  // Define each fixed expense with appropriate interface shape including optional paymentDate
   const fixedExpenseItems = [
     { 
       id: 'mortgage', 
@@ -62,6 +63,7 @@ export const ExpenseList = ({
     },
   ];
   
+  // Add home insurance if it exists
   if (property.homeInsurance?.cost) {
     fixedExpenseItems.push({
       id: 'home-insurance',
@@ -74,6 +76,7 @@ export const ExpenseList = ({
     });
   }
   
+  // Add life insurance if it exists
   if (property.lifeInsurance?.cost) {
     fixedExpenseItems.push({
       id: 'life-insurance',

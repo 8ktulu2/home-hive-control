@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ExpenseItem } from './ExpenseItem';
 import { ExpenseTotal } from './ExpenseTotal';
@@ -10,7 +9,7 @@ interface ExpenseItem {
   isPaid: boolean;
   category: string;
   date: string;
-  paymentDate?: string;
+  paymentDate?: string;  // Added paymentDate property
 }
 
 interface ExpenseListContentProps {
@@ -46,3 +45,4 @@ export const ExpenseListContent = ({ expenses, onTogglePaid }: ExpenseListConten
     </div>
   );
 };
+
