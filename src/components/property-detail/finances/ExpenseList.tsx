@@ -10,6 +10,17 @@ interface ExpenseListProps {
   onlyDetails?: boolean;
 }
 
+// Define an explicit interface for fixed expenses that includes paymentDate
+interface FixedExpense {
+  id: string;
+  name: string;
+  value: number;
+  isPaid: boolean;
+  category: string;
+  date: string;
+  paymentDate?: string;
+}
+
 export const ExpenseList = ({ 
   property, 
   onExpenseUpdate, 
@@ -36,7 +47,7 @@ export const ExpenseList = ({
   const ibi = property.ibi || 0;
   
   // Define each fixed expense with appropriate interface shape including optional paymentDate
-  const fixedExpenseItems = [
+  const fixedExpenseItems: FixedExpense[] = [
     { 
       id: 'mortgage', 
       name: 'Hipoteca', 
@@ -129,3 +140,4 @@ export const ExpenseList = ({
     </div>
   );
 };
+
