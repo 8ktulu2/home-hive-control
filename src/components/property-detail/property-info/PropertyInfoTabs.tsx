@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Property } from '@/types/property';
+import { Property, InventoryItem } from '@/types/property';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GeneralInfoTab from './GeneralInfoTab';
 import ContactsTab from './ContactsTab';
