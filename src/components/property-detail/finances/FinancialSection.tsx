@@ -13,7 +13,7 @@ const FinancialSection = ({ property, setProperty }: FinancialSectionProps) => {
   const { handleExpenseAdd, handleExpenseUpdate } = useExpenseManagement(property, setProperty);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="col-span-2">
       <PropertyFinances 
         property={property} 
         onExpenseAdd={handleExpenseAdd} 
