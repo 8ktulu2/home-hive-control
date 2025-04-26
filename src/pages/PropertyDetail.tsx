@@ -11,6 +11,7 @@ import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHea
 import MainContent from '@/components/property-detail/MainContent';
 import SecondaryContent from '@/components/property-detail/SecondaryContent';
 import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
+import { Property } from '@/types/property';
 
 const PropertyDetail = () => {
   const { id } = useParams();
