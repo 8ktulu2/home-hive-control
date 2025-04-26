@@ -31,14 +31,14 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
           // Check if the property already exists
           const existingPropertyIndex = properties.findIndex((p: Property) => p.id === property.id);
           
-          if (existingPropertyIndex === -1) {
-            // If it's a new property, add it to the array
-            properties.push(updatedProperty);
-            toast.success('Propiedad creada con éxito');
-          } else {
+          if (existingPropertyIndex !== -1) {
             // If it exists, update it
             properties[existingPropertyIndex] = updatedProperty;
             toast.success('Propiedad actualizada con éxito');
+          } else {
+            // If it's a new property, add it to the array
+            properties.push(updatedProperty);
+            toast.success('Propiedad creada con éxito');
           }
         } else {
           // If no properties are saved, create a new array
@@ -55,6 +55,14 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
           const images = JSON.parse(savedImages);
           images[property.id] = property.image;
           localStorage.setItem('propertyImages', JSON.stringify(images));
+        }
+        
+        // Also save additional images if they exist
+        if (property.images && property.images.length > 0) {
+          const savedImagesData = localStorage.getItem('propertyAdditionalImages') || '{}';
+          const imagesData = JSON.parse(savedImagesData);
+          imagesData[property.id] = property.images;
+          localStorage.setItem('propertyAdditionalImages', JSON.stringify(imagesData));
         }
         
         // Navigate back to property detail page
