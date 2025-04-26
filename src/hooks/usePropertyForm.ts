@@ -18,26 +18,37 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
         netIncome
       };
       
+      // Obtener propiedades del localStorage
       const savedProperties = localStorage.getItem('properties');
+      let properties = [];
       let isNewProperty = true;
       
       if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        isNewProperty = !properties.some((p: Property) => p.id === property.id);
-        
-        if (isNewProperty) {
-          properties.push(updatedProperty);
-        } else {
-          const index = properties.findIndex((p: Property) => p.id === property.id);
-          if (index >= 0) {
-            properties[index] = updatedProperty;
-          } else {
+        try {
+          properties = JSON.parse(savedProperties);
+          
+          // Comprobar si la propiedad ya existe
+          const existingPropertyIndex = properties.findIndex((p: Property) => p.id === property.id);
+          isNewProperty = existingPropertyIndex === -1;
+          
+          if (isNewProperty) {
+            // Si es nueva, añadirla al array
             properties.push(updatedProperty);
+          } else {
+            // Si existe, actualizarla
+            properties[existingPropertyIndex] = updatedProperty;
           }
+          
+          // Guardar en localStorage
+          localStorage.setItem('properties', JSON.stringify(properties));
+          
+        } catch (error) {
+          console.error("Error al procesar las propiedades:", error);
+          toast.error("Error al guardar la propiedad");
+          return;
         }
-        
-        localStorage.setItem('properties', JSON.stringify(properties));
       } else {
+        // Si no hay propiedades guardadas, crear un nuevo array
         localStorage.setItem('properties', JSON.stringify([updatedProperty]));
       }
       

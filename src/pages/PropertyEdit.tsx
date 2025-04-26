@@ -2,7 +2,6 @@
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { toast } from 'sonner';
 import { Property, Tenant, ContactDetails } from '@/types/property';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePropertyForm } from '@/hooks/usePropertyForm';
@@ -20,7 +19,7 @@ const PropertyEdit = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   
   const { property, setProperty, loading, isNewProperty } = usePropertyLoader(id);
-  const { createNewProperty, updatePropertyImage } = usePropertyManagement(property);
+  const { updatePropertyImage } = usePropertyManagement(property);
   
   const calculateTotalExpenses = () => {
     let total = 0;
@@ -29,6 +28,7 @@ const PropertyEdit = () => {
       if (property.ibi) total += property.ibi / 12;
       if (property.homeInsurance?.cost) total += property.homeInsurance.cost / 12;
       if (property.lifeInsurance?.cost) total += property.lifeInsurance.cost / 12;
+      if (property.communityFee) total += property.communityFee / 12;
       if (property.monthlyExpenses) {
         property.monthlyExpenses.forEach(expense => {
           if (!expense.isPaid) total += expense.amount;
