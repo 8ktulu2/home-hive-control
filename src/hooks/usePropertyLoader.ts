@@ -8,10 +8,28 @@ import { toast } from 'sonner';
 export const usePropertyLoader = (id: string | undefined) => {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const isNewProperty = id === 'new';
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadProperty = () => {
+      if (isNewProperty) {
+        // Create a basic empty property object for new property
+        const newProperty: Property = {
+          id: `property-${Date.now()}`,
+          name: '',
+          address: '',
+          image: '/placeholder.svg',
+          rent: 0,
+          expenses: 0,
+          rentPaid: false,
+          netIncome: 0
+        };
+        setProperty(newProperty);
+        setLoading(false);
+        return;
+      }
+      
       const savedProperties = localStorage.getItem('properties');
       let foundProperty: Property | undefined;
       
@@ -51,18 +69,14 @@ export const usePropertyLoader = (id: string | undefined) => {
         
         setProperty(foundProperty);
       } else {
-        if (id === 'new') {
-          navigate('/property/edit/new');
-        } else {
-          toast.error('Propiedad no encontrada');
-          navigate('/');
-        }
+        toast.error('Propiedad no encontrada');
+        navigate('/');
       }
       setLoading(false);
     };
 
     loadProperty();
-  }, [id, navigate]);
+  }, [id, navigate, isNewProperty]);
 
-  return { property, setProperty, loading };
+  return { property, setProperty, loading, isNewProperty };
 };
