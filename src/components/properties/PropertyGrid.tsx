@@ -146,6 +146,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
               variant="destructive"
               onClick={() => setShowDeleteDialog(true)}
               className="flex items-center gap-2"
+              data-delete-properties
             >
               <Trash className="h-4 w-4" />
               <span>Eliminar ({selectedProperties.length})</span>
@@ -206,3 +207,4 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
 };
 
 export default PropertyGrid;
+

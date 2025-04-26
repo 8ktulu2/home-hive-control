@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, Plus, Trash, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -109,8 +110,15 @@ const Header = ({
   };
 
   const handleDeleteProperties = () => {
+    // If we're on the home page, find the delete button in PropertyGrid and trigger it
     if (location.pathname === '/') {
-      toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
+      // Try to find if there are selected properties
+      const deleteButton = document.querySelector('button[data-delete-properties]');
+      if (deleteButton) {
+        (deleteButton as HTMLButtonElement).click();
+      } else {
+        toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
+      }
     } else {
       toast.info('Solo puede eliminar propiedades desde la página principal');
     }
@@ -198,3 +206,4 @@ const Header = ({
 };
 
 export default Header;
+
