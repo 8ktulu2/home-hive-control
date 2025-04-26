@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 import { Property, InventoryItem } from '@/types/property';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import GeneralInfoTab from './GeneralInfoTab';
-import ContactsTab from './ContactsTab';
-import InventoryTab from './InventoryTab';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PropertyInfoDialogs from './components/PropertyInfoDialogs';
 import { usePropertyInfoDialogs } from './hooks/usePropertyInfoDialogs';
 import { useInventoryManagement } from '@/hooks/useInventoryManagement';
+import TabContent from './tabs/TabContent';
 
 interface PropertyInfoTabsProps {
   property: Property;
@@ -15,6 +13,7 @@ interface PropertyInfoTabsProps {
 
 const PropertyInfoTabs = ({ property }: PropertyInfoTabsProps) => {
   const [currentProperty, setCurrentProperty] = useState<Property>(property);
+  const [activeTab, setActiveTab] = useState("general");
   
   const { handleAddInventoryItem, handleDeleteInventoryItem, handleEditInventoryItem } = useInventoryManagement(
     currentProperty,
@@ -46,29 +45,22 @@ const PropertyInfoTabs = ({ property }: PropertyInfoTabsProps) => {
 
   return (
     <>
-      <Tabs defaultValue="general">
+      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="contacts">Contactos</TabsTrigger>
           <TabsTrigger value="inventory">Inventario</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general">
-          <GeneralInfoTab property={currentProperty} onTenantClick={handleTenantClick} />
-        </TabsContent>
-
-        <TabsContent value="contacts">
-          <ContactsTab property={currentProperty} onContactClick={handleContactClick} />
-        </TabsContent>
-
-        <TabsContent value="inventory">
-          <InventoryTab 
-            property={currentProperty}
-            onAddInventoryClick={handleInventoryDialogOpen}
-            onEditInventoryItem={handleEditInventoryItemClick}
-            onDeleteInventoryItem={handleDeleteInventoryItem}
-          />
-        </TabsContent>
+        <TabContent 
+          activeTab={activeTab}
+          property={currentProperty}
+          onTenantClick={handleTenantClick}
+          onContactClick={handleContactClick}
+          onAddInventoryClick={handleInventoryDialogOpen}
+          onEditInventoryItem={handleEditInventoryItemClick}
+          onDeleteInventoryItem={handleDeleteInventoryItem}
+        />
       </Tabs>
 
       <PropertyInfoDialogs 

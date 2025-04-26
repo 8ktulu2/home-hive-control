@@ -1,9 +1,8 @@
+
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { mockProperties } from '@/data/mockData';
-import { FileSpreadsheet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePaymentManagement } from '@/hooks/usePaymentManagement';
@@ -12,6 +11,8 @@ import MainContent from '@/components/property-detail/MainContent';
 import SecondaryContent from '@/components/property-detail/SecondaryContent';
 import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import { Property } from '@/types/property';
+import PropertyActions from '@/components/property-detail/header/PropertyActions';
+import ExportButton from '@/components/property-detail/header/ExportButton';
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -101,71 +102,6 @@ const PropertyDetail = () => {
     };
   }, [id, setProperty]);
 
-  const handleExportToGoogleSheets = () => {
-    if (!property) return;
-
-    const propertyData = {
-      'Información General': {
-        Nombre: property.name,
-        Dirección: property.address,
-        'Referencia Catastral': property.cadastralReference || '',
-        Inquilinos: property.tenants?.map(t => t.name).join(', ') || 'Ninguno'
-      },
-      'Información Financiera': {
-        'Alquiler Mensual': formatCurrency(property.rent),
-        'Gastos Mensuales': formatCurrency(property.expenses),
-        'Ingresos Netos': formatCurrency(property.netIncome),
-        'IBI Anual': property.ibi ? formatCurrency(property.ibi) : '',
-      },
-      'Estado de Pagos': property.paymentHistory?.map(p => ({
-        Mes: `${p.month + 1}/${p.year}`,
-        Estado: p.isPaid ? 'Pagado' : 'Pendiente',
-        Fecha: new Date(p.date).toLocaleDateString('es-ES'),
-        Notas: p.notes || ''
-      })),
-      'Contactos': {
-        'Administrador Comunidad': property.communityManager || '',
-        'Compañía de Seguros': property.insuranceCompany || '',
-        'Proveedor de Agua': property.waterProvider || '',
-        'Proveedor de Electricidad': property.electricityProvider || ''
-      },
-      'Tareas': property.tasks?.map(t => ({
-        Título: t.title,
-        Descripción: t.description || '',
-        Estado: t.completed ? 'Completada' : 'Pendiente',
-        'Fecha límite': t.dueDate || '',
-      })),
-      'Documentos': property.documents?.map(d => ({
-        Nombre: d.name,
-        Tipo: d.type,
-        Categoría: d.category || '',
-        'Fecha de subida': d.uploadDate,
-      })),
-      'Inventario': property.inventory?.map(i => ({
-        Tipo: i.type,
-        Nombre: i.name,
-        Estado: i.condition,
-        Notas: i.notes || ''
-      }))
-    };
-    
-    console.log('Datos para exportar a Google Sheets:', propertyData);
-    
-    toast.success('Preparando exportación a Google Sheets...');
-    setTimeout(() => {
-      toast.success('Datos exportados correctamente a Google Sheets');
-    }, 1500);
-  };
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
-
   if (!property) {
     return (
       <Layout>
@@ -179,20 +115,15 @@ const PropertyDetail = () => {
   return (
     <Layout>
       <div className="space-y-6">
+        <PropertyActions propertyId={property.id} />
+        
         <div className="flex justify-between items-start">
           <PropertyDetailHeader 
             property={property}
             onRentPaidChange={handleRentPaidChange}
           />
           
-          <Button 
-            variant="outline" 
-            onClick={handleExportToGoogleSheets}
-            className="flex items-center gap-2"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            <span>Exportar a Google Sheets</span>
-          </Button>
+          <ExportButton property={property} />
         </div>
 
         <MonthlyPaymentStatus 
