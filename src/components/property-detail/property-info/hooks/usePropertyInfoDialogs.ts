@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { Property, Tenant, ContactDetails, InventoryItem } from '@/types/property';
+import { Property, Tenant, ContactDetails } from '@/types/property';
+import { useInventoryDialog } from './useInventoryDialog';
 
 export const usePropertyInfoDialogs = (
   currentProperty: Property,
@@ -11,8 +12,6 @@ export const usePropertyInfoDialogs = (
     details: ContactDetails;
   } | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-  const [isInventoryDialogOpen, setIsInventoryDialogOpen] = useState(false);
-  const [editingInventoryItem, setEditingInventoryItem] = useState<InventoryItem | null>(null);
 
   const handleContactClick = (title: string, details: ContactDetails) => {
     setSelectedContact({ title, details });
@@ -22,20 +21,13 @@ export const usePropertyInfoDialogs = (
     setSelectedTenant(tenant);
   };
 
-  const handleInventoryDialogOpen = () => {
-    setEditingInventoryItem(null);
-    setIsInventoryDialogOpen(true);
-  };
-
-  const handleInventoryDialogClose = () => {
-    setIsInventoryDialogOpen(false);
-    setEditingInventoryItem(null);
-  };
-
-  const handleEditInventoryItemClick = (item: InventoryItem) => {
-    setEditingInventoryItem(item);
-    setIsInventoryDialogOpen(true);
-  };
+  const {
+    isInventoryDialogOpen,
+    editingInventoryItem,
+    handleInventoryDialogOpen,
+    handleInventoryDialogClose,
+    handleEditInventoryItemClick
+  } = useInventoryDialog();
 
   return {
     selectedContact,
