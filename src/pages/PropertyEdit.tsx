@@ -24,18 +24,21 @@ const PropertyEdit = () => {
   const calculateTotalExpenses = () => {
     let total = 0;
     if (property) {
+      // Include all possible expenses in calculation
       if (property.mortgage?.monthlyPayment) total += property.mortgage.monthlyPayment;
-      if (property.ibi) total += property.ibi / 12;
-      if (property.homeInsurance?.cost) total += property.homeInsurance.cost / 12;
-      if (property.lifeInsurance?.cost) total += property.lifeInsurance.cost / 12;
-      if (property.communityFee) total += property.communityFee / 12;
+      if (property.ibi) total += property.ibi / 12; // Monthly equivalent of annual IBI
+      if (property.homeInsurance?.cost) total += property.homeInsurance.cost / 12; // Monthly equivalent
+      if (property.lifeInsurance?.cost) total += property.lifeInsurance.cost / 12; // Monthly equivalent
+      if (property.communityFee) total += property.communityFee / 12; // Monthly equivalent of annual community fee
+      
+      // Additional monthly expenses
       if (property.monthlyExpenses) {
         property.monthlyExpenses.forEach(expense => {
           if (!expense.isPaid) total += expense.amount;
         });
       }
     }
-    return total;
+    return parseFloat(total.toFixed(2)); // Round to 2 decimal places for currency
   };
 
   const { handleImageUpload, handleImageChange } = usePropertyImage(

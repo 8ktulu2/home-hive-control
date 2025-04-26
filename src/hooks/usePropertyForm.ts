@@ -9,6 +9,7 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (property) {
+      // Calculate updated expenses and net income
       const expenses = calculateTotalExpenses();
       const netIncome = property.rent - expenses;
       
@@ -18,42 +19,41 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
         netIncome
       };
       
-      // Obtener propiedades del localStorage
-      const savedProperties = localStorage.getItem('properties');
-      let properties = [];
-      let isNewProperty = true;
-      
-      if (savedProperties) {
-        try {
+      try {
+        // Get existing properties from localStorage
+        const savedProperties = localStorage.getItem('properties');
+        let properties = [];
+        
+        if (savedProperties) {
           properties = JSON.parse(savedProperties);
           
-          // Comprobar si la propiedad ya existe
+          // Check if the property already exists
           const existingPropertyIndex = properties.findIndex((p: Property) => p.id === property.id);
-          isNewProperty = existingPropertyIndex === -1;
           
-          if (isNewProperty) {
-            // Si es nueva, añadirla al array
+          if (existingPropertyIndex === -1) {
+            // If it's a new property, add it to the array
             properties.push(updatedProperty);
+            toast.success('Propiedad creada con éxito');
           } else {
-            // Si existe, actualizarla
+            // If it exists, update it
             properties[existingPropertyIndex] = updatedProperty;
+            toast.success('Propiedad actualizada con éxito');
           }
-          
-          // Guardar en localStorage
-          localStorage.setItem('properties', JSON.stringify(properties));
-          
-        } catch (error) {
-          console.error("Error al procesar las propiedades:", error);
-          toast.error("Error al guardar la propiedad");
-          return;
+        } else {
+          // If no properties are saved, create a new array
+          properties = [updatedProperty];
+          toast.success('Propiedad creada con éxito');
         }
-      } else {
-        // Si no hay propiedades guardadas, crear un nuevo array
-        localStorage.setItem('properties', JSON.stringify([updatedProperty]));
+        
+        // Save back to localStorage
+        localStorage.setItem('properties', JSON.stringify(properties));
+        
+        // Navigate back to property detail page
+        navigate(`/property/${property.id}`);
+      } catch (error) {
+        console.error("Error al procesar las propiedades:", error);
+        toast.error("Error al guardar la propiedad");
       }
-      
-      toast.success(isNewProperty ? 'Propiedad creada con éxito' : 'Propiedad actualizada con éxito');
-      navigate(`/property/${property.id}`);
     }
   };
 
