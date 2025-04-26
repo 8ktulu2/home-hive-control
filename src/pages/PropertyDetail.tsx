@@ -1,21 +1,16 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHeader';
-import PropertyInfo from '@/components/property-detail/PropertyInfo';
-import PropertyTasks from '@/components/property-detail/PropertyTasks';
-import PropertyDocuments from '@/components/property-detail/PropertyDocuments';
-import PropertyFinances from '@/components/property-detail/finances/PropertyFinances';
-import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import { mockProperties } from '@/data/mockData';
 import { FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePaymentManagement } from '@/hooks/usePaymentManagement';
-import { useExpenseManagement } from '@/hooks/useExpenseManagement';
-import { Document, Property } from '@/types/property';
+import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHeader';
+import MainContent from '@/components/property-detail/MainContent';
+import SecondaryContent from '@/components/property-detail/SecondaryContent';
+import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -36,11 +31,6 @@ const PropertyDetail = () => {
     handlePaymentUpdate, 
     handleRentPaidChange 
   } = usePaymentManagement(property, setProperty);
-
-  const { 
-    handleExpenseAdd, 
-    handleExpenseUpdate 
-  } = useExpenseManagement(property, setProperty);
 
   useEffect(() => {
     const savedProperties = localStorage.getItem('properties');
@@ -209,29 +199,17 @@ const PropertyDetail = () => {
           onPaymentUpdate={handlePaymentUpdate}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <PropertyInfo property={property} />
-          <PropertyFinances 
-            property={property} 
-            onExpenseAdd={handleExpenseAdd} 
-            onExpenseUpdate={handleExpenseUpdate} 
-          />
-        </div>
+        <MainContent property={property} setProperty={setProperty} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <PropertyTasks 
-            tasks={property.tasks || []}
-            onTaskToggle={handleTaskToggle}
-            onTaskAdd={handleTaskAdd}
-            onTaskDelete={handleTaskDelete}
-            onTaskUpdate={handleTaskUpdate}
-          />
-          <PropertyDocuments 
-            documents={property.documents || []}
-            onDocumentDelete={handleDocumentDelete}
-            onDocumentAdd={handleDocumentAdd}
-          />
-        </div>
+        <SecondaryContent
+          property={property}
+          onTaskToggle={handleTaskToggle}
+          onTaskAdd={handleTaskAdd}
+          onTaskDelete={handleTaskDelete}
+          onTaskUpdate={handleTaskUpdate}
+          onDocumentDelete={handleDocumentDelete}
+          onDocumentAdd={handleDocumentAdd}
+        />
       </div>
     </Layout>
   );
