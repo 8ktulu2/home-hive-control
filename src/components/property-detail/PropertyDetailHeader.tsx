@@ -16,7 +16,11 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           <div className="relative w-20 h-20 overflow-hidden rounded-lg shrink-0">
-            <img src={property.image} alt={property.name} className="w-full h-full object-cover" />
+            <img 
+              src={property.image || '/placeholder.svg'} 
+              alt={property.name} 
+              className="w-full h-full object-cover" 
+            />
           </div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{property.name}</h1>

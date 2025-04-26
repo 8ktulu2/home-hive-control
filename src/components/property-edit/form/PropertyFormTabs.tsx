@@ -40,8 +40,8 @@ const PropertyFormTabs = ({
   updateInsuranceCompany
 }: PropertyFormTabsProps) => {
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="mb-6">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="mb-6 w-full justify-start">
         <TabsTrigger value="basic">Información Básica</TabsTrigger>
         <TabsTrigger value="tenants">Inquilinos</TabsTrigger>
         <TabsTrigger value="contacts">Contactos</TabsTrigger>

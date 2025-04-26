@@ -12,7 +12,7 @@ export const usePropertyLoader = (id: string | undefined) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadProperty = () => {
+    const loadProperty = async () => {
       if (isNewProperty) {
         // Create a basic empty property object for new property
         const newProperty: Property = {
@@ -23,7 +23,8 @@ export const usePropertyLoader = (id: string | undefined) => {
           rent: 0,
           expenses: 0,
           rentPaid: false,
-          netIncome: 0
+          netIncome: 0,
+          tenants: []
         };
         setProperty(newProperty);
         setLoading(false);
@@ -53,6 +54,13 @@ export const usePropertyLoader = (id: string | undefined) => {
       }
       
       if (foundProperty) {
+        // Ensure all needed property objects exist to prevent null reference errors
+        if (!foundProperty.tenants) foundProperty.tenants = [];
+        if (!foundProperty.mortgage) foundProperty.mortgage = {};
+        if (!foundProperty.homeInsurance) foundProperty.homeInsurance = {};
+        if (!foundProperty.lifeInsurance) foundProperty.lifeInsurance = {};
+        if (!foundProperty.documents) foundProperty.documents = [];
+        
         if (foundProperty.paymentHistory && foundProperty.paymentHistory.length > 0) {
           const currentDate = new Date();
           const currentMonth = currentDate.getMonth();

@@ -143,7 +143,7 @@ const PropertyEdit = () => {
 
   return (
     <Layout>
-      <PropertyFormHeader isNewProperty={isNewProperty} propertyName={property.name} />
+      <PropertyFormHeader isNewProperty={isNewProperty} propertyName={property.name || 'Nueva propiedad'} />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <PropertyFormTabs

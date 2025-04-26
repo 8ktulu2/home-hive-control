@@ -11,7 +11,8 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
     if (property) {
       // Calculate updated expenses and net income
       const expenses = calculateTotalExpenses();
-      const netIncome = property.rent - expenses;
+      const rent = property.rent || 0;
+      const netIncome = rent - expenses;
       
       const updatedProperty = {
         ...property,
@@ -47,6 +48,14 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
         
         // Save back to localStorage
         localStorage.setItem('properties', JSON.stringify(properties));
+        
+        // Save images separately if needed
+        if (property.image && !property.image.startsWith('/placeholder')) {
+          const savedImages = localStorage.getItem('propertyImages') || '{}';
+          const images = JSON.parse(savedImages);
+          images[property.id] = property.image;
+          localStorage.setItem('propertyImages', JSON.stringify(images));
+        }
         
         // Navigate back to property detail page
         navigate(`/property/${property.id}`);
