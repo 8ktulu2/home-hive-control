@@ -1,7 +1,6 @@
 
 import { Property } from '@/types/property';
 import PropertyActions from './header/PropertyActions';
-import ExportButton from './header/ExportButton';
 
 interface PropertyDetailHeaderProps {
   property: Property;
@@ -27,8 +26,6 @@ const PropertyDetailHeader = ({ property, onRentPaidChange }: PropertyDetailHead
             <p className="text-muted-foreground">{property.address}</p>
           </div>
         </div>
-        
-        <ExportButton property={property} />
       </div>
     </>
   );
