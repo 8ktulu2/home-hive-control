@@ -1,12 +1,23 @@
 
 import { useState } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import PropertyCard from './PropertyCard';
 import { Property, PaymentRecord } from '@/types/property';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface PropertyGridProps {
   properties: Property[];
@@ -15,12 +26,60 @@ interface PropertyGridProps {
 
 const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   const filteredProperties = properties.filter(
     property => 
       property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePropertySelect = (propertyId: string) => {
+    setSelectedProperties(prev => {
+      if (prev.includes(propertyId)) {
+        return prev.filter(id => id !== propertyId);
+      } else {
+        return [...prev, propertyId];
+      }
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    try {
+      const updatedProperties = properties.filter(p => !selectedProperties.includes(p.id));
+      
+      // Update localStorage
+      localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      
+      // Delete associated images
+      const savedImages = localStorage.getItem('propertyImages');
+      if (savedImages) {
+        const images = JSON.parse(savedImages);
+        selectedProperties.forEach(id => delete images[id]);
+        localStorage.setItem('propertyImages', JSON.stringify(images));
+      }
+      
+      // Delete additional images
+      const savedAdditionalImages = localStorage.getItem('propertyAdditionalImages');
+      if (savedAdditionalImages) {
+        const additionalImages = JSON.parse(savedAdditionalImages);
+        selectedProperties.forEach(id => delete additionalImages[id]);
+        localStorage.setItem('propertyAdditionalImages', JSON.stringify(additionalImages));
+      }
+      
+      if (onPropertiesUpdate) {
+        onPropertiesUpdate(updatedProperties);
+      }
+      
+      setSelectedProperties([]);
+      setShowDeleteDialog(false);
+      toast.success('Propiedades seleccionadas eliminadas correctamente');
+    } catch (error) {
+      console.error('Error al eliminar las propiedades:', error);
+      toast.error('Error al eliminar las propiedades');
+    }
+  };
 
   const handlePaymentUpdate = (propertyId: string, month: number, year: number, isPaid: boolean, notes?: string) => {
     const updatedProperties = properties.map(property => {
@@ -81,12 +140,24 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
             className="pl-9"
           />
         </div>
-        <Button asChild className="w-full sm:w-auto flex gap-2">
-          <Link to="/property/new">
-            <Plus className="h-4 w-4" />
-            <span>Nueva Propiedad</span>
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          {selectedProperties.length > 0 && (
+            <Button 
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Trash className="h-4 w-4" />
+              <span>Eliminar ({selectedProperties.length})</span>
+            </Button>
+          )}
+          <Button asChild className="flex gap-2">
+            <Link to="/property/new">
+              <Plus className="h-4 w-4" />
+              <span>Nueva Propiedad</span>
+            </Link>
+          </Button>
+        </div>
       </div>
       
       {filteredProperties.length === 0 ? (
@@ -97,14 +168,39 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map(property => (
-            <PropertyCard 
-              key={property.id} 
-              property={property} 
-              onPaymentUpdate={handlePaymentUpdate}
-            />
+            <div key={property.id} className="relative">
+              <div className="absolute top-2 left-2 z-10">
+                <Checkbox
+                  checked={selectedProperties.includes(property.id)}
+                  onCheckedChange={() => handlePropertySelect(property.id)}
+                />
+              </div>
+              <PropertyCard 
+                property={property} 
+                onPaymentUpdate={handlePaymentUpdate}
+              />
+            </div>
           ))}
         </div>
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminarán permanentemente {selectedProperties.length} propiedades
+              y todos sus datos asociados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
