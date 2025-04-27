@@ -13,14 +13,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
             updatedTask.completedDate = new Date().toISOString();
             
             // Remove the notification when task is completed
-            const savedNotifications = localStorage.getItem('notifications');
-            if (savedNotifications) {
-              const notifications = JSON.parse(savedNotifications);
-              const updatedNotifications = notifications.filter(
-                (n: any) => !(n.type === 'task' && n.taskId === taskId)
-              );
-              localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-            }
+            removeTaskNotification(taskId);
             
             toast.success("Tarea completada", {
               description: `La tarea "${task.title}" ha sido marcada como completada.`
@@ -78,6 +71,18 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
     }
   };
 
+  const removeTaskNotification = (taskId: string) => {
+    const savedNotifications = localStorage.getItem('notifications');
+    if (savedNotifications) {
+      const notifications = JSON.parse(savedNotifications);
+      const updatedNotifications = notifications.filter(
+        (n: any) => !(n.type === 'task' && n.taskId === taskId)
+      );
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      console.log("Task notification removed for task:", taskId);
+    }
+  };
+
   const addTaskNotification = (propertyId: string, task: Task) => {
     if (!task.completed) {  // Only add notification if task is not completed
       const notification = {
@@ -114,14 +119,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
   const handleTaskDelete = (taskId: string) => {
     if (property && property.tasks) {
       // Remove task notification when task is deleted
-      const savedNotifications = localStorage.getItem('notifications');
-      if (savedNotifications) {
-        const notifications = JSON.parse(savedNotifications);
-        const updatedNotifications = notifications.filter(
-          (n: any) => !(n.type === 'task' && n.taskId === taskId)
-        );
-        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-      }
+      removeTaskNotification(taskId);
 
       updatePropertyInStorage({
         ...property,
@@ -138,14 +136,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
           
           // If the task status changed to completed, remove notification
           if (updates.completed === true && !task.completed) {
-            const savedNotifications = localStorage.getItem('notifications');
-            if (savedNotifications) {
-              const notifications = JSON.parse(savedNotifications);
-              const updatedNotifications = notifications.filter(
-                (n: any) => !(n.type === 'task' && n.taskId === taskId)
-              );
-              localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-            }
+            removeTaskNotification(taskId);
           } 
           // If task changed from completed to pending, add notification
           else if (updates.completed === false && task.completed) {

@@ -21,7 +21,14 @@ export const HeaderActions = () => {
             (openButton as HTMLButtonElement).click();
           }
         } else {
-          toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
+          // Try with the AlertDialog
+          const alertDialogTriggers = document.querySelectorAll('[data-state="closed"]');
+          for (const trigger of alertDialogTriggers) {
+            if (trigger.textContent?.includes('Eliminar')) {
+              (trigger as HTMLButtonElement).click();
+              break;
+            }
+          }
         }
       } else {
         toast.info('Por favor, seleccione las propiedades a eliminar en la lista');

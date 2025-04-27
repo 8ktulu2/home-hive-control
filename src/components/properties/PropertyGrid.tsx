@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import PropertyGridHeader from './grid/PropertyGridHeader';
 import PropertyGridList from './grid/PropertyGridList';
@@ -32,6 +32,26 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
     });
   };
 
+  // Listen for the delete button in header actions
+  useEffect(() => {
+    const handleHeaderDeleteClick = () => {
+      if (selectedProperties.length > 0) {
+        setShowDeleteDialog(true);
+      }
+    };
+    
+    const deleteButton = document.querySelector('button[aria-label="Delete properties"]');
+    if (deleteButton) {
+      deleteButton.addEventListener('click', handleHeaderDeleteClick);
+    }
+    
+    return () => {
+      if (deleteButton) {
+        deleteButton.removeEventListener('click', handleHeaderDeleteClick);
+      }
+    };
+  }, [selectedProperties]);
+
   const handleDeleteSelected = () => {
     try {
       const updatedProperties = properties.filter(p => !selectedProperties.includes(p.id));
@@ -53,6 +73,16 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
         const additionalImages = JSON.parse(savedAdditionalImages);
         selectedProperties.forEach(id => delete additionalImages[id]);
         localStorage.setItem('propertyAdditionalImages', JSON.stringify(additionalImages));
+      }
+      
+      // Delete any task notifications related to the properties
+      const savedNotifications = localStorage.getItem('notifications');
+      if (savedNotifications) {
+        const notifications = JSON.parse(savedNotifications);
+        const updatedNotifications = notifications.filter(
+          (n: any) => !selectedProperties.includes(n.propertyId)
+        );
+        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
       }
       
       if (onPropertiesUpdate) {

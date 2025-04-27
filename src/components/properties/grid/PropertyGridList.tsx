@@ -1,7 +1,7 @@
 
 import { Property } from '@/types/property';
 import PropertyButton from '../PropertyButton';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PropertyGridListProps {
   properties: Property[];
@@ -23,16 +23,21 @@ const PropertyGridList = ({
     onPropertySelect(propertyId);
   };
 
-  const handleClick = (propertyId: string) => {
+  const handleClick = (propertyId: string, event: React.MouseEvent) => {
+    // Stop propagation to prevent other click handlers
+    event.stopPropagation();
+    
     if (selectionMode || selectedProperties.length > 0) {
       onPropertySelect(propertyId);
     }
   };
 
   // Reset selection mode when no properties are selected
-  if (selectedProperties.length === 0 && selectionMode) {
-    setSelectionMode(false);
-  }
+  useEffect(() => {
+    if (selectedProperties.length === 0 && selectionMode) {
+      setSelectionMode(false);
+    }
+  }, [selectedProperties, selectionMode]);
 
   if (properties.length === 0) {
     return (
@@ -49,7 +54,8 @@ const PropertyGridList = ({
         <div
           key={property.id}
           className="relative"
-          onClick={() => handleClick(property.id)}
+          onClick={(e) => handleClick(property.id, e)}
+          data-selected={selectedProperties.includes(property.id)}
         >
           <PropertyButton 
             property={property} 

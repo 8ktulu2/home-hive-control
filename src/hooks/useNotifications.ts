@@ -9,6 +9,7 @@ export interface Notification {
   propertyId: string;
   message: string;
   read: boolean;
+  taskId?: string; // Added to track associated tasks
 }
 
 export const useNotifications = () => {
@@ -95,7 +96,7 @@ export const useNotifications = () => {
     const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
     
     if (propertyExists) {
-      // Mark as read but don't remove the notification
+      // ONLY mark as read but don't remove the notification
       const updatedNotifications = notifications.map(n => 
         n.id === notification.id ? { ...n, read: true } : n
       );
