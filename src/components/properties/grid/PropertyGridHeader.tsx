@@ -1,7 +1,6 @@
 
-import { Search, Trash } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 interface PropertyGridHeaderProps {
   searchTerm: string;
@@ -13,8 +12,6 @@ interface PropertyGridHeaderProps {
 const PropertyGridHeader = ({
   searchTerm,
   onSearchChange,
-  selectedCount,
-  onDeleteClick,
 }: PropertyGridHeaderProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -27,20 +24,8 @@ const PropertyGridHeader = ({
           className="pl-9"
         />
       </div>
-      {selectedCount > 0 && (
-        <Button 
-          variant="destructive"
-          onClick={onDeleteClick}
-          className="flex items-center gap-2"
-          data-delete-properties
-        >
-          <Trash className="h-4 w-4" />
-          <span>Eliminar ({selectedCount})</span>
-        </Button>
-      )}
     </div>
   );
 };
 
 export default PropertyGridHeader;
-

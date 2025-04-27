@@ -9,12 +9,20 @@ export const HeaderActions = () => {
   const location = useLocation();
 
   const handleDeleteProperties = () => {
-    // If we're on the home page, find the delete button in PropertyGrid and trigger it
     if (location.pathname === '/') {
-      // Try to find if there are selected properties
-      const deleteButton = document.querySelector('button[data-delete-properties]');
-      if (deleteButton) {
-        (deleteButton as HTMLButtonElement).click();
+      const selectedProperties = document.querySelectorAll('[data-selected="true"]');
+      
+      if (selectedProperties.length > 0) {
+        const deleteDialog = document.querySelector('dialog[role="dialog"]');
+        if (deleteDialog) {
+          // Open the delete dialog
+          const openButton = deleteDialog.querySelector('button[aria-haspopup="dialog"]');
+          if (openButton) {
+            (openButton as HTMLButtonElement).click();
+          }
+        } else {
+          toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
+        }
       } else {
         toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
       }

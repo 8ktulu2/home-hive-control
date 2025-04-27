@@ -29,6 +29,11 @@ const PropertyGridList = ({
     }
   };
 
+  // Reset selection mode when no properties are selected
+  if (selectedProperties.length === 0 && selectionMode) {
+    setSelectionMode(false);
+  }
+
   if (properties.length === 0) {
     return (
       <div className="text-center py-10">

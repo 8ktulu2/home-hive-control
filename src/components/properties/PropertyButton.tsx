@@ -54,7 +54,12 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
 
   return (
     <Link 
-      to={`/property/${property.id}`}
+      to={isSelected ? "#" : `/property/${property.id}`}
+      onClick={(e) => {
+        if (isSelected) {
+          e.preventDefault();
+        }
+      }}
       className={cn(
         "group block w-full transition-all duration-200 hover:scale-[1.02]",
         isSelected && "ring-2 ring-primary"
@@ -63,6 +68,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
       onMouseUp={handleMouseUp}
       onTouchStart={handleMouseDown}
       onTouchEnd={handleMouseUp}
+      data-selected={isSelected ? "true" : "false"}
     >
       <div className="relative p-4 rounded-xl border bg-gradient-to-br from-background to-secondary/20 shadow-md hover:shadow-lg transition-all duration-200">
         <div className="flex flex-col gap-2">
