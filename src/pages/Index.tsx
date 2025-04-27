@@ -21,11 +21,8 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Mis Propiedades</h1>
-          <p className="text-muted-foreground">Gestiona tus inmuebles en alquiler de forma sencilla</p>
-        </div>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Mis Propiedades</h1>
       </div>
       <PropertyGrid 
         properties={properties} 
@@ -36,4 +33,3 @@ const Index = () => {
 };
 
 export default Index;
-
