@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface PropertyButtonProps {
   property: Property;
@@ -18,6 +18,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
   const currentYear = new Date().getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   const [pressTimer, setPressTimer] = useState<number | null>(null);
+  const longPressTriggered = useRef(false);
   
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-ES', {
@@ -30,8 +31,10 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
 
   const handleMouseDown = () => {
     if (onLongPress) {
+      longPressTriggered.current = false;
       const timer = window.setTimeout(() => {
         onLongPress();
+        longPressTriggered.current = true;
       }, 1000);
       setPressTimer(timer);
     }
@@ -56,8 +59,9 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
     <Link 
       to={isSelected ? "#" : `/property/${property.id}`}
       onClick={(e) => {
-        if (isSelected) {
+        if (isSelected || longPressTriggered.current) {
           e.preventDefault();
+          longPressTriggered.current = false;
         }
       }}
       className={cn(

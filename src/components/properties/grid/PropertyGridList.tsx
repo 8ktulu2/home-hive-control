@@ -27,7 +27,7 @@ const PropertyGridList = ({
     // Stop propagation to prevent other click handlers
     event.stopPropagation();
     
-    if (selectionMode || selectedProperties.length > 0) {
+    if (selectionMode) {
       onPropertySelect(propertyId);
     }
   };
