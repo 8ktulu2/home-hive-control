@@ -8,7 +8,26 @@ import { Property } from '@/types/property';
 const Index = () => {
   const [properties, setProperties] = useState<Property[]>(() => {
     const savedProperties = localStorage.getItem('properties');
-    return savedProperties ? JSON.parse(savedProperties) : mockProperties;
+    if (savedProperties) {
+      // Parse and clean up properties - remove empty "Nueva Propiedad" entries
+      let parsedProperties = JSON.parse(savedProperties);
+      
+      // Filter out empty properties with default name and no details
+      parsedProperties = parsedProperties.filter((p: Property) => {
+        const isEmptyNewProperty = p.name === 'Nueva Propiedad' && 
+          (!p.address || p.address === '') && 
+          p.rent === 0 && 
+          (!p.tenants || p.tenants.length === 0);
+          
+        return !isEmptyNewProperty;
+      });
+      
+      // Save cleaned up properties back to localStorage
+      localStorage.setItem('properties', JSON.stringify(parsedProperties));
+      
+      return parsedProperties;
+    }
+    return mockProperties;
   });
   
   useEffect(() => {

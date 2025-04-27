@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Property } from '@/types/property';
 import PropertyGridHeader from './grid/PropertyGridHeader';
 import PropertyGridList from './grid/PropertyGridList';
@@ -15,6 +15,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement | null>(null);
   
   const filteredProperties = properties.filter(
     property => 
@@ -34,27 +35,37 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
 
   // Listen for the delete button in header actions
   useEffect(() => {
-    const handleHeaderDeleteClick = () => {
+    const handleShowDeleteDialog = () => {
       if (selectedProperties.length > 0) {
         setShowDeleteDialog(true);
+      } else {
+        toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
       }
     };
     
     const deleteButton = document.querySelector('button[aria-label="Delete properties"]');
     if (deleteButton) {
-      deleteButton.addEventListener('click', handleHeaderDeleteClick);
+      deleteButtonRef.current = deleteButton as HTMLButtonElement;
+      deleteButton.addEventListener('click', handleShowDeleteDialog);
     }
     
     return () => {
       if (deleteButton) {
-        deleteButton.removeEventListener('click', handleHeaderDeleteClick);
+        deleteButton.removeEventListener('click', handleShowDeleteDialog);
       }
     };
-  }, [selectedProperties]);
+  }, [selectedProperties.length]);
 
   const handleDeleteSelected = () => {
     try {
-      const updatedProperties = properties.filter(p => !selectedProperties.includes(p.id));
+      // Filter out any empty properties or properties with default names to fix the issue
+      const validProperties = properties.filter(p => 
+        p.name !== 'Nueva Propiedad' || 
+        (p.address && p.address.trim() !== '')
+      );
+      
+      // Now filter out selected properties
+      const updatedProperties = validProperties.filter(p => !selectedProperties.includes(p.id));
       
       // Update localStorage
       localStorage.setItem('properties', JSON.stringify(updatedProperties));
@@ -146,7 +157,13 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         selectedCount={selectedProperties.length}
-        onDeleteClick={() => setShowDeleteDialog(true)}
+        onDeleteClick={() => {
+          if (selectedProperties.length > 0) {
+            setShowDeleteDialog(true);
+          } else {
+            toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
+          }
+        }}
       />
       
       <PropertyGridList
@@ -161,7 +178,6 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
         selectedCount={selectedProperties.length}
         onOpenChange={setShowDeleteDialog}
         onConfirmDelete={handleDeleteSelected}
-        data-delete-trigger="true"
       />
     </div>
   );

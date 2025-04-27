@@ -57,8 +57,8 @@ export function usePropertyCreation() {
     };
     
     // Don't save the property to localStorage here - only when explicitly requested
-    toast.success(`Propiedad "${newProperty.name}" creada correctamente`);
-
+    // This prevents accidental property creation
+    
     return newProperty;
   };
 

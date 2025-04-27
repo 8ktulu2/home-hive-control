@@ -1,4 +1,3 @@
-
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -37,8 +36,8 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
       longPressTriggered.current = false;
       touchStartTime.current = Date.now();
       const timer = window.setTimeout(() => {
-        onLongPress();
         longPressTriggered.current = true;
+        if (onLongPress) onLongPress();
       }, 1000);
       setPressTimer(timer);
     }
@@ -52,11 +51,13 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    console.log('Touch start detected');
     touchStartTime.current = Date.now();
     handleMouseDown();
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    console.log('Touch end detected', Date.now() - touchStartTime.current);
     handleMouseUp();
     
     // Prevent triggering navigation on long press
@@ -89,8 +90,10 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
       )}
       onMouseDown={isMobile ? undefined : handleMouseDown}
       onMouseUp={isMobile ? undefined : handleMouseUp}
+      onMouseLeave={isMobile ? undefined : handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleMouseUp}
       data-selected={isSelected ? "true" : "false"}
     >
       <div className="relative p-4 rounded-xl border bg-gradient-to-br from-background to-secondary/20 shadow-md hover:shadow-lg transition-all duration-200">

@@ -1,4 +1,3 @@
-
 import { Plus, Trash } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,10 +12,17 @@ export const HeaderActions = () => {
       const selectedProperties = document.querySelectorAll('[data-selected="true"]');
       
       if (selectedProperties.length > 0) {
-        // Find the delete dialog triggers
-        const alertDialogTrigger = document.querySelector('button[data-delete-trigger="true"]');
-        if (alertDialogTrigger) {
-          (alertDialogTrigger as HTMLButtonElement).click();
+        // Find the delete dialog
+        const deleteDialog = document.querySelector('[data-delete-trigger="true"]');
+        if (deleteDialog) {
+          // If it's an element, query for a button inside
+          const buttons = deleteDialog.querySelectorAll('button');
+          if (buttons.length > 0) {
+            (buttons[0] as HTMLButtonElement).click();
+          } else {
+            // Otherwise try to click the element directly
+            (deleteDialog as HTMLElement).click();
+          }
         } else {
           toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
         }
@@ -43,6 +49,7 @@ export const HeaderActions = () => {
         size="icon" 
         className="h-8 w-8"
         onClick={handleDeleteProperties}
+        aria-label="Delete properties"
       >
         <Trash className="h-4 w-4" />
       </Button>
