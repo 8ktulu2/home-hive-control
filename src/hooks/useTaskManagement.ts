@@ -21,10 +21,18 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
               );
               localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
             }
+            
+            toast.success("Tarea completada", {
+              description: `La tarea "${task.title}" ha sido marcada como completada.`
+            });
           } else {
             delete updatedTask.completedDate;
             // Re-add notification if task is unchecked
             addTaskNotification(property.id, updatedTask);
+            
+            toast.info("Tarea pendiente", {
+              description: `La tarea "${task.title}" ha sido marcada como pendiente.`
+            });
           }
           return updatedTask;
         }
@@ -56,34 +64,50 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       // Add task notification
       addTaskNotification(property.id, task);
       
-      updatePropertyInStorage({
+      // Update property with new task
+      const updatedProperty = {
         ...property,
         tasks: [...(property.tasks || []), task]
+      };
+      
+      updatePropertyInStorage(updatedProperty);
+      
+      toast.success("Tarea añadida", {
+        description: `La tarea "${task.title}" ha sido añadida correctamente.`
       });
     }
   };
 
   const addTaskNotification = (propertyId: string, task: Task) => {
-    const notification = {
-      id: `notification-task-${task.id}`,
-      type: 'task',
-      taskId: task.id,
-      propertyId: propertyId,
-      message: `Tarea pendiente: ${task.title}`,
-      read: false
-    };
-
-    const savedNotifications = localStorage.getItem('notifications');
-    const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
-    
-    // Check if notification already exists
-    const notificationExists = notifications.some(
-      (n: any) => n.taskId === task.id
-    );
-    
-    if (!notificationExists) {
-      notifications.push(notification);
+    if (!task.completed) {  // Only add notification if task is not completed
+      const notification = {
+        id: `notification-task-${task.id}`,
+        type: 'task',
+        taskId: task.id,
+        propertyId: propertyId,
+        message: `Tarea pendiente: ${task.title}`,
+        read: false,
+        createdAt: new Date().toISOString()
+      };
+  
+      const savedNotifications = localStorage.getItem('notifications');
+      let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+      
+      // Check if notification already exists
+      const existingIndex = notifications.findIndex(
+        (n: any) => n.taskId === task.id
+      );
+      
+      if (existingIndex >= 0) {
+        // Update existing notification
+        notifications[existingIndex] = notification;
+      } else {
+        // Add new notification
+        notifications.push(notification);
+      }
+      
       localStorage.setItem('notifications', JSON.stringify(notifications));
+      console.log("Task notification added:", notification);
     }
   };
 
@@ -108,9 +132,30 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
 
   const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
     if (property && property.tasks) {
-      const updatedTasks = property.tasks.map(task => 
-        task.id === taskId ? { ...task, ...updates } : task
-      );
+      const updatedTasks = property.tasks.map(task => {
+        if (task.id === taskId) {
+          const updatedTask = { ...task, ...updates };
+          
+          // If the task status changed to completed, remove notification
+          if (updates.completed === true && !task.completed) {
+            const savedNotifications = localStorage.getItem('notifications');
+            if (savedNotifications) {
+              const notifications = JSON.parse(savedNotifications);
+              const updatedNotifications = notifications.filter(
+                (n: any) => !(n.type === 'task' && n.taskId === taskId)
+              );
+              localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+            }
+          } 
+          // If task changed from completed to pending, add notification
+          else if (updates.completed === false && task.completed) {
+            addTaskNotification(property.id, updatedTask);
+          }
+          
+          return updatedTask;
+        }
+        return task;
+      });
       
       updatePropertyInStorage({
         ...property,
