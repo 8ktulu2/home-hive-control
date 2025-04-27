@@ -21,7 +21,7 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="text-center mb-8">
+      <div className="text-center py-4">
         <h1 className="text-3xl font-bold text-gray-800">Mis Propiedades</h1>
       </div>
       <PropertyGrid 
