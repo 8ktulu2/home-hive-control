@@ -42,14 +42,14 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       clearTimeout(touchTimeoutRef.current);
     }
     
-    // Set a new timeout for long press detection
+    // Set a new timeout for long press detection - reduce to 500ms for better responsiveness
     touchTimeoutRef.current = setTimeout(() => {
-      console.log('Long press activated for property:', property.id);
+      console.log('Long press detected for property:', property.id);
       setIsLongPress(true);
       if (onLongPress) {
         onLongPress();
       }
-    }, 500); // 500ms para la detección de pulsación larga
+    }, 500);
   };
 
   const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
@@ -61,12 +61,12 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       touchTimeoutRef.current = null;
     }
     
-    // If we're in selection mode already
+    // If we're already in selection mode or this was a long press
     if (isSelected !== undefined && onSelect) {
-      if (isLongPress || touchDuration < 500) {
-        e.preventDefault(); // Prevent navigation
-        onSelect(property.id);
-      }
+      // Always prevent default to handle selection properly
+      e.preventDefault();
+      // Toggle selection on click/tap when in selection mode
+      onSelect(property.id);
     }
     
     setIsLongPress(false);
@@ -83,11 +83,11 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
 
   return (
     <Link 
-      to={isSelected ? "#" : `/property/${property.id}`}
+      to={isSelected !== undefined ? "#" : `/property/${property.id}`}
       onClick={(e) => {
-        if (isSelected !== undefined && onSelect) {
+        if (isSelected !== undefined) {
           e.preventDefault();
-          onSelect(property.id);
+          if (onSelect) onSelect(property.id);
         }
       }}
       className={cn(
