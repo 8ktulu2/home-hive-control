@@ -1,7 +1,7 @@
 
 import { Property } from '@/types/property';
-import { Checkbox } from '@/components/ui/checkbox';
 import PropertyButton from '../PropertyButton';
+import { useState } from 'react';
 
 interface PropertyGridListProps {
   properties: Property[];
@@ -16,6 +16,19 @@ const PropertyGridList = ({
   onPropertySelect,
   onPaymentUpdate,
 }: PropertyGridListProps) => {
+  const [selectionMode, setSelectionMode] = useState(false);
+
+  const handleLongPress = (propertyId: string) => {
+    setSelectionMode(true);
+    onPropertySelect(propertyId);
+  };
+
+  const handleClick = (propertyId: string) => {
+    if (selectionMode || selectedProperties.length > 0) {
+      onPropertySelect(propertyId);
+    }
+  };
+
   if (properties.length === 0) {
     return (
       <div className="text-center py-10">
@@ -28,16 +41,16 @@ const PropertyGridList = ({
   return (
     <div className="grid gap-4">
       {properties.map(property => (
-        <div key={property.id} className="relative">
-          <div className="absolute top-2 left-2 z-10">
-            <Checkbox
-              checked={selectedProperties.includes(property.id)}
-              onCheckedChange={() => onPropertySelect(property.id)}
-            />
-          </div>
+        <div
+          key={property.id}
+          className="relative"
+          onClick={() => handleClick(property.id)}
+        >
           <PropertyButton 
             property={property} 
             onPaymentUpdate={onPaymentUpdate}
+            onLongPress={() => handleLongPress(property.id)}
+            isSelected={selectedProperties.includes(property.id)}
           />
         </div>
       ))}
