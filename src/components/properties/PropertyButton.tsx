@@ -20,9 +20,10 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   const currentYear = new Date().getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   
+  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartTime = useRef<number>(0);
-  const touchTimer = useRef<number | null>(null);
   const isMobile = useIsMobile();
+  const [isLongPress, setIsLongPress] = useState(false);
   
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-ES', {
@@ -33,58 +34,49 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
     }).format(amount);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Start timer to detect long press
+  const handleTouchStart = () => {
     touchStartTime.current = Date.now();
-    touchTimer.current = window.setTimeout(() => {
-      console.log('Long press detected on mobile');
+    
+    // Clear any existing timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+    
+    // Set a new timeout for long press detection
+    touchTimeoutRef.current = setTimeout(() => {
+      console.log('Long press activated for property:', property.id);
+      setIsLongPress(true);
       if (onLongPress) {
         onLongPress();
       }
-    }, 800); // Slightly shorter timing for better user experience
+    }, 500); // 500ms para la detección de pulsación larga
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    // Clear the timer
-    if (touchTimer.current) {
-      clearTimeout(touchTimer.current);
-      touchTimer.current = null;
+  const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
+    const touchDuration = Date.now() - touchStartTime.current;
+    
+    // Clear the timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
     }
     
-    // Check if it was a short tap and we're in selection mode
-    const touchDuration = Date.now() - touchStartTime.current;
-    if (touchDuration < 800 && isSelected !== undefined && onSelect) {
-      // This was a short tap while we're in selection mode, toggle selection
-      e.preventDefault(); // Prevent navigation
-      onSelect(property.id);
+    // If we're in selection mode already
+    if (isSelected !== undefined && onSelect) {
+      if (isLongPress || touchDuration < 500) {
+        e.preventDefault(); // Prevent navigation
+        onSelect(property.id);
+      }
     }
+    
+    setIsLongPress(false);
   };
 
-  // Mouse events for non-mobile
-  const handleMouseDown = () => {
-    if (!isMobile) {
-      touchStartTime.current = Date.now();
-      touchTimer.current = window.setTimeout(() => {
-        console.log('Long press detected on desktop');
-        if (onLongPress) {
-          onLongPress();
-        }
-      }, 800);
-    }
-  };
-
-  const handleMouseUp = () => {
-    if (!isMobile && touchTimer.current) {
-      clearTimeout(touchTimer.current);
-      touchTimer.current = null;
-    }
-  };
-  
-  // Clean up the timer when the component unmounts
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (touchTimer.current) {
-        clearTimeout(touchTimer.current);
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
       }
     };
   }, []);
@@ -93,28 +85,23 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
     <Link 
       to={isSelected ? "#" : `/property/${property.id}`}
       onClick={(e) => {
-        if (isSelected !== undefined) {
-          const pressTimeDiff = Date.now() - touchStartTime.current;
-          if (pressTimeDiff < 800 && onSelect) {
-            // Short tap/click in selection mode
-            e.preventDefault();
-            onSelect(property.id);
-          }
+        if (isSelected !== undefined && onSelect) {
+          e.preventDefault();
+          onSelect(property.id);
         }
       }}
       className={cn(
         "group block w-full transition-all duration-200 hover:scale-[1.02]",
         isSelected && "ring-2 ring-primary"
       )}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
       onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={() => {
-        if (touchTimer.current) {
-          clearTimeout(touchTimer.current);
-          touchTimer.current = null;
+      onTouchEnd={handleTouchEnd as any}
+      onMouseDown={isMobile ? undefined : handleTouchStart}
+      onMouseUp={isMobile ? undefined : handleTouchEnd as any}
+      onMouseLeave={() => {
+        if (touchTimeoutRef.current) {
+          clearTimeout(touchTimeoutRef.current);
+          touchTimeoutRef.current = null;
         }
       }}
       data-selected={isSelected ? "true" : "false"}
@@ -161,6 +148,12 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
             </p>
           </div>
         </div>
+        
+        {isSelected && (
+          <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm">
+            ✓
+          </div>
+        )}
       </div>
     </Link>
   );

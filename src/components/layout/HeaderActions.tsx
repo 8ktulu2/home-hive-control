@@ -10,13 +10,13 @@ export const HeaderActions = () => {
 
   const handleDeleteProperties = () => {
     if (location.pathname === '/') {
+      // Buscar si hay propiedades seleccionadas
       const selectedProperties = document.querySelectorAll('[data-selected="true"]');
       
       if (selectedProperties.length > 0) {
-        // Find the delete dialog trigger and click it
+        // Buscar el botón de eliminación en PropertyGridHeader y simulamos un clic
         const deleteButton = document.querySelector('[data-delete-trigger="true"]');
         if (deleteButton) {
-          // Simulate a click on the element
           const clickEvent = new MouseEvent('click', {
             bubbles: true,
             cancelable: true,
@@ -24,10 +24,10 @@ export const HeaderActions = () => {
           });
           deleteButton.dispatchEvent(clickEvent);
         } else {
-          toast.info('Seleccione propiedades para eliminar y haga clic en el botón de eliminar');
+          toast.error('No se pudo encontrar el botón de eliminar');
         }
       } else {
-        toast.info('Por favor, seleccione las propiedades a eliminar manteniendo pulsada una propiedad');
+        toast.info('Mantén pulsada una propiedad para seleccionarla primero');
       }
     } else {
       toast.info('Solo puede eliminar propiedades desde la página principal');

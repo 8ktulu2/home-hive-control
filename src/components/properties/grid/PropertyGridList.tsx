@@ -3,6 +3,7 @@ import { Property } from '@/types/property';
 import PropertyButton from '../PropertyButton';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 interface PropertyGridListProps {
   properties: Property[];
@@ -23,7 +24,11 @@ const PropertyGridList = ({
   const handleLongPress = (propertyId: string) => {
     console.log('Long press detected for property:', propertyId);
     setSelectionMode(true);
+    // Auto-select the first property that triggered selection mode
     onPropertySelect(propertyId);
+    
+    // Notify user
+    toast.info('Modo de selección activado. Toca las propiedades para seleccionarlas.');
   };
 
   const handleSelect = (propertyId: string) => {
@@ -35,6 +40,7 @@ const PropertyGridList = ({
   useEffect(() => {
     if (selectedProperties.length === 0 && selectionMode) {
       setSelectionMode(false);
+      console.log('Selection mode deactivated, no properties selected');
     }
   }, [selectedProperties, selectionMode]);
 
@@ -76,11 +82,6 @@ const PropertyGridList = ({
             onSelect={selectionMode ? handleSelect : undefined}
             isSelected={selectedProperties.includes(property.id)}
           />
-          {selectedProperties.includes(property.id) && (
-            <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm">
-              ✓
-            </div>
-          )}
         </div>
       ))}
     </div>

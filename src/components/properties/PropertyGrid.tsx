@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import PropertyGridHeader from './grid/PropertyGridHeader';
 import PropertyGridList from './grid/PropertyGridList';
@@ -34,40 +35,12 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
     });
   };
 
-  // Listen for the delete button in header actions
-  useEffect(() => {
-    const handleShowDeleteDialog = () => {
-      if (selectedProperties.length > 0) {
-        setShowDeleteDialog(true);
-      } else {
-        toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
-      }
-    };
-    
-    const deleteButton = document.querySelector('button[aria-label="Delete properties"]');
-    if (deleteButton) {
-      deleteButton.addEventListener('click', handleShowDeleteDialog);
-    }
-    
-    return () => {
-      if (deleteButton) {
-        deleteButton.removeEventListener('click', handleShowDeleteDialog);
-      }
-    };
-  }, [selectedProperties.length]);
-
   const handleDeleteSelected = () => {
     try {
       console.log('Deleting properties:', selectedProperties);
       
-      // Filter out any empty properties or properties with default names to fix the issue
-      const validProperties = properties.filter(p => 
-        p.name !== 'Nueva Propiedad' || 
-        (p.address && p.address.trim() !== '')
-      );
-      
-      // Now filter out selected properties
-      const updatedProperties = validProperties.filter(p => !selectedProperties.includes(p.id));
+      // Filter out selected properties
+      const updatedProperties = properties.filter(p => !selectedProperties.includes(p.id));
       
       // Update localStorage
       localStorage.setItem('properties', JSON.stringify(updatedProperties));
@@ -153,19 +126,22 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
     }
   };
 
+  // Actualiza el manejador para el botón de eliminar
+  const handleDeleteButtonClick = () => {
+    if (selectedProperties.length > 0) {
+      setShowDeleteDialog(true);
+    } else {
+      toast.info('Por favor, mantenga pulsada una propiedad para seleccionarla primero');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PropertyGridHeader
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         selectedCount={selectedProperties.length}
-        onDeleteClick={() => {
-          if (selectedProperties.length > 0) {
-            setShowDeleteDialog(true);
-          } else {
-            toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
-          }
-        }}
+        onDeleteClick={handleDeleteButtonClick}
       />
       
       <PropertyGridList

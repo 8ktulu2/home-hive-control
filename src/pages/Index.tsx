@@ -9,12 +9,12 @@ const Index = () => {
   const [properties, setProperties] = useState<Property[]>(() => {
     const savedProperties = localStorage.getItem('properties');
     if (savedProperties) {
-      // Parse and clean up properties - remove empty "Nueva Propiedad" entries
+      // Analizar y limpiar propiedades
       let parsedProperties = JSON.parse(savedProperties);
       
-      // Filter out empty properties with default name and no details
+      // Filtrar propiedades vacías o con el nombre por defecto sin detalles
       parsedProperties = parsedProperties.filter((p: Property) => {
-        if (!p || !p.id) return false; // Filter out invalid entries
+        if (!p || !p.id) return false; // Filtrar entradas inválidas
         
         const isEmptyNewProperty = p.name === 'Nueva Propiedad' && 
           (!p.address || p.address === '') && 
@@ -24,7 +24,7 @@ const Index = () => {
         return !isEmptyNewProperty;
       });
       
-      // Save cleaned up properties back to localStorage
+      // Guardar las propiedades limpias en localStorage
       localStorage.setItem('properties', JSON.stringify(parsedProperties));
       
       return parsedProperties;
