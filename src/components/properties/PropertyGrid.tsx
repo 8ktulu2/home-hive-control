@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Property } from '@/types/property';
 import PropertyGridHeader from './grid/PropertyGridHeader';
@@ -15,7 +14,6 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const deleteButtonRef = useRef<HTMLButtonElement | null>(null);
   
   const filteredProperties = properties.filter(
     property => 
@@ -24,7 +22,10 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
   );
 
   const handlePropertySelect = (propertyId: string) => {
+    console.log('PropertyGrid - handlePropertySelect:', propertyId);
+    
     setSelectedProperties(prev => {
+      // Toggle selection
       if (prev.includes(propertyId)) {
         return prev.filter(id => id !== propertyId);
       } else {
@@ -45,7 +46,6 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
     
     const deleteButton = document.querySelector('button[aria-label="Delete properties"]');
     if (deleteButton) {
-      deleteButtonRef.current = deleteButton as HTMLButtonElement;
       deleteButton.addEventListener('click', handleShowDeleteDialog);
     }
     
@@ -58,6 +58,8 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
 
   const handleDeleteSelected = () => {
     try {
+      console.log('Deleting properties:', selectedProperties);
+      
       // Filter out any empty properties or properties with default names to fix the issue
       const validProperties = properties.filter(p => 
         p.name !== 'Nueva Propiedad' || 

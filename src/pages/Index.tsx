@@ -14,9 +14,11 @@ const Index = () => {
       
       // Filter out empty properties with default name and no details
       parsedProperties = parsedProperties.filter((p: Property) => {
+        if (!p || !p.id) return false; // Filter out invalid entries
+        
         const isEmptyNewProperty = p.name === 'Nueva Propiedad' && 
           (!p.address || p.address === '') && 
-          p.rent === 0 && 
+          (!p.rent || p.rent === 0) && 
           (!p.tenants || p.tenants.length === 0);
           
         return !isEmptyNewProperty;

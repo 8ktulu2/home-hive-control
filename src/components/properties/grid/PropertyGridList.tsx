@@ -26,13 +26,9 @@ const PropertyGridList = ({
     onPropertySelect(propertyId);
   };
 
-  const handleClick = (propertyId: string, event: React.MouseEvent) => {
-    // Stop propagation to prevent other click handlers
-    event.stopPropagation();
-    
-    if (selectionMode) {
-      onPropertySelect(propertyId);
-    }
+  const handleSelect = (propertyId: string) => {
+    console.log('Selection toggle for property:', propertyId);
+    onPropertySelect(propertyId);
   };
 
   // Reset selection mode when no properties are selected
@@ -42,21 +38,17 @@ const PropertyGridList = ({
     }
   }, [selectedProperties, selectionMode]);
 
-  // Add a click handler on document to exit selection mode when clicking outside
+  // Listen for ESC key to exit selection mode
   useEffect(() => {
-    const handleDocumentClick = (e: MouseEvent) => {
-      if (selectionMode) {
-        const target = e.target as HTMLElement;
-        // Check if click is outside of property items
-        if (!target.closest('[data-selected]')) {
-          setSelectionMode(false);
-        }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectionMode) {
+        setSelectionMode(false);
       }
     };
 
-    document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener('click', handleDocumentClick);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectionMode]);
 
@@ -75,15 +67,20 @@ const PropertyGridList = ({
         <div
           key={property.id}
           className="relative"
-          onClick={(e) => handleClick(property.id, e)}
           data-selected={selectedProperties.includes(property.id)}
         >
           <PropertyButton 
             property={property} 
             onPaymentUpdate={onPaymentUpdate}
             onLongPress={() => handleLongPress(property.id)}
+            onSelect={selectionMode ? handleSelect : undefined}
             isSelected={selectedProperties.includes(property.id)}
           />
+          {selectedProperties.includes(property.id) && (
+            <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm">
+              ✓
+            </div>
+          )}
         </div>
       ))}
     </div>
