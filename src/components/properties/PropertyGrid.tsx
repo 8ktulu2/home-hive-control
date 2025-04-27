@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { Property, PaymentRecord } from '@/types/property';
-import { toast } from 'sonner';
+import { Property } from '@/types/property';
 import PropertyGridHeader from './grid/PropertyGridHeader';
 import PropertyGridList from './grid/PropertyGridList';
 import DeletePropertiesDialog from './grid/DeletePropertiesDialog';
+import { toast } from 'sonner';
 
 interface PropertyGridProps {
   properties: Property[];
@@ -74,7 +74,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
         const existingPayments = property.paymentHistory || [];
         const existingPaymentIndex = existingPayments.findIndex(p => p.month === month && p.year === year);
         
-        let updatedPayments: PaymentRecord[];
+        let updatedPayments;
         
         if (existingPaymentIndex >= 0) {
           updatedPayments = [...existingPayments];
@@ -84,7 +84,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
             date: new Date().toISOString()
           };
         } else {
-          const newPayment: PaymentRecord = {
+          const newPayment = {
             id: `payment-${Date.now()}`,
             date: new Date().toISOString(),
             amount: property.rent,
