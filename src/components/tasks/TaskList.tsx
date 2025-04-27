@@ -28,15 +28,15 @@ export const TaskList = ({ tasks, onTaskClick, onTaskToggle }: TaskListProps) =>
           <p className="text-muted-foreground">No hay tareas disponibles</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="w-full">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">Estado</TableHead>
-                <TableHead>Tarea</TableHead>
-                <TableHead>Propiedad</TableHead>
-                <TableHead>Creada</TableHead>
-                <TableHead>Completada</TableHead>
+                <TableHead className="w-[40px]">Estado</TableHead>
+                <TableHead className="max-w-[30%]">Tarea</TableHead>
+                <TableHead className="max-w-[20%]">Propiedad</TableHead>
+                <TableHead className="w-[100px]">Creada</TableHead>
+                <TableHead className="w-[100px]">Completada</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -49,21 +49,27 @@ export const TaskList = ({ tasks, onTaskClick, onTaskToggle }: TaskListProps) =>
                   <TableCell onClick={(e) => { e.stopPropagation(); onTaskToggle(task); }}>
                     <Checkbox checked={task.completed} />
                   </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className={task.completed ? "line-through text-muted-foreground" : ""}>
+                  <TableCell className="max-w-[30%]">
+                    <div className="min-w-0">
+                      <div className={`truncate ${task.completed ? "line-through text-muted-foreground" : ""}`}>
                         {task.title}
                       </div>
                       {task.description && (
-                        <p className="text-sm text-muted-foreground mt-1 truncate max-w-xs">
+                        <p className="text-sm text-muted-foreground mt-1 truncate">
                           {task.description}
                         </p>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{task.propertyName}</TableCell>
-                  <TableCell>{formatDate(task.createdDate)}</TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-[20%]">
+                    <div className="truncate">
+                      {task.propertyName}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDate(task.createdDate)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {task.completedDate ? formatDate(task.completedDate) : '-'}
                   </TableCell>
                 </TableRow>
