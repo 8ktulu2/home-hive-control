@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,8 +15,9 @@ import { es } from 'date-fns/locale';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from 'react-router-dom';
 
-// Extender el tipo Task para incluir información adicional
+// Extend the Task type to include property information
 interface ExtendedTask extends Task {
   propertyName: string;
   propertyId: string;
@@ -30,23 +32,34 @@ const Tasks = () => {
   const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [dialogAction, setDialogAction] = useState<'complete' | 'incomplete'>('complete');
-  const [properties, setProperties] = useState<Property[]>(() => {
-    const savedProperties = localStorage.getItem('properties');
-    return savedProperties ? JSON.parse(savedProperties) : mockProperties;
-  });
+  const [properties, setProperties] = useState<Property[]>([]);
+  const navigate = useNavigate();
   
-  // Recopilar todas las tareas de todas las propiedades
+  // Load properties from localStorage
+  useEffect(() => {
+    const loadProperties = () => {
+      const savedProperties = localStorage.getItem('properties');
+      return savedProperties ? JSON.parse(savedProperties) : mockProperties;
+    };
+    
+    setProperties(loadProperties());
+  }, []);
+  
+  // Collect all tasks from existing properties
   const allTasks: ExtendedTask[] = properties.reduce((tasks, property) => {
-    const propertyTasks = property.tasks?.map(task => ({
+    if (!property.tasks) return tasks;
+    
+    const propertyTasks = property.tasks.map(task => ({
       ...task,
       propertyName: property.name,
       propertyId: property.id,
-      createdDate: task.createdDate || new Date().toISOString() // Usar fecha existente o crear una nueva
-    })) || [];
+      createdDate: task.createdDate || new Date().toISOString() // Use existing date or create a new one
+    }));
+    
     return [...tasks, ...propertyTasks];
   }, [] as ExtendedTask[]);
   
-  // Obtener lista única de propiedades para el filtro
+  // Get unique properties for the filter
   const uniqueProperties = Array.from(
     new Set(properties.map(property => property.id))
   ).map(id => {
@@ -54,7 +67,7 @@ const Tasks = () => {
     return { id, name: property?.name || 'Unknown' };
   });
 
-  // Filtrar tareas según los criterios seleccionados
+  // Filter tasks based on selected criteria
   const filteredTasks = allTasks.filter(task => {
     const matchesFilter = 
       filter === 'all' || 
@@ -71,6 +84,11 @@ const Tasks = () => {
     
     return matchesFilter && matchesSearch && matchesPropertyFilter;
   });
+  
+  // Navigate to the property details page with the tasks section
+  const handleTaskRowClick = (task: ExtendedTask) => {
+    navigate(`/property/${task.propertyId}#tasks`);
+  };
   
   const handleTaskToggle = (task: ExtendedTask) => {
     setSelectedTask(task);
@@ -90,7 +108,7 @@ const Tasks = () => {
               completed: !task.completed
             };
             
-            // Añadir o eliminar la fecha de completado
+            // Add or remove completion date
             if (!task.completed) {
               updatedTask.completedDate = new Date().toISOString();
             } else {
@@ -211,11 +229,14 @@ const Tasks = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredTasks.map(task => (
-                    <TableRow key={task.id}>
-                      <TableCell>
+                    <TableRow 
+                      key={task.id} 
+                      className="cursor-pointer hover:bg-accent/50"
+                      onClick={() => handleTaskRowClick(task)}
+                    >
+                      <TableCell onClick={(e) => { e.stopPropagation(); handleTaskToggle(task); }}>
                         <Checkbox 
                           checked={task.completed} 
-                          onClick={() => handleTaskToggle(task)}
                         />
                       </TableCell>
                       <TableCell>

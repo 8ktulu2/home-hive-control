@@ -16,10 +16,10 @@ export const NotificationItem = ({
 }: NotificationItemProps) => {
   return (
     <div 
-      className="flex items-start justify-between py-2 cursor-pointer"
+      className="flex items-start justify-between py-2 cursor-pointer hover:bg-accent/20 px-2 rounded-md"
       onClick={() => onNotificationClick(notification)}
     >
-      <span className={notification.read ? "text-muted-foreground" : ""}>
+      <span className={notification.read ? "text-muted-foreground" : "font-medium"}>
         {notification.message}
       </span>
       <Button 

@@ -20,7 +20,10 @@ export const TaskItem = ({
     <div className="flex items-start p-2 rounded-md hover:bg-accent/20">
       <div 
         className="flex-shrink-0 cursor-pointer mt-0.5" 
-        onClick={() => onTaskToggle(task)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onTaskToggle(task);
+        }}
       >
         {task.completed ? (
           <CheckCircle className="h-5 w-5 text-success" />
@@ -44,7 +47,10 @@ export const TaskItem = ({
           variant="ghost" 
           size="icon" 
           className={`h-6 w-6 ${task.notification?.enabled ? 'text-primary' : 'text-muted-foreground'}`}
-          onClick={() => onOpenNotificationDialog(task)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenNotificationDialog(task);
+          }}
           title="Configurar notificación"
         >
           {task.notification?.enabled ? (
@@ -57,7 +63,10 @@ export const TaskItem = ({
           variant="ghost" 
           size="icon" 
           className="h-6 w-6 text-muted-foreground hover:text-destructive"
-          onClick={() => onTaskDelete(task.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onTaskDelete(task.id);
+          }}
           title="Eliminar tarea"
         >
           <Trash className="h-4 w-4" />

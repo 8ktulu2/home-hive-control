@@ -16,36 +16,64 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    const savedNotifications = localStorage.getItem('notifications');
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications));
-    } else {
-      const defaultNotifications: Notification[] = [
-        {
-          id: 'notif-1',
-          type: 'payment',
-          propertyId: 'property-001',
-          message: 'Pago de alquiler pendiente - Apartamento Centro',
-          read: false
-        },
-        {
-          id: 'notif-2',
-          type: 'task',
-          propertyId: 'property-001',
-          message: 'Tarea pendiente - Revisar caldera',
-          read: false
-        },
-        {
-          id: 'notif-3',
-          type: 'document',
-          propertyId: 'property-001',
-          message: 'Documento caducado - Contrato Inquilino',
-          read: false
+    const loadNotifications = () => {
+      const savedNotifications = localStorage.getItem('notifications');
+      
+      // Get current properties to filter notifications
+      const savedProperties = localStorage.getItem('properties');
+      const properties = savedProperties ? JSON.parse(savedProperties) : [];
+      const propertyIds = properties.map((p: any) => p.id);
+      
+      if (savedNotifications) {
+        const allNotifications = JSON.parse(savedNotifications);
+        // Filter out notifications for properties that no longer exist
+        const validNotifications = allNotifications.filter(
+          (notif: Notification) => propertyIds.includes(notif.propertyId)
+        );
+        
+        if (validNotifications.length !== allNotifications.length) {
+          // Save the filtered notifications back to localStorage
+          localStorage.setItem('notifications', JSON.stringify(validNotifications));
         }
-      ];
-      setNotifications(defaultNotifications);
-      localStorage.setItem('notifications', JSON.stringify(defaultNotifications));
-    }
+        
+        setNotifications(validNotifications);
+      } else {
+        // Create default notifications only for existing properties
+        const defaultNotifications: Notification[] = [];
+        
+        // Only add default notifications if the property exists
+        if (propertyIds.includes('property-001')) {
+          defaultNotifications.push(
+            {
+              id: 'notif-1',
+              type: 'payment',
+              propertyId: 'property-001',
+              message: 'Pago de alquiler pendiente - Apartamento Centro',
+              read: false
+            },
+            {
+              id: 'notif-2',
+              type: 'task',
+              propertyId: 'property-001',
+              message: 'Tarea pendiente - Revisar caldera',
+              read: false
+            },
+            {
+              id: 'notif-3',
+              type: 'document',
+              propertyId: 'property-001',
+              message: 'Documento caducado - Contrato Inquilino',
+              read: false
+            }
+          );
+        }
+        
+        setNotifications(defaultNotifications);
+        localStorage.setItem('notifications', JSON.stringify(defaultNotifications));
+      }
+    };
+
+    loadNotifications();
   }, []);
 
   useEffect(() => {
@@ -88,11 +116,17 @@ export const useNotifications = () => {
       }
     } else {
       toast.error('Propiedad no encontrada');
+      
+      // Remove the notification for non-existent property
+      handleRemoveNotification(notification.id);
     }
   };
 
-  const handleRemoveNotification = (notificationId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleRemoveNotification = (notificationId: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    
     const updatedNotifications = notifications.filter(n => n.id !== notificationId);
     setNotifications(updatedNotifications);
     toast.info('Notificación eliminada');
