@@ -1,12 +1,11 @@
-
 import { useState } from 'react';
 import { Search, Plus, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import PropertyCard from './PropertyCard';
-import { Property, PaymentRecord } from '@/types/property';
+import { Property } from '@/types/property';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import PropertyButton from './PropertyButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -167,7 +166,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
           <p className="text-muted-foreground mt-2">Intente con otra búsqueda o agregue una nueva propiedad</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-4">
           {filteredProperties.map(property => (
             <div key={property.id} className="relative">
               <div className="absolute top-2 left-2 z-10">
@@ -176,7 +175,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
                   onCheckedChange={() => handlePropertySelect(property.id)}
                 />
               </div>
-              <PropertyCard 
+              <PropertyButton 
                 property={property} 
                 onPaymentUpdate={handlePaymentUpdate}
               />
@@ -207,4 +206,3 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
 };
 
 export default PropertyGrid;
-
