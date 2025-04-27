@@ -14,7 +14,7 @@ import { TaskConfirmDialog } from '@/components/tasks/TaskConfirmDialog';
 import { ExtendedTask } from '@/components/tasks/types';
 
 const Tasks = () => {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('pending'); // Set default to pending
   const [searchTerm, setSearchTerm] = useState('');
   const [propertyFilter, setPropertyFilter] = useState('all');
   const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
@@ -125,40 +125,41 @@ const Tasks = () => {
         propertyFilter={propertyFilter}
         onPropertyFilterChange={setPropertyFilter}
         properties={properties}
-        onNewTask={() => {}}
       />
 
-      <Tabs defaultValue="all" onValueChange={setFilter} value={filter}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="all">Todas</TabsTrigger>
-          <TabsTrigger value="pending">Pendientes</TabsTrigger>
-          <TabsTrigger value="completed">Completadas</TabsTrigger>
-        </TabsList>
+      <div className="h-[calc(100vh-280px)] overflow-hidden">
+        <Tabs defaultValue="pending" onValueChange={setFilter} value={filter}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="pending">Pendientes</TabsTrigger>
+            <TabsTrigger value="completed">Completadas</TabsTrigger>
+            <TabsTrigger value="all">Todas</TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {filter === 'pending' ? (
-                <Clock className="h-5 w-5" />
-              ) : filter === 'completed' ? (
-                <Check className="h-5 w-5" />
-              ) : null}
-              {filter === 'all' 
-                ? 'Todas las tareas' 
-                : filter === 'pending' 
-                  ? 'Tareas pendientes' 
-                  : 'Tareas completadas'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TaskList
-              tasks={filteredTasks}
-              onTaskClick={handleTaskClick}
-              onTaskToggle={handleTaskToggle}
-            />
-          </CardContent>
-        </Card>
-      </Tabs>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {filter === 'pending' ? (
+                  <Clock className="h-5 w-5" />
+                ) : filter === 'completed' ? (
+                  <Check className="h-5 w-5" />
+                ) : null}
+                {filter === 'all' 
+                  ? 'Todas las tareas' 
+                  : filter === 'pending' 
+                    ? 'Tareas pendientes' 
+                    : 'Tareas completadas'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100vh-430px)] overflow-auto">
+              <TaskList
+                tasks={filteredTasks}
+                onTaskClick={handleTaskClick}
+                onTaskToggle={handleTaskToggle}
+              />
+            </CardContent>
+          </Card>
+        </Tabs>
+      </div>
       
       <TaskConfirmDialog
         isOpen={isConfirmDialogOpen}
