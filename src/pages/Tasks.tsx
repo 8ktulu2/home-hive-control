@@ -4,38 +4,24 @@ import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockProperties } from '@/data/mockData';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Task, Property } from '@/types/property';
-import { Check, Clock, Plus, Search, Filter, CalendarCheck } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Check, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from 'react-router-dom';
-
-// Extend the Task type to include property information
-interface ExtendedTask extends Task {
-  propertyName: string;
-  propertyId: string;
-  completedDate?: string;
-  createdDate: string;
-}
+import { Property } from '@/types/property';
+import { TaskFilters } from '@/components/tasks/TaskFilters';
+import { TaskList } from '@/components/tasks/TaskList';
+import { TaskConfirmDialog } from '@/components/tasks/TaskConfirmDialog';
+import { ExtendedTask } from '@/components/tasks/types';
 
 const Tasks = () => {
-  const [filter, setFilter] = useState('all'); // 'all', 'pending', 'completed'
+  const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [propertyFilter, setPropertyFilter] = useState('all');
   const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [dialogAction, setDialogAction] = useState<'complete' | 'incomplete'>('complete');
   const [properties, setProperties] = useState<Property[]>([]);
   const navigate = useNavigate();
   
-  // Load properties from localStorage
   useEffect(() => {
     const loadProperties = () => {
       const savedProperties = localStorage.getItem('properties');
@@ -45,7 +31,6 @@ const Tasks = () => {
     setProperties(loadProperties());
   }, []);
   
-  // Collect all tasks from existing properties
   const allTasks: ExtendedTask[] = properties.reduce((tasks, property) => {
     if (!property.tasks) return tasks;
     
@@ -53,21 +38,12 @@ const Tasks = () => {
       ...task,
       propertyName: property.name,
       propertyId: property.id,
-      createdDate: task.createdDate || new Date().toISOString() // Use existing date or create a new one
+      createdDate: task.createdDate || new Date().toISOString()
     }));
     
     return [...tasks, ...propertyTasks];
   }, [] as ExtendedTask[]);
   
-  // Get unique properties for the filter
-  const uniqueProperties = Array.from(
-    new Set(properties.map(property => property.id))
-  ).map(id => {
-    const property = properties.find(p => p.id === id);
-    return { id, name: property?.name || 'Unknown' };
-  });
-
-  // Filter tasks based on selected criteria
   const filteredTasks = allTasks.filter(task => {
     const matchesFilter = 
       filter === 'all' || 
@@ -85,14 +61,12 @@ const Tasks = () => {
     return matchesFilter && matchesSearch && matchesPropertyFilter;
   });
   
-  // Navigate to the property details page with the tasks section
-  const handleTaskRowClick = (task: ExtendedTask) => {
+  const handleTaskClick = (task: ExtendedTask) => {
     navigate(`/property/${task.propertyId}#tasks`);
   };
   
   const handleTaskToggle = (task: ExtendedTask) => {
     setSelectedTask(task);
-    setDialogAction(task.completed ? 'incomplete' : 'complete');
     setIsConfirmDialogOpen(true);
   };
   
@@ -108,7 +82,6 @@ const Tasks = () => {
               completed: !task.completed
             };
             
-            // Add or remove completion date
             if (!task.completed) {
               updatedTask.completedDate = new Date().toISOString();
             } else {
@@ -136,15 +109,6 @@ const Tasks = () => {
     
     setIsConfirmDialogOpen(false);
   };
-  
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No disponible';
-    try {
-      return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: es });
-    } catch (e) {
-      return 'Fecha inválida';
-    }
-  };
 
   return (
     <Layout>
@@ -155,39 +119,14 @@ const Tasks = () => {
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-between mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar tareas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Select value={propertyFilter} onValueChange={setPropertyFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] gap-2">
-              <Filter className="h-4 w-4" />
-              <SelectValue placeholder="Filtrar por propiedad" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las propiedades</SelectItem>
-              {uniqueProperties.map(property => (
-                <SelectItem key={property.id} value={property.id}>
-                  {property.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Button className="w-full sm:w-auto flex gap-2">
-            <Plus className="h-4 w-4" />
-            <span>Nueva Tarea</span>
-          </Button>
-        </div>
-      </div>
+      <TaskFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        propertyFilter={propertyFilter}
+        onPropertyFilterChange={setPropertyFilter}
+        properties={properties}
+        onNewTask={() => {}}
+      />
 
       <Tabs defaultValue="all" onValueChange={setFilter} value={filter}>
         <TabsList className="mb-6">
@@ -212,81 +151,21 @@ const Tasks = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {filteredTasks.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No hay tareas disponibles</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">Estado</TableHead>
-                    <TableHead>Tarea</TableHead>
-                    <TableHead>Propiedad</TableHead>
-                    <TableHead>Creada</TableHead>
-                    <TableHead>Completada</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTasks.map(task => (
-                    <TableRow 
-                      key={task.id} 
-                      className="cursor-pointer hover:bg-accent/50"
-                      onClick={() => handleTaskRowClick(task)}
-                    >
-                      <TableCell onClick={(e) => { e.stopPropagation(); handleTaskToggle(task); }}>
-                        <Checkbox 
-                          checked={task.completed} 
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className={task.completed ? "line-through text-muted-foreground" : ""}>
-                            {task.title}
-                          </div>
-                          {task.description && (
-                            <p className="text-sm text-muted-foreground mt-1 truncate max-w-xs">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{task.propertyName}</TableCell>
-                      <TableCell>{formatDate(task.createdDate)}</TableCell>
-                      <TableCell>
-                        {task.completedDate ? formatDate(task.completedDate) : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <TaskList
+              tasks={filteredTasks}
+              onTaskClick={handleTaskClick}
+              onTaskToggle={handleTaskToggle}
+            />
           </CardContent>
         </Card>
       </Tabs>
       
-      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {dialogAction === 'complete' 
-                ? 'Completar Tarea' 
-                : 'Marcar Tarea como Pendiente'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {dialogAction === 'complete' 
-                ? '¿Confirmas que has completado esta tarea?' 
-                : '¿Confirmas que quieres marcar esta tarea como pendiente?'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmTaskToggle}>
-              {dialogAction === 'complete' ? 'Completar' : 'Marcar como Pendiente'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <TaskConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+        selectedTask={selectedTask}
+        onConfirm={handleConfirmTaskToggle}
+      />
     </Layout>
   );
 };
