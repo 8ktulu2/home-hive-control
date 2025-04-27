@@ -1,23 +1,10 @@
 
 import { useState } from 'react';
-import { Search, Plus, Trash } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Property, PaymentRecord } from '@/types/property';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import PropertyButton from './PropertyButton';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Checkbox } from '@/components/ui/checkbox';
+import PropertyGridHeader from './grid/PropertyGridHeader';
+import PropertyGridList from './grid/PropertyGridList';
+import DeletePropertiesDialog from './grid/DeletePropertiesDialog';
 
 interface PropertyGridProps {
   properties: Property[];
@@ -81,7 +68,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
     }
   };
 
-  const handlePaymentUpdate = (propertyId: string, month: number, year: number, isPaid: boolean, notes?: string) => {
+  const handlePaymentUpdate = (propertyId: string, month: number, year: number, isPaid: boolean) => {
     const updatedProperties = properties.map(property => {
       if (property.id === propertyId) {
         const existingPayments = property.paymentHistory || [];
@@ -90,29 +77,24 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
         let updatedPayments: PaymentRecord[];
         
         if (existingPaymentIndex >= 0) {
-          // Update existing payment record
           updatedPayments = [...existingPayments];
           updatedPayments[existingPaymentIndex] = {
             ...updatedPayments[existingPaymentIndex],
             isPaid,
-            date: new Date().toISOString(),
-            notes: notes || updatedPayments[existingPaymentIndex].notes
+            date: new Date().toISOString()
           };
         } else {
-          // Create new payment record
           const newPayment: PaymentRecord = {
             id: `payment-${Date.now()}`,
             date: new Date().toISOString(),
             amount: property.rent,
             isPaid,
             month,
-            year,
-            notes
+            year
           };
           updatedPayments = [...existingPayments, newPayment];
         }
         
-        // Update the property
         return {
           ...property,
           paymentHistory: updatedPayments,
@@ -130,78 +112,26 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar propiedades..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex gap-2">
-          {selectedProperties.length > 0 && (
-            <Button 
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-              className="flex items-center gap-2"
-              data-delete-properties
-            >
-              <Trash className="h-4 w-4" />
-              <span>Eliminar ({selectedProperties.length})</span>
-            </Button>
-          )}
-          <Button asChild className="flex gap-2">
-            <Link to="/property/new">
-              <Plus className="h-4 w-4" />
-              <span>Nueva Propiedad</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PropertyGridHeader
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedCount={selectedProperties.length}
+        onDeleteClick={() => setShowDeleteDialog(true)}
+      />
       
-      {filteredProperties.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-xl font-medium">No se encontraron propiedades</p>
-          <p className="text-muted-foreground mt-2">Intente con otra búsqueda o agregue una nueva propiedad</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {filteredProperties.map(property => (
-            <div key={property.id} className="relative">
-              <div className="absolute top-2 left-2 z-10">
-                <Checkbox
-                  checked={selectedProperties.includes(property.id)}
-                  onCheckedChange={() => handlePropertySelect(property.id)}
-                />
-              </div>
-              <PropertyButton 
-                property={property} 
-                onPaymentUpdate={handlePaymentUpdate}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      <PropertyGridList
+        properties={filteredProperties}
+        selectedProperties={selectedProperties}
+        onPropertySelect={handlePropertySelect}
+        onPaymentUpdate={handlePaymentUpdate}
+      />
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminarán permanentemente {selectedProperties.length} propiedades
-              y todos sus datos asociados.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive hover:bg-destructive/90">
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeletePropertiesDialog
+        showDialog={showDeleteDialog}
+        selectedCount={selectedProperties.length}
+        onOpenChange={setShowDeleteDialog}
+        onConfirmDelete={handleDeleteSelected}
+      />
     </div>
   );
 };
