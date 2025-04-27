@@ -3,9 +3,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/formatters';
+import { PropertyHistoricalData } from './types';
 
 interface MonthlyContentProps {
-  filteredData: any[];
+  filteredData: PropertyHistoricalData[];
   selectedYear: number;
 }
 

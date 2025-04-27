@@ -3,9 +3,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
+import { PropertyHistoricalData } from './types';
 
 interface ExpensesContentProps {
-  filteredData: any[];
+  filteredData: PropertyHistoricalData[];
 }
 
 const ExpensesContent = ({ filteredData }: ExpensesContentProps) => {
