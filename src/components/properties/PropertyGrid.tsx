@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { Search, Plus, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Property } from '@/types/property';
+import { Property, PaymentRecord } from '@/types/property';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import PropertyButton from './PropertyButton';
