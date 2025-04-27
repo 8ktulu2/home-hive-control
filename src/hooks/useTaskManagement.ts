@@ -11,8 +11,20 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
           const updatedTask = { ...task, completed };
           if (completed) {
             updatedTask.completedDate = new Date().toISOString();
+            
+            // Remove the notification when task is completed
+            const savedNotifications = localStorage.getItem('notifications');
+            if (savedNotifications) {
+              const notifications = JSON.parse(savedNotifications);
+              const updatedNotifications = notifications.filter(
+                (n: any) => !(n.type === 'task' && n.taskId === taskId)
+              );
+              localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+            }
           } else {
             delete updatedTask.completedDate;
+            // Re-add notification if task is unchecked
+            addTaskNotification(property.id, updatedTask);
           }
           return updatedTask;
         }
@@ -40,6 +52,9 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
           date: newTask.notification.date,
         } : undefined
       };
+
+      // Add task notification
+      addTaskNotification(property.id, task);
       
       updatePropertyInStorage({
         ...property,
@@ -48,8 +63,42 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
     }
   };
 
+  const addTaskNotification = (propertyId: string, task: Task) => {
+    const notification = {
+      id: `notification-task-${task.id}`,
+      type: 'task',
+      taskId: task.id,
+      propertyId: propertyId,
+      message: `Tarea pendiente: ${task.title}`,
+      read: false
+    };
+
+    const savedNotifications = localStorage.getItem('notifications');
+    const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+    
+    // Check if notification already exists
+    const notificationExists = notifications.some(
+      (n: any) => n.taskId === task.id
+    );
+    
+    if (!notificationExists) {
+      notifications.push(notification);
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+    }
+  };
+
   const handleTaskDelete = (taskId: string) => {
     if (property && property.tasks) {
+      // Remove task notification when task is deleted
+      const savedNotifications = localStorage.getItem('notifications');
+      if (savedNotifications) {
+        const notifications = JSON.parse(savedNotifications);
+        const updatedNotifications = notifications.filter(
+          (n: any) => !(n.type === 'task' && n.taskId === taskId)
+        );
+        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      }
+
       updatePropertyInStorage({
         ...property,
         tasks: property.tasks.filter(task => task.id !== taskId)
