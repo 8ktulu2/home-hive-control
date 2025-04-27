@@ -7,9 +7,10 @@ import FinancialOverview from '@/components/finances/FinancialOverview';
 import FinancialMetrics from '@/components/finances/FinancialMetrics';
 import RentHistory from '@/components/finances/RentHistory';
 import FinancialCharts from '@/components/finances/FinancialCharts';
+import HistoricalData from '@/components/finances/HistoricalData';
 import { mockProperties } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
-import { Building, Calendar, ArrowUpDown, Filter } from 'lucide-react';
+import { Building, Calendar, ArrowUpDown, Filter, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -17,6 +18,7 @@ const Finances = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showAllProperties, setShowAllProperties] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
   // Format the current month and year
   const formattedMonth = format(selectedMonth, 'MMMM yyyy', { locale: es });
@@ -42,6 +44,14 @@ const Finances = () => {
     const newDate = new Date(selectedMonth);
     newDate.setMonth(newDate.getMonth() + 1);
     setSelectedMonth(newDate);
+  };
+
+  const handlePreviousYear = () => {
+    setSelectedYear(prevYear => prevYear - 1);
+  };
+
+  const handleNextYear = () => {
+    setSelectedYear(prevYear => prevYear + 1);
   };
 
   return (
@@ -98,11 +108,17 @@ const Finances = () => {
       </div>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 mb-6">
+        <TabsList className="grid grid-cols-5 mb-6">
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="metrics">Métricas</TabsTrigger>
           <TabsTrigger value="history">Historial</TabsTrigger>
           <TabsTrigger value="charts">Gráficos</TabsTrigger>
+          <TabsTrigger value="historical">
+            <div className="flex items-center gap-1">
+              <FileText className="h-4 w-4" />
+              <span>Histórico Fiscal</span>
+            </div>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -135,6 +151,15 @@ const Finances = () => {
             properties={mockProperties}
             selectedMonth={selectedMonth}
             showAllProperties={showAllProperties}
+          />
+        </TabsContent>
+
+        <TabsContent value="historical">
+          <HistoricalData
+            properties={mockProperties}
+            selectedYear={selectedYear}
+            onPreviousYear={handlePreviousYear}
+            onNextYear={handleNextYear}
           />
         </TabsContent>
       </Tabs>
