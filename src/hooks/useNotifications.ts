@@ -9,7 +9,7 @@ export interface Notification {
   propertyId: string;
   message: string;
   read: boolean;
-  taskId?: string; // Added to track associated tasks
+  taskId?: string;
 }
 
 export const useNotifications = () => {
@@ -20,7 +20,6 @@ export const useNotifications = () => {
     const loadNotifications = () => {
       const savedNotifications = localStorage.getItem('notifications');
       
-      // Get current properties to filter notifications
       const savedProperties = localStorage.getItem('properties');
       const properties = savedProperties ? JSON.parse(savedProperties) : [];
       const propertyIds = properties.map((p: any) => p.id);
@@ -28,12 +27,26 @@ export const useNotifications = () => {
       if (savedNotifications) {
         const allNotifications = JSON.parse(savedNotifications);
         // Filter out notifications for properties that no longer exist
-        const validNotifications = allNotifications.filter(
-          (notif: Notification) => propertyIds.includes(notif.propertyId)
-        );
+        // También verificamos el estado de las tareas para mantener las notificaciones no leídas
+        const validNotifications = allNotifications.filter((notif: Notification) => {
+          // Primero verificamos si la propiedad existe
+          if (!propertyIds.includes(notif.propertyId)) return false;
+          
+          // Si es una notificación de tarea, verificamos el estado de la tarea
+          if (notif.type === 'task' && notif.taskId) {
+            const property = properties.find((p: any) => p.id === notif.propertyId);
+            const task = property?.tasks?.find((t: any) => t.id === notif.taskId);
+            
+            // Si la tarea existe y no está completada, mantenemos la notificación como no leída
+            if (task && !task.completed) {
+              notif.read = false;
+            }
+          }
+          
+          return true;
+        });
         
         if (validNotifications.length !== allNotifications.length) {
-          // Save the filtered notifications back to localStorage
           localStorage.setItem('notifications', JSON.stringify(validNotifications));
         }
         
@@ -96,12 +109,8 @@ export const useNotifications = () => {
     const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
     
     if (propertyExists) {
-      // ONLY mark as read but don't remove the notification
-      const updatedNotifications = notifications.map(n => 
-        n.id === notification.id ? { ...n, read: true } : n
-      );
-      setNotifications(updatedNotifications);
-      
+      // Ya no marcamos la notificación como leída aquí
+      // Solo navegamos a la página correspondiente
       switch (notification.type) {
         case 'payment':
           navigate(`/property/${notification.propertyId}#payment-status`);
@@ -118,8 +127,6 @@ export const useNotifications = () => {
       }
     } else {
       toast.error('Propiedad no encontrada');
-      
-      // Remove the notification for non-existent property
       handleRemoveNotification(notification.id);
     }
   };
