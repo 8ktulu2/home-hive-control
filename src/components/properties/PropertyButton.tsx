@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEffect, useState, useRef } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PropertyButtonProps {
   property: Property;
@@ -19,6 +20,8 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
   const [pressTimer, setPressTimer] = useState<number | null>(null);
   const longPressTriggered = useRef(false);
+  const touchStartTime = useRef<number>(0);
+  const isMobile = useIsMobile();
   
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-ES', {
@@ -32,6 +35,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
   const handleMouseDown = () => {
     if (onLongPress) {
       longPressTriggered.current = false;
+      touchStartTime.current = Date.now();
       const timer = window.setTimeout(() => {
         onLongPress();
         longPressTriggered.current = true;
@@ -44,6 +48,21 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
     if (pressTimer) {
       clearTimeout(pressTimer);
       setPressTimer(null);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartTime.current = Date.now();
+    handleMouseDown();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    handleMouseUp();
+    
+    // Prevent triggering navigation on long press
+    const touchDuration = Date.now() - touchStartTime.current;
+    if (touchDuration > 500) {
+      e.preventDefault();
     }
   };
 
@@ -68,10 +87,10 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, isSelected }: 
         "group block w-full transition-all duration-200 hover:scale-[1.02]",
         isSelected && "ring-2 ring-primary"
       )}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onTouchStart={handleMouseDown}
-      onTouchEnd={handleMouseUp}
+      onMouseDown={isMobile ? undefined : handleMouseDown}
+      onMouseUp={isMobile ? undefined : handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       data-selected={isSelected ? "true" : "false"}
     >
       <div className="relative p-4 rounded-xl border bg-gradient-to-br from-background to-secondary/20 shadow-md hover:shadow-lg transition-all duration-200">

@@ -13,22 +13,12 @@ export const HeaderActions = () => {
       const selectedProperties = document.querySelectorAll('[data-selected="true"]');
       
       if (selectedProperties.length > 0) {
-        const deleteDialog = document.querySelector('dialog[role="dialog"]');
-        if (deleteDialog) {
-          // Open the delete dialog
-          const openButton = deleteDialog.querySelector('button[aria-haspopup="dialog"]');
-          if (openButton) {
-            (openButton as HTMLButtonElement).click();
-          }
+        // Find the delete dialog triggers
+        const alertDialogTrigger = document.querySelector('button[data-delete-trigger="true"]');
+        if (alertDialogTrigger) {
+          (alertDialogTrigger as HTMLButtonElement).click();
         } else {
-          // Try with the AlertDialog
-          const alertDialogTriggers = document.querySelectorAll('[data-state="closed"]');
-          for (const trigger of alertDialogTriggers) {
-            if (trigger.textContent?.includes('Eliminar')) {
-              (trigger as HTMLButtonElement).click();
-              break;
-            }
-          }
+          toast.info('Por favor, seleccione las propiedades a eliminar en la lista');
         }
       } else {
         toast.info('Por favor, seleccione las propiedades a eliminar en la lista');

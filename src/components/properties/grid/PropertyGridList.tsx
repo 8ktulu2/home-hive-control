@@ -2,6 +2,7 @@
 import { Property } from '@/types/property';
 import PropertyButton from '../PropertyButton';
 import { useState, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PropertyGridListProps {
   properties: Property[];
@@ -17,8 +18,10 @@ const PropertyGridList = ({
   onPaymentUpdate,
 }: PropertyGridListProps) => {
   const [selectionMode, setSelectionMode] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleLongPress = (propertyId: string) => {
+    console.log('Long press detected for property:', propertyId);
     setSelectionMode(true);
     onPropertySelect(propertyId);
   };
@@ -38,6 +41,24 @@ const PropertyGridList = ({
       setSelectionMode(false);
     }
   }, [selectedProperties, selectionMode]);
+
+  // Add a click handler on document to exit selection mode when clicking outside
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (selectionMode) {
+        const target = e.target as HTMLElement;
+        // Check if click is outside of property items
+        if (!target.closest('[data-selected]')) {
+          setSelectionMode(false);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [selectionMode]);
 
   if (properties.length === 0) {
     return (

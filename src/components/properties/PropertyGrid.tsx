@@ -161,6 +161,7 @@ const PropertyGrid = ({ properties, onPropertiesUpdate }: PropertyGridProps) => 
         selectedCount={selectedProperties.length}
         onOpenChange={setShowDeleteDialog}
         onConfirmDelete={handleDeleteSelected}
+        data-delete-trigger="true"
       />
     </div>
   );
