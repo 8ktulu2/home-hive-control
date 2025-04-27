@@ -95,6 +95,7 @@ export const useNotifications = () => {
     const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
     
     if (propertyExists) {
+      // Mark as read but don't remove the notification
       const updatedNotifications = notifications.map(n => 
         n.id === notification.id ? { ...n, read: true } : n
       );

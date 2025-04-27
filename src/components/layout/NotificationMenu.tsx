@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNotifications } from '@/hooks/useNotifications';
+import { NotificationItem } from './NotificationItem';
 
 export const NotificationMenu = () => {
   const { notifications, unreadCount, handleNotificationClick, handleRemoveNotification } = useNotifications();
@@ -26,25 +27,16 @@ export const NotificationMenu = () => {
             No hay notificaciones
           </div>
         ) : (
-          notifications.map(notification => (
-            <DropdownMenuItem 
-              key={notification.id} 
-              className="flex items-start justify-between py-2 cursor-pointer"
-              onClick={() => handleNotificationClick(notification)}
-            >
-              <span className={notification.read ? "text-muted-foreground" : ""}>
-                {notification.message}
-              </span>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6 ml-2 opacity-50 hover:opacity-100"
-                onClick={(e) => handleRemoveNotification(notification.id, e)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </DropdownMenuItem>
-          ))
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.map((notification) => (
+              <NotificationItem 
+                key={notification.id}
+                notification={notification}
+                onNotificationClick={handleNotificationClick}
+                onRemoveNotification={handleRemoveNotification}
+              />
+            ))}
+          </div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

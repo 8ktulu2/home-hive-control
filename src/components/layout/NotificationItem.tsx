@@ -1,5 +1,5 @@
 
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type Notification } from '@/hooks/useNotifications';
 
@@ -16,12 +16,22 @@ export const NotificationItem = ({
 }: NotificationItemProps) => {
   return (
     <div 
-      className="flex items-start justify-between py-2 cursor-pointer hover:bg-accent/20 px-2 rounded-md"
+      className={`flex items-start justify-between py-2 cursor-pointer hover:bg-accent/20 px-2 rounded-md border-l-4 ${
+        notification.read ? 'border-l-muted' : 'border-l-primary'
+      }`}
       onClick={() => onNotificationClick(notification)}
     >
-      <span className={notification.read ? "text-muted-foreground" : "font-medium"}>
-        {notification.message}
-      </span>
+      <div className="flex-1">
+        <span className={notification.read ? "text-muted-foreground" : "font-medium"}>
+          {notification.message}
+        </span>
+        {notification.read && (
+          <div className="flex items-center text-xs text-muted-foreground mt-1">
+            <Check className="h-3 w-3 mr-1" />
+            <span>Visto</span>
+          </div>
+        )}
+      </div>
       <Button 
         variant="ghost" 
         size="icon" 
