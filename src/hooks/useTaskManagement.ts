@@ -54,7 +54,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         } : undefined
       };
 
-      // Add task notification
+      // Always add task notification for every new task
       addTaskNotification(property.id, task);
       
       // Update property with new task

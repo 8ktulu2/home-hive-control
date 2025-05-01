@@ -27,7 +27,7 @@ export const useNotifications = () => {
       if (savedNotifications) {
         const allNotifications = JSON.parse(savedNotifications);
         // Filter out notifications for properties that no longer exist
-        // También verificamos el estado de las tareas para mantener las notificaciones no leídas
+        // También verificamos el estado de las tareas para mantener las notificaciones de tareas pendientes siempre visibles
         const validNotifications = allNotifications.filter((notif: Notification) => {
           // Primero verificamos si la propiedad existe
           if (!propertyIds.includes(notif.propertyId)) return false;
@@ -37,9 +37,12 @@ export const useNotifications = () => {
             const property = properties.find((p: any) => p.id === notif.propertyId);
             const task = property?.tasks?.find((t: any) => t.id === notif.taskId);
             
-            // Si la tarea existe y no está completada, mantenemos la notificación como no leída
+            // Si la tarea existe y no está completada, mantenemos la notificación siempre
             if (task && !task.completed) {
-              notif.read = false;
+              return true;
+            } else if (task && task.completed) {
+              // Si la tarea está completada, eliminamos la notificación
+              return false;
             }
           }
           
@@ -109,25 +112,48 @@ export const useNotifications = () => {
     const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
     
     if (propertyExists) {
-      // Ya no marcamos la notificación como leída aquí
-      // Solo navegamos a la página correspondiente
-      switch (notification.type) {
-        case 'payment':
-          navigate(`/property/${notification.propertyId}#payment-status`);
-          break;
-        case 'task':
-          navigate(`/property/${notification.propertyId}#tasks`);
-          break;
-        case 'document':
-          navigate(`/property/${notification.propertyId}#documents`);
-          break;
-        default:
-          navigate(`/property/${notification.propertyId}`);
-          break;
+      // Para notificaciones de tipo tarea, solo marcarlas como leídas si no están relacionadas a tareas pendientes
+      if (notification.type === 'task' && notification.taskId) {
+        const property = properties.find((p: any) => p.id === notification.propertyId);
+        const task = property?.tasks?.find((t: any) => t.id === notification.taskId);
+        
+        if (task && !task.completed) {
+          // Si la tarea está pendiente, navegamos sin marcar como leída
+          navigateToProperty(notification);
+          return;
+        }
       }
+      
+      // Para otros tipos de notificaciones, las marcamos como leídas
+      const updatedNotifications = notifications.map(n => {
+        if (n.id === notification.id) {
+          return { ...n, read: true };
+        }
+        return n;
+      });
+      
+      setNotifications(updatedNotifications);
+      navigateToProperty(notification);
     } else {
       toast.error('Propiedad no encontrada');
       handleRemoveNotification(notification.id);
+    }
+  };
+
+  const navigateToProperty = (notification: Notification) => {
+    switch (notification.type) {
+      case 'payment':
+        navigate(`/property/${notification.propertyId}#payment-status`);
+        break;
+      case 'task':
+        navigate(`/property/${notification.propertyId}#tasks`);
+        break;
+      case 'document':
+        navigate(`/property/${notification.propertyId}#documents`);
+        break;
+      default:
+        navigate(`/property/${notification.propertyId}`);
+        break;
     }
   };
 
@@ -141,7 +167,15 @@ export const useNotifications = () => {
     toast.info('Notificación eliminada');
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // Modified to count all task notifications related to pending tasks as unread,
+  // regardless of their read status
+  const unreadCount = notifications.filter(n => {
+    if (n.type === 'task' && n.taskId) {
+      // Consider all task notifications for pending tasks as "unread" for the counter
+      return true;
+    }
+    return !n.read;
+  }).length;
 
   return {
     notifications,

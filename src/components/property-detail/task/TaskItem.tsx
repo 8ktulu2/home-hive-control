@@ -46,14 +46,14 @@ export const TaskItem = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className={`h-6 w-6 ${task.notification?.enabled ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`h-6 w-6 ${!task.completed ? 'text-primary' : 'text-muted-foreground'}`}
           onClick={(e) => {
             e.stopPropagation();
             onOpenNotificationDialog(task);
           }}
           title="Configurar notificación"
         >
-          {task.notification?.enabled ? (
+          {!task.completed ? (
             <Bell className="h-4 w-4" />
           ) : (
             <BellOff className="h-4 w-4" />
