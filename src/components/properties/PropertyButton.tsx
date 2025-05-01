@@ -83,11 +83,11 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
 
   return (
     <Link 
-      to={isSelected !== undefined ? "#" : `/property/${property.id}`}
+      to={isSelected !== undefined && onSelect ? "#" : `/property/${property.id}`}
       onClick={(e) => {
-        if (isSelected !== undefined) {
+        if (isSelected !== undefined && onSelect) {
           e.preventDefault();
-          if (onSelect) onSelect(property.id);
+          onSelect(property.id);
         }
       }}
       className={cn(

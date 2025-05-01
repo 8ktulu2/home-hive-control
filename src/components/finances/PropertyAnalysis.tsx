@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
 
 interface PropertyAnalysisProps {
   properties: Property[];
@@ -57,13 +58,12 @@ const PropertyAnalysis = ({ properties, selectedMonth }: PropertyAnalysisProps) 
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  asChild
                   className="text-xs flex items-center gap-1"
                 >
-                  <a href={`/property/${property.id}`}>
+                  <Link to={`/property/${property.id}`}>
                     <span>Ver detalles</span>
                     <ArrowUpDown className="h-3 w-3" />
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </Card>
