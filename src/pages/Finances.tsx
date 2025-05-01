@@ -6,7 +6,7 @@ import FinancialOverview from '@/components/finances/FinancialOverview';
 import FinancialMetrics from '@/components/finances/FinancialMetrics';
 import RentHistory from '@/components/finances/RentHistory';
 import FinancialCharts from '@/components/finances/FinancialCharts';
-import HistoricalData from '@/components/finances/HistoricalData';
+import HistoricalData from '@/components/finances/historical/HistoricalData';
 import { mockProperties } from '@/data/mockData';
 import { FileText } from 'lucide-react';
 import MonthlyNavigator from '@/components/finances/MonthlyNavigator';
