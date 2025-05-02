@@ -25,8 +25,8 @@ jest.mock('../documentUtils', () => ({
 const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
   return {
-    getItem: jest.fn((key) => store[key] || null),
-    setItem: jest.fn((key, value) => {
+    getItem: jest.fn<(key: string) => string | null>((key) => store[key] || null),
+    setItem: jest.fn<(key: string, value: string) => void>((key, value) => {
       store[key] = value.toString();
     }),
     clear: jest.fn(() => {
@@ -40,13 +40,13 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock document.createElement for download functionality
-document.createElement = jest.fn(() => ({
+document.createElement = jest.fn().mockImplementation(() => ({
   setAttribute: jest.fn(),
   click: jest.fn(),
   style: {},
   href: '',
   download: '',
-})) as any;
+}));
 
 // Mock toast
 jest.mock('sonner', () => ({
@@ -59,7 +59,7 @@ jest.mock('sonner', () => ({
 // Mock useDocumentUpload hook
 jest.mock('@/hooks/useDocumentUpload', () => ({
   useDocumentUpload: jest.fn(() => ({
-    handleFileUpload: jest.fn((file) => ({
+    handleFileUpload: jest.fn((file: File) => ({
       id: 'new-doc-id',
       name: file.name,
       type: 'pdf',

@@ -9,8 +9,8 @@ import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
   return {
-    getItem: jest.fn((key) => store[key] || null),
-    setItem: jest.fn((key, value) => {
+    getItem: jest.fn<(key: string) => string | null>((key) => store[key] || null),
+    setItem: jest.fn<(key: string, value: string) => void>((key, value) => {
       store[key] = value.toString();
     }),
     clear: jest.fn(() => {
