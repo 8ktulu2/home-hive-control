@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -169,7 +168,7 @@ const Tasks = () => {
           notifications.push(notification);
         }
         
-        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+        localStorage.setItem('notifications', JSON.stringify(notifications));
       }
     } catch (error) {
       console.error("Error al añadir notificación de tarea:", error);
