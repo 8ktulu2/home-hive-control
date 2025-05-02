@@ -12,6 +12,7 @@ import MonthlyNavigator from '@/components/finances/MonthlyNavigator';
 import ViewToggle from '@/components/finances/ViewToggle';
 import PropertyAnalysis from '@/components/finances/PropertyAnalysis';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { mockProperties } from '@/data/mockData';
 
 const Finances = () => {
   const [activeTab, setActiveTab] = useState('overview');
