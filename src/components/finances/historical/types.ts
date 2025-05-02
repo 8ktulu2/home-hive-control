@@ -1,3 +1,4 @@
+
 export interface HistoricalExpense {
   id: string;
   name: string;
@@ -40,8 +41,26 @@ export interface FiscalData {
   legalFees: number;
   otherExpenses: number;
   
+  // Amortizaciones
+  buildingDepreciation: number; // 3% del valor de construcción
+  furnitureDepreciation: number; // 10% del valor de muebles
+  
+  // Saldos de dudoso cobro
+  badDebts: number;
+  
   // Totales calculados
   totalIncome: number;
   totalExpenses: number;
   netProfit: number;
+  
+  // Reducciones
+  applicableReduction: number; // 50%, 60%, 70% o 90%
+  reducedNetProfit: number;
+  
+  // Información adicional para cálculos
+  inTensionedArea: boolean;
+  rentLoweredFromPrevious: boolean;
+  youngTenant: boolean; // 18-35 años
+  recentlyRenovated: boolean; // Rehabilitada en los últimos 2 años
 }
+
