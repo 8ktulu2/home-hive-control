@@ -2,6 +2,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useDocumentsState } from '../useDocumentsState';
 import * as documentUtils from '../documentUtils';
+import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
 // Mock the document utils
 jest.mock('../documentUtils', () => ({

@@ -7,6 +7,7 @@ import {
 } from '../documentUtils';
 import { mockProperties } from '@/data/mockData';
 import { Property } from '@/types/property';
+import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
 // Mock localStorage
 const mockLocalStorage = (() => {
