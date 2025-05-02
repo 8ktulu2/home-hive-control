@@ -12,6 +12,7 @@ import MonthlyContent from './MonthlyContent';
 import FiscalDetailContent from './FiscalDetailContent';
 import { PropertyHistoricalData } from './types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Card } from '@/components/ui/card';
 
 interface HistoricalDataProps {
   properties: Property[];
@@ -124,55 +125,73 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
   const annualTotals = calculateAnnualTotals();
 
   return (
-    <div className="bg-[#1A1F2C] text-white rounded-lg p-4 md:p-6 space-y-4 md:space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <YearNavigator
-          selectedYear={selectedYear}
-          onPreviousYear={onPreviousYear}
-          onNextYear={onNextYear}
-        />
-        <PropertySelector
-          properties={properties}
-          selectedProperty={selectedProperty}
-          onPropertyChange={setSelectedProperty}
-        />
+    <Card className="bg-[#1A1F2C] text-white rounded-lg overflow-hidden">
+      <div className="p-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <YearNavigator
+            selectedYear={selectedYear}
+            onPreviousYear={onPreviousYear}
+            onNextYear={onNextYear}
+          />
+          <PropertySelector
+            properties={properties}
+            selectedProperty={selectedProperty}
+            onPropertyChange={setSelectedProperty}
+          />
+        </div>
+        
+        <Badge className="bg-[#8B5CF6] text-white hover:bg-[#7048e8]">
+          <FileText className="h-4 w-4 mr-1" /> Datos para Declaración Fiscal
+        </Badge>
       </div>
       
-      <Badge className="bg-[#8B5CF6] text-white hover:bg-[#7048e8]">
-        <FileText className="h-4 w-4 mr-1" /> Datos para Declaración Fiscal
-      </Badge>
-      
-      <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="mt-4">
-        <TabsList className={`${isMobile ? 'grid grid-cols-2 gap-1' : 'grid grid-cols-4'} mb-6 bg-[#292F3F]`}>
-          <TabsTrigger 
-            value="summary" 
-            className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
-          >
-            Resumen
-          </TabsTrigger>
-          <TabsTrigger 
-            value="monthly" 
-            className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
-          >
-            Mensual
-          </TabsTrigger>
+      <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="px-4 bg-[#292F3F]/80">
           {isMobile ? (
             <>
-              <TabsTrigger 
-                value="expenses" 
-                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
-              >
-                Gastos
-              </TabsTrigger>
-              <TabsTrigger 
-                value="fiscal" 
-                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
-              >
-                IRPF
-              </TabsTrigger>
+              <TabsList className="grid grid-cols-2 gap-1 w-full mb-1 bg-transparent">
+                <TabsTrigger 
+                  value="summary" 
+                  className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+                >
+                  Resumen
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="monthly" 
+                  className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+                >
+                  Mensual
+                </TabsTrigger>
+              </TabsList>
+              <TabsList className="grid grid-cols-2 gap-1 w-full mb-2 bg-transparent">
+                <TabsTrigger 
+                  value="expenses" 
+                  className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+                >
+                  Gastos
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="fiscal" 
+                  className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+                >
+                  IRPF
+                </TabsTrigger>
+              </TabsList>
             </>
           ) : (
-            <>
+            <TabsList className="grid grid-cols-4 w-full bg-transparent">
+              <TabsTrigger 
+                value="summary" 
+                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              >
+                Resumen
+              </TabsTrigger>
+              <TabsTrigger 
+                value="monthly" 
+                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              >
+                Mensual
+              </TabsTrigger>
               <TabsTrigger 
                 value="expenses" 
                 className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
@@ -185,27 +204,29 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
               >
                 Datos IRPF
               </TabsTrigger>
-            </>
+            </TabsList>
           )}
-        </TabsList>
+        </div>
         
-        <TabsContent value="summary">
-          <AnnualSummaryCards {...annualTotals} />
-        </TabsContent>
-        
-        <TabsContent value="monthly">
-          <MonthlyContent filteredData={filteredData} selectedYear={selectedYear} />
-        </TabsContent>
-        
-        <TabsContent value="expenses">
-          <ExpensesContent filteredData={filteredData} />
-        </TabsContent>
+        <div className="p-4">
+          <TabsContent value="summary">
+            <AnnualSummaryCards {...annualTotals} />
+          </TabsContent>
+          
+          <TabsContent value="monthly">
+            <MonthlyContent filteredData={filteredData} selectedYear={selectedYear} />
+          </TabsContent>
+          
+          <TabsContent value="expenses">
+            <ExpensesContent filteredData={filteredData} />
+          </TabsContent>
 
-        <TabsContent value="fiscal">
-          <FiscalDetailContent filteredData={filteredData} selectedYear={selectedYear} />
-        </TabsContent>
+          <TabsContent value="fiscal">
+            <FiscalDetailContent filteredData={filteredData} selectedYear={selectedYear} />
+          </TabsContent>
+        </div>
       </Tabs>
-    </div>
+    </Card>
   );
 };
 

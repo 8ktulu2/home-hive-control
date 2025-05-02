@@ -13,6 +13,7 @@ import ViewToggle from '@/components/finances/ViewToggle';
 import PropertyAnalysis from '@/components/finances/PropertyAnalysis';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { mockProperties } from '@/data/mockData';
+import { Card } from '@/components/ui/card';
 
 const Finances = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -74,79 +75,87 @@ const Finances = () => {
         />
       </div>
 
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className={`${isMobile ? 'grid grid-cols-3 mb-4 gap-1' : 'grid grid-cols-5'} mb-6`}>
-          <TabsTrigger value="overview">Resumen</TabsTrigger>
-          <TabsTrigger value="metrics">Métricas</TabsTrigger>
-          <TabsTrigger value="history">Historial</TabsTrigger>
-          {isMobile ? (
-            <TabsTrigger value="charts">Gráficos</TabsTrigger>
-          ) : (
-            <>
-              <TabsTrigger value="charts">Gráficos</TabsTrigger>
-              <TabsTrigger value="historical">
-                <div className="flex items-center gap-1">
-                  <FileText className="h-4 w-4" />
-                  <span>Histórico</span>
-                </div>
-              </TabsTrigger>
-            </>
-          )}
-        </TabsList>
-        
-        {isMobile && (
-          <TabsList className="grid grid-cols-1 mb-6">
-            <TabsTrigger value="historical">
-              <div className="flex items-center gap-1">
-                <FileText className="h-4 w-4" />
-                <span>Histórico Fiscal</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-        )}
+      <Card className="overflow-hidden">
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+          <div className="px-2 pt-2 pb-0 bg-card">
+            {isMobile ? (
+              <>
+                <TabsList className="grid grid-cols-3 w-full mb-1">
+                  <TabsTrigger value="overview">Resumen</TabsTrigger>
+                  <TabsTrigger value="metrics">Métricas</TabsTrigger>
+                  <TabsTrigger value="history">Historial</TabsTrigger>
+                </TabsList>
+                <TabsList className="grid grid-cols-2 w-full mb-2">
+                  <TabsTrigger value="charts">Gráficos</TabsTrigger>
+                  <TabsTrigger value="historical">
+                    <div className="flex items-center gap-1">
+                      <FileText className="h-4 w-4" />
+                      <span>Histórico</span>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </>
+            ) : (
+              <TabsList className="grid grid-cols-5 w-full mb-0">
+                <TabsTrigger value="overview">Resumen</TabsTrigger>
+                <TabsTrigger value="metrics">Métricas</TabsTrigger>
+                <TabsTrigger value="history">Historial</TabsTrigger>
+                <TabsTrigger value="charts">Gráficos</TabsTrigger>
+                <TabsTrigger value="historical">
+                  <div className="flex items-center gap-1">
+                    <FileText className="h-4 w-4" />
+                    <span>Histórico</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            )}
+          </div>
 
-        <TabsContent value="overview">
-          <FinancialOverview 
-            properties={mockProperties} 
-            summary={financialSummary}
-            selectedMonth={selectedMonth}
-            showAllProperties={showAllProperties}
-          />
-        </TabsContent>
+          <div className="p-4">
+            <TabsContent value="overview">
+              <FinancialOverview 
+                properties={mockProperties} 
+                summary={financialSummary}
+                selectedMonth={selectedMonth}
+                showAllProperties={showAllProperties}
+              />
+            </TabsContent>
 
-        <TabsContent value="metrics">
-          <FinancialMetrics 
-            properties={mockProperties}
-            selectedMonth={selectedMonth}
-            showAllProperties={showAllProperties}
-          />
-        </TabsContent>
+            <TabsContent value="metrics">
+              <FinancialMetrics 
+                properties={mockProperties}
+                selectedMonth={selectedMonth}
+                showAllProperties={showAllProperties}
+              />
+            </TabsContent>
 
-        <TabsContent value="history">
-          <RentHistory 
-            properties={mockProperties}
-            selectedMonth={selectedMonth}
-            showAllProperties={showAllProperties}
-          />
-        </TabsContent>
+            <TabsContent value="history">
+              <RentHistory 
+                properties={mockProperties}
+                selectedMonth={selectedMonth}
+                showAllProperties={showAllProperties}
+              />
+            </TabsContent>
 
-        <TabsContent value="charts">
-          <FinancialCharts 
-            properties={mockProperties}
-            selectedMonth={selectedMonth}
-            showAllProperties={showAllProperties}
-          />
-        </TabsContent>
+            <TabsContent value="charts">
+              <FinancialCharts 
+                properties={mockProperties}
+                selectedMonth={selectedMonth}
+                showAllProperties={showAllProperties}
+              />
+            </TabsContent>
 
-        <TabsContent value="historical">
-          <HistoricalData
-            properties={mockProperties}
-            selectedYear={selectedYear}
-            onPreviousYear={handlePreviousYear}
-            onNextYear={handleNextYear}
-          />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="historical">
+              <HistoricalData
+                properties={mockProperties}
+                selectedYear={selectedYear}
+                onPreviousYear={handlePreviousYear}
+                onNextYear={handleNextYear}
+              />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </Card>
 
       {!showAllProperties && (
         <PropertyAnalysis 
