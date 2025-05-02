@@ -1,5 +1,4 @@
-
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useRef } from 'react';
 import { Document, Property } from '@/types/property';
 import { mockProperties } from '@/data/mockData';
 import { toast } from 'sonner';
@@ -14,6 +13,7 @@ interface DocumentsContextType {
   isUploading: boolean;
   properties: Array<{ id: string; name: string }>;
   uniqueTypes: string[];
+  fileInputRef: React.RefObject<HTMLInputElement>;
   setSearchTerm: (term: string) => void;
   setPropertyFilter: (filter: string) => void;
   setTypeFilter: (filter: string) => void;
@@ -54,7 +54,7 @@ export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children 
     return getAllDocuments();
   });
   
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { handleFileUpload, isUploading } = useDocumentUpload();
   
   // Get all properties from localStorage or use mock data
@@ -192,14 +192,14 @@ export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children 
     isUploading,
     properties: uniqueProperties,
     uniqueTypes,
+    fileInputRef,
     setSearchTerm,
     setPropertyFilter,
     setTypeFilter,
     handleDownload,
     handleDelete,
     handleUploadClick,
-    handleFileChange,
-    fileInputRef
+    handleFileChange
   };
 
   return (
