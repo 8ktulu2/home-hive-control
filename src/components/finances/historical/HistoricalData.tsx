@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Property } from '@/types/property';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
 import FiscalDetailContent from './FiscalDetailContent';
 import { PropertyHistoricalData } from './types';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HistoricalDataProps {
   properties: Property[];
@@ -21,6 +23,7 @@ interface HistoricalDataProps {
 const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }: HistoricalDataProps) => {
   const [selectedProperty, setSelectedProperty] = React.useState<string>("all");
   const [activeTab, setActiveTab] = React.useState("summary");
+  const isMobile = useIsMobile();
 
   const generateHistoricalData = () => {
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -121,8 +124,8 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
   const annualTotals = calculateAnnualTotals();
 
   return (
-    <div className="bg-[#1A1F2C] text-white rounded-lg p-6 space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div className="bg-[#1A1F2C] text-white rounded-lg p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <YearNavigator
           selectedYear={selectedYear}
           onPreviousYear={onPreviousYear}
@@ -140,31 +143,50 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
       </Badge>
       
       <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="mt-4">
-        <TabsList className="grid grid-cols-4 mb-6 bg-[#292F3F]">
+        <TabsList className={`${isMobile ? 'grid grid-cols-2 gap-1' : 'grid grid-cols-4'} mb-6 bg-[#292F3F]`}>
           <TabsTrigger 
             value="summary" 
             className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
           >
-            Resumen Anual
+            Resumen
           </TabsTrigger>
           <TabsTrigger 
             value="monthly" 
             className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
           >
-            Detalle Mensual
+            Mensual
           </TabsTrigger>
-          <TabsTrigger 
-            value="expenses" 
-            className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
-          >
-            Gastos Deducibles
-          </TabsTrigger>
-          <TabsTrigger 
-            value="fiscal" 
-            className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
-          >
-            Datos IRPF
-          </TabsTrigger>
+          {isMobile ? (
+            <>
+              <TabsTrigger 
+                value="expenses" 
+                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              >
+                Gastos
+              </TabsTrigger>
+              <TabsTrigger 
+                value="fiscal" 
+                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              >
+                IRPF
+              </TabsTrigger>
+            </>
+          ) : (
+            <>
+              <TabsTrigger 
+                value="expenses" 
+                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              >
+                Gastos Deducibles
+              </TabsTrigger>
+              <TabsTrigger 
+                value="fiscal" 
+                className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              >
+                Datos IRPF
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
         
         <TabsContent value="summary">

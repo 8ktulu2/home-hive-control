@@ -4,6 +4,7 @@ import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import FiscalDetailForm from './FiscalDetailForm';
 import { FileText } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FiscalDetailContentProps {
   filteredData: PropertyHistoricalData[];
@@ -11,6 +12,7 @@ interface FiscalDetailContentProps {
 }
 
 const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContentProps) => {
+  const isMobile = useIsMobile();
   const [fiscalData, setFiscalData] = useState<Record<string, FiscalData>>(() => {
     // Initialize with default data for each property
     const initialData: Record<string, FiscalData> = {};
@@ -83,33 +85,43 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <Card className="border-[#8B5CF6]/20">
-        <CardHeader>
+        <CardHeader className={isMobile ? "p-4" : ""}>
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-[#8B5CF6]" />
             <CardTitle className="text-lg">Declaración de la Renta {selectedYear}</CardTitle>
           </div>
           <CardDescription>
-            Información desglosada para la declaración de IRPF como propietario
+            Información para la declaración de IRPF
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? "p-4 pt-0" : ""}>
           <div className="bg-[#292F3F] p-4 rounded-lg mb-6 text-sm">
-            <p className="mb-2 font-medium">Instrucciones para la Declaración:</p>
+            <p className="mb-2 font-medium">Instrucciones:</p>
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              <li>Los ingresos y gastos deben declararse en el apartado de "Rendimientos del capital inmobiliario" (casillas 0062-0075).</li>
-              <li>La reducción por alquiler de vivienda habitual se aplica en la casilla 0150.</li>
-              <li>Todos los gastos deben estar justificados con facturas o recibos a nombre del propietario.</li>
-              <li>El exceso de gastos sobre ingresos puede compensarse en los 4 años siguientes.</li>
-              <li>Conserve toda la documentación durante al menos 4 años.</li>
+              {isMobile ? (
+                <>
+                  <li>Ingresos y gastos: casillas 0062-0075</li>
+                  <li>Reducción: casilla 0150</li>
+                  <li>Conserve toda la documentación 4 años</li>
+                </>
+              ) : (
+                <>
+                  <li>Los ingresos y gastos deben declararse en el apartado de "Rendimientos del capital inmobiliario" (casillas 0062-0075).</li>
+                  <li>La reducción por alquiler de vivienda habitual se aplica en la casilla 0150.</li>
+                  <li>Todos los gastos deben estar justificados con facturas o recibos a nombre del propietario.</li>
+                  <li>El exceso de gastos sobre ingresos puede compensarse en los 4 años siguientes.</li>
+                  <li>Conserve toda la documentación durante al menos 4 años.</li>
+                </>
+              )}
             </ul>
           </div>
         </CardContent>
       </Card>
 
       {filteredData.map(property => (
-        <div key={property.propertyId}>
+        <div key={property.propertyId} className="mb-6 last:mb-0">
           <FiscalDetailForm
             initialData={fiscalData[property.propertyId]}
             onSave={(data) => handleSaveFiscalData(property.propertyId, data)}

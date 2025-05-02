@@ -5,9 +5,11 @@ import { mockProperties } from '@/data/mockData';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Calculator, Info } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Historical = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const isMobile = useIsMobile();
 
   const handlePreviousYear = () => {
     setSelectedYear(prevYear => prevYear - 1);
@@ -33,7 +35,7 @@ const Historical = () => {
             <CardTitle>Declaración de la Renta</CardTitle>
           </div>
           <CardDescription>
-            Información completa para optimizar tu declaración de IRPF como propietario
+            Información para optimizar tu declaración IRPF
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -50,13 +52,24 @@ const Historical = () => {
                   <p className="font-semibold">Gastos Deducibles:</p>
                 </div>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>IBI (100% deducible)</li>
-                  <li>Intereses hipoteca (no el capital amortizado)</li>
-                  <li>Gastos de comunidad y mantenimiento</li>
-                  <li>Seguros del inmueble</li>
-                  <li>Amortización del inmueble (3% valor)</li>
-                  <li>Amortización de mobiliario (10%)</li>
-                  <li>Suministros pagados por el propietario</li>
+                  {isMobile ? (
+                    <>
+                      <li>IBI (100% deducible)</li>
+                      <li>Intereses hipotecarios</li>
+                      <li>Gastos de comunidad</li>
+                      <li>Amortización (3% valor)</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>IBI (100% deducible)</li>
+                      <li>Intereses hipoteca (no el capital amortizado)</li>
+                      <li>Gastos de comunidad y mantenimiento</li>
+                      <li>Seguros del inmueble</li>
+                      <li>Amortización del inmueble (3% valor)</li>
+                      <li>Amortización de mobiliario (10%)</li>
+                      <li>Suministros pagados por el propietario</li>
+                    </>
+                  )}
                 </ul>
               </div>
               
@@ -67,22 +80,24 @@ const Historical = () => {
                 </div>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>50% general (vivienda habitual)</li>
-                  <li>90% (zonas tensionadas con rebaja de renta)</li>
-                  <li>70% (inquilinos jóvenes en zonas tensionadas)</li>
-                  <li>60% (viviendas recientemente rehabilitadas)</li>
+                  <li>90% (zonas tensionadas)</li>
+                  <li>70% (inquilinos jóvenes)</li>
+                  <li>60% (viviendas rehabilitadas)</li>
                 </ul>
               </div>
             </div>
             
-            <div className="bg-amber-500/10 text-amber-500 p-3 rounded-md text-sm">
-              <p className="font-semibold mb-1">Recuerda:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Los gastos de conservación y reparación son deducibles, pero no las mejoras que aumenten el valor.</li>
-                <li>Los intereses y gastos de reparación no pueden superar los ingresos (el exceso se compensa en 4 años).</li>
-                <li>Conserva facturas y justificantes de todos los gastos durante al menos 4 años.</li>
-                <li>Las reducciones solo aplican a alquileres de vivienda habitual, no a usos turísticos o temporales.</li>
-              </ul>
-            </div>
+            {!isMobile && (
+              <div className="bg-amber-500/10 text-amber-500 p-3 rounded-md text-sm">
+                <p className="font-semibold mb-1">Recuerda:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Los gastos de conservación son deducibles, no las mejoras.</li>
+                  <li>Los intereses y gastos no pueden superar los ingresos.</li>
+                  <li>Conserva facturas durante al menos 4 años.</li>
+                  <li>Las reducciones solo aplican a vivienda habitual.</li>
+                </ul>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -7,17 +7,18 @@ import FinancialMetrics from '@/components/finances/FinancialMetrics';
 import RentHistory from '@/components/finances/RentHistory';
 import FinancialCharts from '@/components/finances/FinancialCharts';
 import HistoricalData from '@/components/finances/historical/HistoricalData';
-import { mockProperties } from '@/data/mockData';
 import { FileText } from 'lucide-react';
 import MonthlyNavigator from '@/components/finances/MonthlyNavigator';
 import ViewToggle from '@/components/finances/ViewToggle';
 import PropertyAnalysis from '@/components/finances/PropertyAnalysis';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Finances = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showAllProperties, setShowAllProperties] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const isMobile = useIsMobile();
   
   // Calcular datos financieros globales
   const financialSummary = mockProperties.reduce(
@@ -73,18 +74,35 @@ const Finances = () => {
       </div>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 mb-6">
+        <TabsList className={`${isMobile ? 'grid grid-cols-3 mb-4 gap-1' : 'grid grid-cols-5'} mb-6`}>
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="metrics">Métricas</TabsTrigger>
           <TabsTrigger value="history">Historial</TabsTrigger>
-          <TabsTrigger value="charts">Gráficos</TabsTrigger>
-          <TabsTrigger value="historical">
-            <div className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
-              <span>Histórico Fiscal</span>
-            </div>
-          </TabsTrigger>
+          {isMobile ? (
+            <TabsTrigger value="charts">Gráficos</TabsTrigger>
+          ) : (
+            <>
+              <TabsTrigger value="charts">Gráficos</TabsTrigger>
+              <TabsTrigger value="historical">
+                <div className="flex items-center gap-1">
+                  <FileText className="h-4 w-4" />
+                  <span>Histórico</span>
+                </div>
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
+        
+        {isMobile && (
+          <TabsList className="grid grid-cols-1 mb-6">
+            <TabsTrigger value="historical">
+              <div className="flex items-center gap-1">
+                <FileText className="h-4 w-4" />
+                <span>Histórico Fiscal</span>
+              </div>
+            </TabsTrigger>
+          </TabsList>
+        )}
 
         <TabsContent value="overview">
           <FinancialOverview 
