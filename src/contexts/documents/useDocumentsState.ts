@@ -1,87 +1,29 @@
-import React, { createContext, useState, useContext, ReactNode, useRef } from 'react';
-import { Document, Property } from '@/types/property';
-import { mockProperties } from '@/data/mockData';
+
+import { useState, useRef } from 'react';
+import { Document } from '@/types/property';
 import { toast } from 'sonner';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { getAllDocuments, getPropertiesFromStorage, getUniqueProperties, getInitialDocuments } from './documentUtils';
 
-interface DocumentsContextType {
-  documents: Document[];
-  searchTerm: string;
-  propertyFilter: string;
-  typeFilter: string;
-  filteredDocuments: Document[];
-  isUploading: boolean;
-  properties: Array<{ id: string; name: string }>;
-  uniqueTypes: string[];
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  setSearchTerm: (term: string) => void;
-  setPropertyFilter: (filter: string) => void;
-  setTypeFilter: (filter: string) => void;
-  handleDownload: (documentName: string) => void;
-  handleDelete: (documentId: string, documentName: string) => void;
-  handleUploadClick: () => void;
-  handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-const DocumentsContext = createContext<DocumentsContextType | undefined>(undefined);
-
-export const useDocuments = (): DocumentsContextType => {
-  const context = useContext(DocumentsContext);
-  if (!context) {
-    throw new Error('useDocuments must be used within a DocumentsProvider');
-  }
-  return context;
-};
-
-export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function useDocumentsState() {
   const [searchTerm, setSearchTerm] = useState('');
   const [propertyFilter, setPropertyFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [documents, setDocuments] = useState<Document[]>(() => {
-    // Get documents from localStorage or use mock data
-    const savedProperties = localStorage.getItem('properties');
-    if (savedProperties) {
-      const properties = JSON.parse(savedProperties);
-      return properties.reduce((docs: Document[], property: any) => {
-        const propertyDocuments = property.documents?.map((doc: Document) => ({
-          ...doc,
-          propertyName: property.name,
-          propertyId: property.id
-        })) || [];
-        return [...docs, ...propertyDocuments];
-      }, []);
-    }
-    return getAllDocuments();
-  });
+  const [documents, setDocuments] = useState<Document[]>(getInitialDocuments);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { handleFileUpload, isUploading } = useDocumentUpload();
   
-  // Get all properties from localStorage or use mock data
-  const properties = (() => {
-    const savedProperties = localStorage.getItem('properties');
-    if (savedProperties) {
-      try {
-        return JSON.parse(savedProperties);
-      } catch (e) {
-        console.error("Error parsing properties from localStorage", e);
-        return mockProperties;
-      }
-    }
-    return mockProperties;
-  })();
+  // Get all properties and unique properties
+  const properties = getPropertiesFromStorage();
+  const uniqueProperties = getUniqueProperties(properties);
   
-  const uniqueProperties = Array.from(
-    new Set([...properties.map((property: Property) => property.id)])
-  ).map(id => {
-    const property = properties.find((p: Property) => p.id === id);
-    return { id, name: property?.name || 'Unknown' };
-  });
-  
+  // Get unique document types
   const uniqueTypes = Array.from(
     new Set(documents.map(doc => doc.type))
   );
   
+  // Filter documents based on search term and filters
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -96,18 +38,6 @@ export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children 
     return matchesSearch && matchesPropertyFilter && matchesTypeFilter;
   });
 
-  // Function to get all documents from mock data
-  function getAllDocuments() {
-    return mockProperties.reduce((documents, property) => {
-      const propertyDocuments = property.documents?.map(doc => ({
-        ...doc,
-        propertyName: property.name,
-        propertyId: property.id
-      })) || [];
-      return [...documents, ...propertyDocuments];
-    }, [] as Array<any>);
-  }
-
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -118,7 +48,7 @@ export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     // Get selected property
     const propertyId = propertyFilter !== 'all' ? propertyFilter : uniqueProperties[0]?.id;
-    const property = properties.find((p: Property) => p.id === propertyId);
+    const property = properties.find((p) => p.id === propertyId);
     
     if (!property) {
       toast.error("Selecciona una propiedad para subir documentos");
@@ -183,7 +113,7 @@ export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children 
     toast.success(`Documento "${documentName}" eliminado`);
   };
 
-  const value = {
+  return {
     documents,
     searchTerm,
     propertyFilter,
@@ -201,10 +131,4 @@ export const DocumentsProvider: React.FC<{ children: ReactNode }> = ({ children 
     handleUploadClick,
     handleFileChange
   };
-
-  return (
-    <DocumentsContext.Provider value={value}>
-      {children}
-    </DocumentsContext.Provider>
-  );
-};
+}

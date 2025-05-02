@@ -2,7 +2,7 @@
 import React from 'react';
 import { DocumentSearchBar } from '@/components/documents/DocumentSearchBar';
 import { DocumentFilters } from '@/components/documents/DocumentFilters';
-import { useDocuments } from '@/contexts/DocumentsContext';
+import { useDocuments } from '@/contexts/documents';
 
 export const DocumentsControls = () => {
   const {

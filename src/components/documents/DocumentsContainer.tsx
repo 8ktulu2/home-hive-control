@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
 import { DocumentTable } from '@/components/documents/DocumentTable';
-import { useDocuments } from '@/contexts/DocumentsContext';
+import { useDocuments } from '@/contexts/documents';
 import React from 'react';
 
 export const DocumentsContainer = () => {
