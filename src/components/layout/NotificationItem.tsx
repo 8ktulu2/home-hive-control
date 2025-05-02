@@ -14,7 +14,7 @@ export const NotificationItem = ({
   onNotificationClick, 
   onRemoveNotification 
 }: NotificationItemProps) => {
-  // Task notifications are always highlighted until completed
+  // Task notifications are always highlighted
   const isHighlighted = notification.type === 'task' || !notification.read;
   
   return (

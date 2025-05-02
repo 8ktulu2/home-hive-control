@@ -10,14 +10,20 @@ export interface Notification {
   message: string;
   read: boolean;
   taskId?: string;
+  createdAt: string;
 }
 
 export const useNotifications = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Cargar notificaciones cada vez que se renderiza el componente para mantenerlo actualizado
   useEffect(() => {
-    const loadNotifications = () => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = () => {
+    try {
       const savedNotifications = localStorage.getItem('notifications');
       
       const savedProperties = localStorage.getItem('properties');
@@ -35,13 +41,15 @@ export const useNotifications = () => {
           // Si es una notificación de tarea, verificamos el estado de la tarea
           if (notif.type === 'task' && notif.taskId) {
             const property = properties.find((p: any) => p.id === notif.propertyId);
-            const task = property?.tasks?.find((t: any) => t.id === notif.taskId);
+            if (!property || !property.tasks) return false;
+            
+            const task = property.tasks.find((t: any) => t.id === notif.taskId);
             
             // Si la tarea existe y no está completada, mantenemos la notificación
             if (task && !task.completed) {
               return true;
-            } else if (task && task.completed) {
-              // Si la tarea está completada, eliminamos la notificación
+            } else if (!task || (task && task.completed)) {
+              // Si la tarea no existe o está completada, eliminamos la notificación
               return false;
             }
           }
@@ -55,88 +63,84 @@ export const useNotifications = () => {
         
         setNotifications(validNotifications);
       } else {
-        // Crear notificaciones predeterminadas solo para propiedades existentes
+        // Si no hay notificaciones guardadas, revisamos las tareas pendientes y creamos notificaciones
         const defaultNotifications: Notification[] = [];
         
-        // Solo agregar notificaciones predeterminadas si la propiedad existe
-        if (propertyIds.includes('property-001')) {
-          defaultNotifications.push(
-            {
-              id: 'notif-1',
-              type: 'payment',
-              propertyId: 'property-001',
-              message: 'Pago de alquiler pendiente - Apartamento Centro',
-              read: false
-            },
-            {
-              id: 'notif-2',
-              type: 'task',
-              propertyId: 'property-001',
-              message: 'Tarea pendiente - Revisar caldera',
-              read: false
-            },
-            {
-              id: 'notif-3',
-              type: 'document',
-              propertyId: 'property-001',
-              message: 'Documento caducado - Contrato Inquilino',
-              read: false
-            }
-          );
-        }
+        // Crear notificaciones para todas las tareas pendientes
+        properties.forEach((property: any) => {
+          if (property.tasks) {
+            property.tasks.forEach((task: any) => {
+              if (!task.completed) {
+                defaultNotifications.push({
+                  id: `notification-task-${task.id}`,
+                  type: 'task',
+                  taskId: task.id,
+                  propertyId: property.id,
+                  message: `Tarea pendiente: ${task.title}`,
+                  read: false,
+                  createdAt: new Date().toISOString()
+                });
+              }
+            });
+          }
+        });
         
-        setNotifications(defaultNotifications);
-        localStorage.setItem('notifications', JSON.stringify(defaultNotifications));
+        if (defaultNotifications.length > 0) {
+          setNotifications(defaultNotifications);
+          localStorage.setItem('notifications', JSON.stringify(defaultNotifications));
+        } else {
+          setNotifications([]);
+        }
       }
-    };
-
-    loadNotifications();
-  }, []);
+    } catch (error) {
+      console.error("Error al cargar notificaciones:", error);
+      setNotifications([]);
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('notifications', JSON.stringify(notifications));
   }, [notifications]);
 
   const handleNotificationClick = (notification: Notification) => {
-    const savedProperties = localStorage.getItem('properties');
-    let properties = [];
-    
-    if (savedProperties) {
-      properties = JSON.parse(savedProperties);
-    } else {
-      const { mockProperties } = require('@/data/mockData');
-      properties = mockProperties;
-      localStorage.setItem('properties', JSON.stringify(mockProperties));
-    }
-    
-    const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
-    
-    if (propertyExists) {
-      // Para notificaciones de tipo tarea, solo marcarlas como leídas si no están relacionadas a tareas pendientes
-      if (notification.type === 'task' && notification.taskId) {
-        const property = properties.find((p: any) => p.id === notification.propertyId);
-        const task = property?.tasks?.find((t: any) => t.id === notification.taskId);
-        
-        if (task && !task.completed) {
-          // Si la tarea está pendiente, navegamos sin marcar como leída
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      let properties = [];
+      
+      if (savedProperties) {
+        properties = JSON.parse(savedProperties);
+      } else {
+        const { mockProperties } = require('@/data/mockData');
+        properties = mockProperties;
+        localStorage.setItem('properties', JSON.stringify(mockProperties));
+      }
+      
+      const propertyExists = properties.some((p: any) => p.id === notification.propertyId);
+      
+      if (propertyExists) {
+        // Para notificaciones de tipo tarea, solo navegamos a la propiedad
+        // No las marcamos como leídas ya que deben permanecer visibles hasta que se complete la tarea
+        if (notification.type === 'task' && notification.taskId) {
           navigateToProperty(notification);
           return;
         }
+        
+        // Para otros tipos de notificaciones, las marcamos como leídas
+        const updatedNotifications = notifications.map(n => {
+          if (n.id === notification.id && n.type !== 'task') {
+            return { ...n, read: true };
+          }
+          return n;
+        });
+        
+        setNotifications(updatedNotifications);
+        navigateToProperty(notification);
+      } else {
+        toast.error('Propiedad no encontrada');
+        handleRemoveNotification(notification.id);
       }
-      
-      // Para otros tipos de notificaciones, las marcamos como leídas
-      const updatedNotifications = notifications.map(n => {
-        if (n.id === notification.id) {
-          return { ...n, read: true };
-        }
-        return n;
-      });
-      
-      setNotifications(updatedNotifications);
-      navigateToProperty(notification);
-    } else {
-      toast.error('Propiedad no encontrada');
-      handleRemoveNotification(notification.id);
+    } catch (error) {
+      console.error("Error al manejar clic en notificación:", error);
     }
   };
 
@@ -167,15 +171,9 @@ export const useNotifications = () => {
     toast.info('Notificación eliminada');
   };
 
-  // Modificado para contar todas las notificaciones de tareas relacionadas con tareas pendientes como no leídas,
-  // independientemente de su estado de lectura
-  const unreadCount = notifications.filter(n => {
-    if (n.type === 'task' && n.taskId) {
-      // Considerar todas las notificaciones de tareas para tareas pendientes como "no leídas" para el contador
-      return true;
-    }
-    return !n.read;
-  }).length;
+  // Contar todas las notificaciones de tareas como no leídas,
+  // independientemente de su estado de lectura ya que deben permanecer visibles
+  const unreadCount = notifications.length;
 
   return {
     notifications,

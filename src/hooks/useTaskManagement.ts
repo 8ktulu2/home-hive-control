@@ -54,7 +54,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         } : undefined
       };
 
-      // Siempre añadir notificación de tarea para cada tarea nueva
+      // Añadir notificación de tarea para cada tarea nueva
       addTaskNotification(property.id, task);
       
       // Actualizar propiedad con nueva tarea
@@ -72,47 +72,55 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
   };
 
   const removeTaskNotification = (taskId: string) => {
-    const savedNotifications = localStorage.getItem('notifications');
-    if (savedNotifications) {
-      const notifications = JSON.parse(savedNotifications);
-      const updatedNotifications = notifications.filter(
-        (n: any) => !(n.type === 'task' && n.taskId === taskId)
-      );
-      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-      console.log("Notificación de tarea eliminada para tarea:", taskId);
+    try {
+      const savedNotifications = localStorage.getItem('notifications');
+      if (savedNotifications) {
+        const notifications = JSON.parse(savedNotifications);
+        const updatedNotifications = notifications.filter(
+          (n: any) => !(n.type === 'task' && n.taskId === taskId)
+        );
+        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+        console.log("Notificación de tarea eliminada para tarea:", taskId);
+      }
+    } catch (error) {
+      console.error("Error al eliminar notificación de tarea:", error);
     }
   };
 
   const addTaskNotification = (propertyId: string, task: Task) => {
-    if (!task.completed) {  // Solo añadir notificación si la tarea no está completada
-      const notification = {
-        id: `notification-task-${task.id}`,
-        type: 'task',
-        taskId: task.id,
-        propertyId: propertyId,
-        message: `Tarea pendiente: ${task.title}`,
-        read: false,
-        createdAt: new Date().toISOString()
-      };
-  
-      const savedNotifications = localStorage.getItem('notifications');
-      let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
-      
-      // Comprobar si la notificación ya existe
-      const existingIndex = notifications.findIndex(
-        (n: any) => n.taskId === task.id
-      );
-      
-      if (existingIndex >= 0) {
-        // Actualizar notificación existente
-        notifications[existingIndex] = notification;
-      } else {
-        // Añadir nueva notificación
-        notifications.push(notification);
+    try {
+      if (!task.completed) {  // Solo añadir notificación si la tarea no está completada
+        const notification = {
+          id: `notification-task-${task.id}`,
+          type: 'task',
+          taskId: task.id,
+          propertyId: propertyId,
+          message: `Tarea pendiente: ${task.title}`,
+          read: false,
+          createdAt: new Date().toISOString()
+        };
+    
+        const savedNotifications = localStorage.getItem('notifications');
+        let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+        
+        // Comprobar si la notificación ya existe
+        const existingIndex = notifications.findIndex(
+          (n: any) => n.taskId === task.id
+        );
+        
+        if (existingIndex >= 0) {
+          // Actualizar notificación existente
+          notifications[existingIndex] = notification;
+        } else {
+          // Añadir nueva notificación
+          notifications.push(notification);
+        }
+        
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+        console.log("Notificación de tarea añadida:", notification);
       }
-      
-      localStorage.setItem('notifications', JSON.stringify(notifications));
-      console.log("Notificación de tarea añadida:", notification);
+    } catch (error) {
+      console.error("Error al añadir notificación de tarea:", error);
     }
   };
 
@@ -158,13 +166,17 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
   const updatePropertyInStorage = (updatedProperty: Property) => {
     setProperty(updatedProperty);
     
-    const savedProperties = localStorage.getItem('properties');
-    if (savedProperties) {
-      const properties = JSON.parse(savedProperties);
-      const updatedProperties = properties.map((p: Property) => 
-        p.id === updatedProperty.id ? updatedProperty : p
-      );
-      localStorage.setItem('properties', JSON.stringify(updatedProperties));
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperties = properties.map((p: Property) => 
+          p.id === updatedProperty.id ? updatedProperty : p
+        );
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      }
+    } catch (error) {
+      console.error("Error al actualizar propiedad en localStorage:", error);
     }
   };
 
