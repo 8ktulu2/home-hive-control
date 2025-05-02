@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { Task, Property } from '@/types/property';
 import { toast } from 'sonner';
+import { getNotificationsFromStorage, saveNotificationsToStorage } from '@/services/notificationService';
+import { Notification } from '@/types/notification';
 
 export function useTaskManagement(property: Property | null, setProperty: (property: Property | null) => void) {
   const handleTaskToggle = (taskId: string, completed: boolean) => {
@@ -12,7 +14,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
           if (completed) {
             updatedTask.completedDate = new Date().toISOString();
             
-            // Eliminar la notificación cuando se completa la tarea
+            // Remove notification when task is completed
             removeTaskNotification(taskId);
             
             toast.success("Tarea completada", {
@@ -20,7 +22,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
             });
           } else {
             delete updatedTask.completedDate;
-            // Volver a añadir la notificación si se desmarca la tarea
+            // Re-add notification if task is marked as pending
             addTaskNotification(property.id, updatedTask);
             
             toast.info("Tarea pendiente", {
@@ -54,10 +56,10 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         } : undefined
       };
 
-      // Añadir notificación de tarea para cada tarea nueva
+      // Add notification for new task
       addTaskNotification(property.id, task);
       
-      // Actualizar propiedad con nueva tarea
+      // Update property with new task
       const updatedProperty = {
         ...property,
         tasks: [...(property.tasks || []), task]
@@ -69,31 +71,29 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         description: `La tarea "${task.title}" ha sido añadida correctamente.`
       });
       
-      // Sincronizar todas las notificaciones con las tareas
+      // Sync all task notifications
       syncAllTaskNotifications();
     }
   };
 
   const removeTaskNotification = (taskId: string) => {
     try {
-      const savedNotifications = localStorage.getItem('notifications');
-      if (savedNotifications) {
-        const notifications = JSON.parse(savedNotifications);
-        const updatedNotifications = notifications.filter(
-          (n: any) => !(n.type === 'task' && n.taskId === taskId)
-        );
-        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-        console.log("Notificación de tarea eliminada para tarea:", taskId);
-      }
+      const notifications = getNotificationsFromStorage();
+      const updatedNotifications = notifications.filter(
+        (n) => !(n.type === 'task' && n.taskId === taskId)
+      );
+      
+      saveNotificationsToStorage(updatedNotifications);
+      console.log("Task notification removed for task:", taskId);
     } catch (error) {
-      console.error("Error al eliminar notificación de tarea:", error);
+      console.error("Error removing task notification:", error);
     }
   };
 
   const addTaskNotification = (propertyId: string, task: Task) => {
     try {
-      if (!task.completed) {  // Solo añadir notificación si la tarea no está completada
-        const notification = {
+      if (!task.completed) {  // Only add notification if task is not completed
+        const notification: Notification = {
           id: `notification-task-${task.id}`,
           type: 'task',
           taskId: task.id,
@@ -103,40 +103,39 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
           createdAt: new Date().toISOString()
         };
     
-        const savedNotifications = localStorage.getItem('notifications');
-        let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+        const notifications = getNotificationsFromStorage();
         
-        // Comprobar si la notificación ya existe
+        // Check if notification already exists
         const existingIndex = notifications.findIndex(
-          (n: any) => n.taskId === task.id
+          (n) => n.taskId === task.id
         );
         
         if (existingIndex >= 0) {
-          // Actualizar notificación existente
+          // Update existing notification
           notifications[existingIndex] = notification;
         } else {
-          // Añadir nueva notificación
+          // Add new notification
           notifications.push(notification);
         }
         
-        localStorage.setItem('notifications', JSON.stringify(notifications));
-        console.log("Notificación de tarea añadida:", notification);
+        saveNotificationsToStorage(notifications);
+        console.log("Task notification added:", notification);
       }
     } catch (error) {
-      console.error("Error al añadir notificación de tarea:", error);
+      console.error("Error adding task notification:", error);
     }
   };
 
-  // Nueva función para sincronizar todas las notificaciones de tareas
+  // Function to sync all task notifications
   const syncAllTaskNotifications = () => {
     try {
-      // Obtener todas las propiedades
+      // Get all properties
       const savedProperties = localStorage.getItem('properties');
       if (!savedProperties) return;
       
       const properties = JSON.parse(savedProperties);
       
-      // Recolectar todas las tareas pendientes
+      // Collect all pending tasks
       const pendingTasks: {task: Task, propertyId: string}[] = [];
       properties.forEach((p: Property) => {
         if (p.tasks) {
@@ -148,16 +147,15 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         }
       });
       
-      // Obtener notificaciones actuales
-      const savedNotifications = localStorage.getItem('notifications');
-      let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+      // Get current notifications
+      const notifications = getNotificationsFromStorage();
       
-      // Filtrar notificaciones que no son de tareas
+      // Filter non-task notifications
       const nonTaskNotifications = notifications.filter(
-        (n: any) => n.type !== 'task'
+        (n) => n.type !== 'task'
       );
       
-      // Crear nuevas notificaciones para todas las tareas pendientes
+      // Create new notifications for all pending tasks
       const taskNotifications = pendingTasks.map(({task, propertyId}) => ({
         id: `notification-task-${task.id}`,
         type: 'task' as const,
@@ -168,21 +166,21 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         createdAt: task.createdDate
       }));
       
-      // Combinar notificaciones
+      // Combine notifications
       const updatedNotifications = [...nonTaskNotifications, ...taskNotifications];
       
-      // Guardar notificaciones actualizadas
-      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      // Save updated notifications
+      saveNotificationsToStorage(updatedNotifications);
       
-      console.log("Notificaciones sincronizadas con tareas pendientes:", updatedNotifications.length);
+      console.log("Notifications synced with pending tasks:", updatedNotifications.length);
     } catch (error) {
-      console.error("Error al sincronizar notificaciones de tareas:", error);
+      console.error("Error syncing task notifications:", error);
     }
   };
 
   const handleTaskDelete = (taskId: string) => {
     if (property && property.tasks) {
-      // Eliminar notificación de tarea cuando se elimina la tarea
+      // Remove task notification when task is deleted
       removeTaskNotification(taskId);
 
       updatePropertyInStorage({
@@ -198,11 +196,11 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         if (task.id === taskId) {
           const updatedTask = { ...task, ...updates };
           
-          // Si el estado de la tarea cambió a completada, eliminar notificación
+          // If task status changed to completed, remove notification
           if (updates.completed === true && !task.completed) {
             removeTaskNotification(taskId);
           } 
-          // Si la tarea cambió de completada a pendiente, añadir notificación
+          // If task changed from completed to pending, add notification
           else if (updates.completed === false && task.completed) {
             addTaskNotification(property.id, updatedTask);
           }
@@ -232,7 +230,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         localStorage.setItem('properties', JSON.stringify(updatedProperties));
       }
     } catch (error) {
-      console.error("Error al actualizar propiedad en localStorage:", error);
+      console.error("Error updating property in localStorage:", error);
     }
   };
 

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockProperties } from '@/data/mockData';
 import { Check, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +11,8 @@ import { TaskList } from '@/components/tasks/TaskList';
 import { TaskConfirmDialog } from '@/components/tasks/TaskConfirmDialog';
 import { ExtendedTask } from '@/components/tasks/types';
 import { useNotifications } from '@/hooks/useNotifications';
+import { getNotificationsFromStorage, saveNotificationsToStorage } from '@/services/notificationService';
+import { mockProperties } from '@/data/mockData';
 
 const Tasks = () => {
   const [filter, setFilter] = useState('pending'); // Set default to pending
@@ -32,7 +33,7 @@ const Tasks = () => {
     setProperties(loadProperties());
   }, []);
   
-  // Sincronizar notificaciones cuando se monta el componente
+  // Sync notifications when component mounts
   useEffect(() => {
     syncAllTaskNotifications();
   }, []);
@@ -91,12 +92,12 @@ const Tasks = () => {
             if (!task.completed) {
               updatedTask.completedDate = new Date().toISOString();
               
-              // Eliminar notificación al completar tarea
+              // Remove notification when completing task
               removeTaskNotification(task.id);
             } else {
               delete updatedTask.completedDate;
               
-              // Añadir notificación al marcar como pendiente
+              // Add notification when marking as pending
               addTaskNotification(property.id, updatedTask);
             }
             
@@ -119,29 +120,26 @@ const Tasks = () => {
     const actionText = selectedTask.completed ? 'pendiente' : 'completada';
     toast.success(`Tarea marcada como ${actionText}`);
     
-    // Recargar notificaciones después de cambiar el estado de la tarea
+    // Reload notifications after changing task state
     loadNotifications();
     
     setIsConfirmDialogOpen(false);
   };
 
-  // Función para eliminar notificación de tarea
+  // Function to remove task notification
   const removeTaskNotification = (taskId: string) => {
     try {
-      const savedNotifications = localStorage.getItem('notifications');
-      if (savedNotifications) {
-        const notifications = JSON.parse(savedNotifications);
-        const updatedNotifications = notifications.filter(
-          (n: any) => !(n.type === 'task' && n.taskId === taskId)
-        );
-        localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-      }
+      const notifications = getNotificationsFromStorage();
+      const updatedNotifications = notifications.filter(
+        (n) => !(n.type === 'task' && n.taskId === taskId)
+      );
+      saveNotificationsToStorage(updatedNotifications);
     } catch (error) {
-      console.error("Error al eliminar notificación de tarea:", error);
+      console.error("Error removing task notification:", error);
     }
   };
 
-  // Función para añadir notificación de tarea
+  // Function to add task notification
   const addTaskNotification = (propertyId: string, task: any) => {
     try {
       if (!task.completed) {
@@ -155,11 +153,10 @@ const Tasks = () => {
           createdAt: new Date().toISOString()
         };
     
-        const savedNotifications = localStorage.getItem('notifications');
-        let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+        const notifications = getNotificationsFromStorage();
         
         const existingIndex = notifications.findIndex(
-          (n: any) => n.taskId === task.id
+          (n) => n.taskId === task.id
         );
         
         if (existingIndex >= 0) {
@@ -168,23 +165,23 @@ const Tasks = () => {
           notifications.push(notification);
         }
         
-        localStorage.setItem('notifications', JSON.stringify(notifications));
+        saveNotificationsToStorage(notifications);
       }
     } catch (error) {
-      console.error("Error al añadir notificación de tarea:", error);
+      console.error("Error adding task notification:", error);
     }
   };
 
-  // Función para sincronizar todas las notificaciones de tareas
+  // Function to sync all task notifications
   const syncAllTaskNotifications = () => {
     try {
-      // Obtener todas las propiedades
+      // Get all properties
       const savedProperties = localStorage.getItem('properties');
       if (!savedProperties) return;
       
       const properties = JSON.parse(savedProperties);
       
-      // Recolectar todas las tareas pendientes
+      // Collect all pending tasks
       const pendingTasks: {task: any, propertyId: string}[] = [];
       properties.forEach((p: Property) => {
         if (p.tasks) {
@@ -196,16 +193,15 @@ const Tasks = () => {
         }
       });
       
-      // Obtener notificaciones actuales
-      const savedNotifications = localStorage.getItem('notifications');
-      let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+      // Get current notifications
+      const notifications = getNotificationsFromStorage();
       
-      // Filtrar notificaciones que no son de tareas
+      // Filter non-task notifications
       const nonTaskNotifications = notifications.filter(
-        (n: any) => n.type !== 'task'
+        (n) => n.type !== 'task'
       );
       
-      // Crear nuevas notificaciones para todas las tareas pendientes
+      // Create new notifications for all pending tasks
       const taskNotifications = pendingTasks.map(({task, propertyId}) => ({
         id: `notification-task-${task.id}`,
         type: 'task',
@@ -216,16 +212,16 @@ const Tasks = () => {
         createdAt: task.createdDate
       }));
       
-      // Combinar notificaciones
+      // Combine notifications
       const updatedNotifications = [...nonTaskNotifications, ...taskNotifications];
       
-      // Guardar notificaciones actualizadas
-      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      // Save updated notifications
+      saveNotificationsToStorage(updatedNotifications);
       
-      // Recargar notificaciones
+      // Reload notifications
       loadNotifications();
     } catch (error) {
-      console.error("Error al sincronizar notificaciones de tareas:", error);
+      console.error("Error syncing task notifications:", error);
     }
   };
 
