@@ -32,6 +32,35 @@ export const useNotifications = () => {
       
       if (savedNotifications) {
         const allNotifications = JSON.parse(savedNotifications);
+        
+        // Verificamos si hay tareas pendientes que no tengan notificación
+        const pendingTasks: Notification[] = [];
+        properties.forEach((property: any) => {
+          if (property.tasks) {
+            property.tasks.forEach((task: any) => {
+              if (!task.completed) {
+                // Verificar si ya existe una notificación para esta tarea
+                const hasNotification = allNotifications.some(
+                  (n: Notification) => n.type === 'task' && n.taskId === task.id
+                );
+                
+                if (!hasNotification) {
+                  // Crear notificación para tarea pendiente
+                  pendingTasks.push({
+                    id: `notification-task-${task.id}`,
+                    type: 'task',
+                    taskId: task.id,
+                    propertyId: property.id,
+                    message: `Tarea pendiente: ${task.title}`,
+                    read: false,
+                    createdAt: new Date().toISOString()
+                  });
+                }
+              }
+            });
+          }
+        });
+        
         // Filtrar notificaciones para propiedades que ya no existen
         // Y verificar el estado de las tareas para mantener las notificaciones de tareas pendientes
         const validNotifications = allNotifications.filter((notif: Notification) => {
@@ -57,11 +86,14 @@ export const useNotifications = () => {
           return true;
         });
         
-        if (validNotifications.length !== allNotifications.length) {
-          localStorage.setItem('notifications', JSON.stringify(validNotifications));
+        // Combinar notificaciones válidas con las nuevas notificaciones de tareas pendientes
+        const combinedNotifications = [...validNotifications, ...pendingTasks];
+        
+        if (combinedNotifications.length !== allNotifications.length || pendingTasks.length > 0) {
+          localStorage.setItem('notifications', JSON.stringify(combinedNotifications));
         }
         
-        setNotifications(validNotifications);
+        setNotifications(combinedNotifications);
       } else {
         // Si no hay notificaciones guardadas, revisamos las tareas pendientes y creamos notificaciones
         const defaultNotifications: Notification[] = [];
@@ -179,6 +211,7 @@ export const useNotifications = () => {
     notifications,
     unreadCount,
     handleNotificationClick,
-    handleRemoveNotification
+    handleRemoveNotification,
+    loadNotifications // Exportamos esta función para poder recargar las notificaciones desde otras partes
   };
 };

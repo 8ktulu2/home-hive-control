@@ -68,6 +68,9 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       toast.success("Tarea añadida", {
         description: `La tarea "${task.title}" ha sido añadida correctamente.`
       });
+      
+      // Sincronizar todas las notificaciones con las tareas
+      syncAllTaskNotifications();
     }
   };
 
@@ -121,6 +124,59 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       }
     } catch (error) {
       console.error("Error al añadir notificación de tarea:", error);
+    }
+  };
+
+  // Nueva función para sincronizar todas las notificaciones de tareas
+  const syncAllTaskNotifications = () => {
+    try {
+      // Obtener todas las propiedades
+      const savedProperties = localStorage.getItem('properties');
+      if (!savedProperties) return;
+      
+      const properties = JSON.parse(savedProperties);
+      
+      // Recolectar todas las tareas pendientes
+      const pendingTasks: {task: Task, propertyId: string}[] = [];
+      properties.forEach((p: Property) => {
+        if (p.tasks) {
+          p.tasks.forEach(task => {
+            if (!task.completed) {
+              pendingTasks.push({task, propertyId: p.id});
+            }
+          });
+        }
+      });
+      
+      // Obtener notificaciones actuales
+      const savedNotifications = localStorage.getItem('notifications');
+      let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+      
+      // Filtrar notificaciones que no son de tareas
+      const nonTaskNotifications = notifications.filter(
+        (n: any) => n.type !== 'task'
+      );
+      
+      // Crear nuevas notificaciones para todas las tareas pendientes
+      const taskNotifications = pendingTasks.map(({task, propertyId}) => ({
+        id: `notification-task-${task.id}`,
+        type: 'task' as const,
+        taskId: task.id,
+        propertyId: propertyId,
+        message: `Tarea pendiente: ${task.title}`,
+        read: false,
+        createdAt: task.createdDate
+      }));
+      
+      // Combinar notificaciones
+      const updatedNotifications = [...nonTaskNotifications, ...taskNotifications];
+      
+      // Guardar notificaciones actualizadas
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+      
+      console.log("Notificaciones sincronizadas con tareas pendientes:", updatedNotifications.length);
+    } catch (error) {
+      console.error("Error al sincronizar notificaciones de tareas:", error);
     }
   };
 
@@ -185,5 +241,6 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
     handleTaskAdd,
     handleTaskDelete,
     handleTaskUpdate,
+    syncAllTaskNotifications
   };
 }
