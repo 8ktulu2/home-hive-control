@@ -26,8 +26,8 @@ export const useNotifications = () => {
       
       if (savedNotifications) {
         const allNotifications = JSON.parse(savedNotifications);
-        // Filter out notifications for properties that no longer exist
-        // También verificamos el estado de las tareas para mantener las notificaciones de tareas pendientes siempre visibles
+        // Filtrar notificaciones para propiedades que ya no existen
+        // Y verificar el estado de las tareas para mantener las notificaciones de tareas pendientes
         const validNotifications = allNotifications.filter((notif: Notification) => {
           // Primero verificamos si la propiedad existe
           if (!propertyIds.includes(notif.propertyId)) return false;
@@ -37,7 +37,7 @@ export const useNotifications = () => {
             const property = properties.find((p: any) => p.id === notif.propertyId);
             const task = property?.tasks?.find((t: any) => t.id === notif.taskId);
             
-            // Si la tarea existe y no está completada, mantenemos la notificación siempre
+            // Si la tarea existe y no está completada, mantenemos la notificación
             if (task && !task.completed) {
               return true;
             } else if (task && task.completed) {
@@ -55,10 +55,10 @@ export const useNotifications = () => {
         
         setNotifications(validNotifications);
       } else {
-        // Create default notifications only for existing properties
+        // Crear notificaciones predeterminadas solo para propiedades existentes
         const defaultNotifications: Notification[] = [];
         
-        // Only add default notifications if the property exists
+        // Solo agregar notificaciones predeterminadas si la propiedad existe
         if (propertyIds.includes('property-001')) {
           defaultNotifications.push(
             {
@@ -167,11 +167,11 @@ export const useNotifications = () => {
     toast.info('Notificación eliminada');
   };
 
-  // Modified to count all task notifications related to pending tasks as unread,
-  // regardless of their read status
+  // Modificado para contar todas las notificaciones de tareas relacionadas con tareas pendientes como no leídas,
+  // independientemente de su estado de lectura
   const unreadCount = notifications.filter(n => {
     if (n.type === 'task' && n.taskId) {
-      // Consider all task notifications for pending tasks as "unread" for the counter
+      // Considerar todas las notificaciones de tareas para tareas pendientes como "no leídas" para el contador
       return true;
     }
     return !n.read;

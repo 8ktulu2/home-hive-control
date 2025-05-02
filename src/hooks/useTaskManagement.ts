@@ -12,7 +12,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
           if (completed) {
             updatedTask.completedDate = new Date().toISOString();
             
-            // Remove the notification when task is completed
+            // Eliminar la notificación cuando se completa la tarea
             removeTaskNotification(taskId);
             
             toast.success("Tarea completada", {
@@ -20,7 +20,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
             });
           } else {
             delete updatedTask.completedDate;
-            // Re-add notification if task is unchecked
+            // Volver a añadir la notificación si se desmarca la tarea
             addTaskNotification(property.id, updatedTask);
             
             toast.info("Tarea pendiente", {
@@ -54,10 +54,10 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         } : undefined
       };
 
-      // Always add task notification for every new task
+      // Siempre añadir notificación de tarea para cada tarea nueva
       addTaskNotification(property.id, task);
       
-      // Update property with new task
+      // Actualizar propiedad con nueva tarea
       const updatedProperty = {
         ...property,
         tasks: [...(property.tasks || []), task]
@@ -79,12 +79,12 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         (n: any) => !(n.type === 'task' && n.taskId === taskId)
       );
       localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-      console.log("Task notification removed for task:", taskId);
+      console.log("Notificación de tarea eliminada para tarea:", taskId);
     }
   };
 
   const addTaskNotification = (propertyId: string, task: Task) => {
-    if (!task.completed) {  // Only add notification if task is not completed
+    if (!task.completed) {  // Solo añadir notificación si la tarea no está completada
       const notification = {
         id: `notification-task-${task.id}`,
         type: 'task',
@@ -98,27 +98,27 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       const savedNotifications = localStorage.getItem('notifications');
       let notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
       
-      // Check if notification already exists
+      // Comprobar si la notificación ya existe
       const existingIndex = notifications.findIndex(
         (n: any) => n.taskId === task.id
       );
       
       if (existingIndex >= 0) {
-        // Update existing notification
+        // Actualizar notificación existente
         notifications[existingIndex] = notification;
       } else {
-        // Add new notification
+        // Añadir nueva notificación
         notifications.push(notification);
       }
       
       localStorage.setItem('notifications', JSON.stringify(notifications));
-      console.log("Task notification added:", notification);
+      console.log("Notificación de tarea añadida:", notification);
     }
   };
 
   const handleTaskDelete = (taskId: string) => {
     if (property && property.tasks) {
-      // Remove task notification when task is deleted
+      // Eliminar notificación de tarea cuando se elimina la tarea
       removeTaskNotification(taskId);
 
       updatePropertyInStorage({
@@ -134,11 +134,11 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         if (task.id === taskId) {
           const updatedTask = { ...task, ...updates };
           
-          // If the task status changed to completed, remove notification
+          // Si el estado de la tarea cambió a completada, eliminar notificación
           if (updates.completed === true && !task.completed) {
             removeTaskNotification(taskId);
           } 
-          // If task changed from completed to pending, add notification
+          // Si la tarea cambió de completada a pendiente, añadir notificación
           else if (updates.completed === false && task.completed) {
             addTaskNotification(property.id, updatedTask);
           }
