@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Property } from '@/types/property';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,7 @@ import PropertySelector from './PropertySelector';
 import AnnualSummaryCards from './AnnualSummaryCards';
 import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
+import FiscalDetailContent from './FiscalDetailContent';
 import { PropertyHistoricalData } from './types';
 
 interface HistoricalDataProps {
@@ -140,7 +140,7 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
       </Badge>
       
       <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="mt-4">
-        <TabsList className="grid grid-cols-3 mb-6 bg-[#292F3F]">
+        <TabsList className="grid grid-cols-4 mb-6 bg-[#292F3F]">
           <TabsTrigger 
             value="summary" 
             className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
@@ -159,6 +159,12 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
           >
             Gastos Deducibles
           </TabsTrigger>
+          <TabsTrigger 
+            value="fiscal" 
+            className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+          >
+            Datos IRPF
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="summary">
@@ -171,6 +177,10 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
         
         <TabsContent value="expenses">
           <ExpensesContent filteredData={filteredData} />
+        </TabsContent>
+
+        <TabsContent value="fiscal">
+          <FiscalDetailContent filteredData={filteredData} selectedYear={selectedYear} />
         </TabsContent>
       </Tabs>
     </div>
