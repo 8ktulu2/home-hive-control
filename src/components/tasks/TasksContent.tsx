@@ -1,12 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, Clock } from 'lucide-react';
-import { Property } from '@/types/property';
 import { TaskFilters } from '@/components/tasks/TaskFilters';
-import { TaskList } from '@/components/tasks/TaskList';
 import { TaskConfirmDialog } from '@/components/tasks/TaskConfirmDialog';
+import { TasksCard } from '@/components/tasks/TasksCard'; // Add this import
 import { ExtendedTask } from '@/components/tasks/types';
 import { useTasksList } from '@/hooks/tasks/useTasksList';
 
@@ -55,7 +52,12 @@ export const TasksContent = () => {
             <TabsTrigger value="all">Todas</TabsTrigger>
           </TabsList>
 
-          <TasksCard filter={filter} filteredTasks={filteredTasks} onTaskClick={handleTaskClick} onTaskToggle={onTaskToggle} />
+          <TasksCard 
+            filter={filter} 
+            filteredTasks={filteredTasks} 
+            onTaskClick={handleTaskClick} 
+            onTaskToggle={onTaskToggle} 
+          />
         </Tabs>
       </div>
       
