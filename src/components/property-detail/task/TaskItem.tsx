@@ -2,6 +2,7 @@
 import { Task } from '@/types/property';
 import { CheckCircle, Circle, Bell, BellOff, Trash, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface TaskItemProps {
   task: Task;
@@ -16,13 +17,22 @@ export const TaskItem = ({
   onTaskDelete,
   onOpenNotificationDialog
 }: TaskItemProps) => {
+  // Add useNotifications to reload notifications when task state changes
+  const { loadNotifications } = useNotifications();
+  
+  const handleTaskToggle = (task: Task) => {
+    onTaskToggle(task);
+    // Reload notifications to update UI immediately
+    setTimeout(loadNotifications, 100);
+  };
+
   return (
     <div className="flex items-start p-2 rounded-md hover:bg-accent/20">
       <div 
         className="flex-shrink-0 cursor-pointer mt-0.5" 
         onClick={(e) => {
           e.stopPropagation();
-          onTaskToggle(task);
+          handleTaskToggle(task);
         }}
       >
         {task.completed ? (
@@ -66,6 +76,8 @@ export const TaskItem = ({
           onClick={(e) => {
             e.stopPropagation();
             onTaskDelete(task.id);
+            // Reload notifications after deleting task
+            setTimeout(loadNotifications, 100);
           }}
           title="Eliminar tarea"
         >

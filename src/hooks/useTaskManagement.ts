@@ -8,8 +8,11 @@ import {
   syncAllTaskNotifications 
 } from '@/utils/taskNotificationUtils';
 import { updatePropertyInStorage, updatePropertyTasks } from '@/services/taskService';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export function useTaskManagement(property: Property | null, setProperty: (property: Property | null) => void) {
+  const { loadNotifications } = useNotifications();
+  
   const handleTaskToggle = (taskId: string, completed: boolean) => {
     if (property && property.tasks) {
       const updatedTasks = property.tasks.map(task => {
@@ -39,6 +42,9 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       });
       
       updatePropertyTasks(property, updatedTasks, setProperty);
+      
+      // Reload notifications to update the UI immediately
+      loadNotifications();
     }
   };
 
@@ -72,8 +78,8 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         description: `La tarea "${task.title}" ha sido añadida correctamente.`
       });
       
-      // Sync all task notifications
-      syncAllTaskNotifications();
+      // Reload notifications to update the UI immediately
+      loadNotifications();
     }
   };
 
@@ -88,6 +94,9 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       };
       
       updatePropertyInStorage(updatedProperty, setProperty);
+      
+      // Reload notifications to update the UI immediately
+      loadNotifications();
     }
   };
 
@@ -112,6 +121,9 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
       });
       
       updatePropertyTasks(property, updatedTasks, setProperty);
+      
+      // Reload notifications to update the UI immediately
+      loadNotifications();
     }
   };
 
