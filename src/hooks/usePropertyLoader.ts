@@ -24,7 +24,8 @@ export const usePropertyLoader = (id: string | undefined) => {
           expenses: 0,
           rentPaid: false,
           netIncome: 0,
-          tenants: []
+          tenants: [],
+          images: [] // Inicializamos el array de imágenes
         };
         setProperty(newProperty);
         setLoading(false);
@@ -39,12 +40,26 @@ export const usePropertyLoader = (id: string | undefined) => {
         foundProperty = properties.find((p: Property) => p.id === id);
         
         if (foundProperty) {
+          // Cargar la imagen principal si existe
           const savedImages = localStorage.getItem('propertyImages');
           if (savedImages && foundProperty.id) {
             const images = JSON.parse(savedImages);
             if (images[foundProperty.id]) {
               foundProperty.image = images[foundProperty.id];
             }
+          }
+          
+          // Cargar las imágenes adicionales si existen
+          const savedAdditionalImages = localStorage.getItem('propertyAdditionalImages');
+          if (savedAdditionalImages && foundProperty.id) {
+            const additionalImages = JSON.parse(savedAdditionalImages);
+            if (additionalImages[foundProperty.id]) {
+              foundProperty.images = additionalImages[foundProperty.id];
+            } else {
+              foundProperty.images = []; // Asegurar que siempre hay un array de imágenes
+            }
+          } else {
+            foundProperty.images = []; // Asegurar que siempre hay un array de imágenes
           }
         }
       }
@@ -60,6 +75,7 @@ export const usePropertyLoader = (id: string | undefined) => {
         if (!foundProperty.homeInsurance) foundProperty.homeInsurance = {};
         if (!foundProperty.lifeInsurance) foundProperty.lifeInsurance = {};
         if (!foundProperty.documents) foundProperty.documents = [];
+        if (!foundProperty.images) foundProperty.images = [];
         
         if (foundProperty.paymentHistory && foundProperty.paymentHistory.length > 0) {
           const currentDate = new Date();

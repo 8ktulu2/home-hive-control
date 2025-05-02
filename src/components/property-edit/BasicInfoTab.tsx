@@ -1,7 +1,7 @@
 
 import { Property } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefObject, useState } from 'react';
+import { RefObject, useState, useEffect } from 'react';
 import MainPropertyImage from './image-gallery/MainPropertyImage';
 import PropertyImageGallery from './image-gallery/PropertyImageGallery';
 import PropertyDetails from './details/PropertyDetails';
@@ -21,8 +21,15 @@ const BasicInfoTab = ({
   handleImageChange,
   setProperty 
 }: BasicInfoTabProps) => {
-  const [additionalImages, setAdditionalImages] = useState<string[]>(property.images || []);
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   
+  // Inicializar con las imágenes de la propiedad si existen
+  useEffect(() => {
+    if (property.images && property.images.length > 0) {
+      setAdditionalImages(property.images);
+    }
+  }, [property.id]); // Solo cuando cambia la propiedad
+
   const handleMultipleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);

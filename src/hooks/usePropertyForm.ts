@@ -49,7 +49,7 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
         // Save back to localStorage
         localStorage.setItem('properties', JSON.stringify(properties));
         
-        // Save images separately if needed
+        // Save main image separately if needed
         if (property.image && !property.image.startsWith('/placeholder')) {
           const savedImages = localStorage.getItem('propertyImages') || '{}';
           const images = JSON.parse(savedImages);
@@ -57,12 +57,44 @@ export const usePropertyForm = (property: Property | null, calculateTotalExpense
           localStorage.setItem('propertyImages', JSON.stringify(images));
         }
         
-        // Also save additional images if they exist
+        // Save additional images if they exist
         if (property.images && property.images.length > 0) {
           const savedImagesData = localStorage.getItem('propertyAdditionalImages') || '{}';
           const imagesData = JSON.parse(savedImagesData);
+          
+          // Guardar las URLs de las imágenes adicionales
           imagesData[property.id] = property.images;
-          localStorage.setItem('propertyAdditionalImages', JSON.stringify(imagesData));
+          
+          // También guardar las imágenes en base64 si son blob URLs
+          const base64Images: string[] = [];
+          const promises = property.images.map(async (url) => {
+            if (url.startsWith('blob:')) {
+              try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.readAsDataURL(blob);
+                });
+              } catch (error) {
+                console.error("Error converting blob to base64:", error);
+                return url;
+              }
+            }
+            return url;
+          });
+          
+          Promise.all(promises)
+            .then(base64ImagesResult => {
+              imagesData[property.id] = base64ImagesResult;
+              localStorage.setItem('propertyAdditionalImages', JSON.stringify(imagesData));
+            })
+            .catch(error => {
+              console.error("Error processing images:", error);
+              // Fallback: save URLs as-is
+              localStorage.setItem('propertyAdditionalImages', JSON.stringify(imagesData));
+            });
         }
         
         // Navigate back to property detail page
