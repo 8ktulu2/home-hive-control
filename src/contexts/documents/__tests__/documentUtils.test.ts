@@ -6,6 +6,7 @@ import {
   getInitialDocuments 
 } from '../documentUtils';
 import { mockProperties } from '@/data/mockData';
+import { Property } from '@/types/property';
 
 // Mock localStorage
 const mockLocalStorage = (() => {
@@ -50,8 +51,17 @@ describe('documentUtils', () => {
   });
   
   test('getPropertiesFromStorage returns data from localStorage if available', () => {
-    const mockStoredProperties = [
-      { id: 'test-id', name: 'Test Property' }
+    const mockStoredProperties: Property[] = [
+      { 
+        id: 'test-id', 
+        name: 'Test Property',
+        address: 'Test Address',
+        image: '/test.jpg',
+        rent: 1000,
+        rentPaid: true,
+        expenses: 200,
+        netIncome: 800
+      }
     ];
     localStorage.setItem('properties', JSON.stringify(mockStoredProperties));
     
@@ -69,10 +79,37 @@ describe('documentUtils', () => {
   });
 
   test('getUniqueProperties returns unique property objects', () => {
-    const testProperties = [
-      { id: '1', name: 'Property 1' },
-      { id: '2', name: 'Property 2' },
-      { id: '1', name: 'Property 1 Duplicate' } // Duplicate ID
+    const testProperties: Property[] = [
+      { 
+        id: '1', 
+        name: 'Property 1',
+        address: 'Address 1',
+        image: '/image1.jpg',
+        rent: 1000,
+        rentPaid: true,
+        expenses: 200,
+        netIncome: 800
+      },
+      { 
+        id: '2', 
+        name: 'Property 2',
+        address: 'Address 2',
+        image: '/image2.jpg',
+        rent: 1200,
+        rentPaid: false,
+        expenses: 300,
+        netIncome: 900
+      },
+      { 
+        id: '1', 
+        name: 'Property 1 Duplicate',
+        address: 'Address 1',
+        image: '/image1.jpg',
+        rent: 1000,
+        rentPaid: true,
+        expenses: 200,
+        netIncome: 800
+      }
     ];
     
     const uniqueProperties = getUniqueProperties(testProperties);
@@ -84,12 +121,18 @@ describe('documentUtils', () => {
   });
 
   test('getInitialDocuments returns documents from localStorage if available', () => {
-    const mockStoredProperties = [
+    const mockStoredProperties: Property[] = [
       { 
         id: '1', 
         name: 'Test Property',
+        address: 'Test Address',
+        image: '/test.jpg',
+        rent: 1000,
+        rentPaid: true,
+        expenses: 200,
+        netIncome: 800,
         documents: [
-          { id: 'doc1', name: 'Test Doc', type: 'pdf' }
+          { id: 'doc1', name: 'Test Doc', type: 'pdf', url: '#', uploadDate: '2023-01-01' }
         ]
       }
     ];

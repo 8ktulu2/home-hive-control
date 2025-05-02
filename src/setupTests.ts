@@ -1,4 +1,7 @@
 
+// Import Jest types
+import '@testing-library/jest-dom';
+
 // Mock global objects needed for tests
 Object.defineProperty(window, 'URL', {
   value: {
