@@ -163,14 +163,14 @@ const Documents = () => {
 
   return (
     <Layout>
-      <div className="mb-4">
+      <div className="mb-4 max-w-full">
         <h1 className="text-2xl font-bold mb-2">Documentos</h1>
         <p className="text-muted-foreground text-sm">
           Administra los documentos de todas tus propiedades
         </p>
       </div>
       
-      <div className="flex flex-col gap-3 mb-4">
+      <div className="flex flex-col gap-3 mb-4 max-w-full">
         <DocumentSearchBar 
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -188,7 +188,7 @@ const Documents = () => {
         />
       </div>
 
-      <Card>
+      <Card className="max-w-full">
         <CardHeader className="py-3">
           <CardTitle className="text-base flex items-center gap-2">
             <FileText className="h-4 w-4" />

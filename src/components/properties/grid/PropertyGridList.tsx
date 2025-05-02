@@ -68,11 +68,11 @@ const PropertyGridList = ({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 max-w-full">
       {properties.map(property => (
         <div
           key={property.id}
-          className="relative"
+          className="relative max-w-full"
           data-selected={selectedProperties.includes(property.id)}
         >
           <PropertyButton 
