@@ -2,8 +2,12 @@
 import { useState } from 'react';
 import { Task, Property } from '@/types/property';
 import { toast } from 'sonner';
-import { getNotificationsFromStorage, saveNotificationsToStorage } from '@/services/notificationService';
-import { Notification } from '@/types/notification';
+import { 
+  removeTaskNotification, 
+  addTaskNotification, 
+  syncAllTaskNotifications 
+} from '@/utils/taskNotificationUtils';
+import { updatePropertyInStorage, updatePropertyTasks } from '@/services/taskService';
 
 export function useTaskManagement(property: Property | null, setProperty: (property: Property | null) => void) {
   const handleTaskToggle = (taskId: string, completed: boolean) => {
@@ -34,10 +38,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         return task;
       });
       
-      updatePropertyInStorage({
-        ...property,
-        tasks: updatedTasks
-      });
+      updatePropertyTasks(property, updatedTasks, setProperty);
     }
   };
 
@@ -65,7 +66,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         tasks: [...(property.tasks || []), task]
       };
       
-      updatePropertyInStorage(updatedProperty);
+      updatePropertyInStorage(updatedProperty, setProperty);
       
       toast.success("Tarea añadida", {
         description: `La tarea "${task.title}" ha sido añadida correctamente.`
@@ -76,117 +77,17 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
     }
   };
 
-  const removeTaskNotification = (taskId: string) => {
-    try {
-      const notifications = getNotificationsFromStorage();
-      const updatedNotifications = notifications.filter(
-        (n) => !(n.type === 'task' && n.taskId === taskId)
-      );
-      
-      saveNotificationsToStorage(updatedNotifications);
-      console.log("Task notification removed for task:", taskId);
-    } catch (error) {
-      console.error("Error removing task notification:", error);
-    }
-  };
-
-  const addTaskNotification = (propertyId: string, task: Task) => {
-    try {
-      if (!task.completed) {  // Only add notification if task is not completed
-        const notification: Notification = {
-          id: `notification-task-${task.id}`,
-          type: 'task',
-          taskId: task.id,
-          propertyId: propertyId,
-          message: `Tarea pendiente: ${task.title}`,
-          read: false,
-          createdAt: new Date().toISOString()
-        };
-    
-        const notifications = getNotificationsFromStorage();
-        
-        // Check if notification already exists
-        const existingIndex = notifications.findIndex(
-          (n) => n.taskId === task.id
-        );
-        
-        if (existingIndex >= 0) {
-          // Update existing notification
-          notifications[existingIndex] = notification;
-        } else {
-          // Add new notification
-          notifications.push(notification);
-        }
-        
-        saveNotificationsToStorage(notifications);
-        console.log("Task notification added:", notification);
-      }
-    } catch (error) {
-      console.error("Error adding task notification:", error);
-    }
-  };
-
-  // Function to sync all task notifications
-  const syncAllTaskNotifications = () => {
-    try {
-      // Get all properties
-      const savedProperties = localStorage.getItem('properties');
-      if (!savedProperties) return;
-      
-      const properties = JSON.parse(savedProperties);
-      
-      // Collect all pending tasks
-      const pendingTasks: {task: Task, propertyId: string}[] = [];
-      properties.forEach((p: Property) => {
-        if (p.tasks) {
-          p.tasks.forEach(task => {
-            if (!task.completed) {
-              pendingTasks.push({task, propertyId: p.id});
-            }
-          });
-        }
-      });
-      
-      // Get current notifications
-      const notifications = getNotificationsFromStorage();
-      
-      // Filter non-task notifications
-      const nonTaskNotifications = notifications.filter(
-        (n) => n.type !== 'task'
-      );
-      
-      // Create new notifications for all pending tasks
-      const taskNotifications = pendingTasks.map(({task, propertyId}) => ({
-        id: `notification-task-${task.id}`,
-        type: 'task' as const,
-        taskId: task.id,
-        propertyId: propertyId,
-        message: `Tarea pendiente: ${task.title}`,
-        read: false,
-        createdAt: task.createdDate
-      }));
-      
-      // Combine notifications
-      const updatedNotifications = [...nonTaskNotifications, ...taskNotifications];
-      
-      // Save updated notifications
-      saveNotificationsToStorage(updatedNotifications);
-      
-      console.log("Notifications synced with pending tasks:", updatedNotifications.length);
-    } catch (error) {
-      console.error("Error syncing task notifications:", error);
-    }
-  };
-
   const handleTaskDelete = (taskId: string) => {
     if (property && property.tasks) {
       // Remove task notification when task is deleted
       removeTaskNotification(taskId);
 
-      updatePropertyInStorage({
+      const updatedProperty = {
         ...property,
         tasks: property.tasks.filter(task => task.id !== taskId)
-      });
+      };
+      
+      updatePropertyInStorage(updatedProperty, setProperty);
     }
   };
 
@@ -210,27 +111,7 @@ export function useTaskManagement(property: Property | null, setProperty: (prope
         return task;
       });
       
-      updatePropertyInStorage({
-        ...property,
-        tasks: updatedTasks
-      });
-    }
-  };
-
-  const updatePropertyInStorage = (updatedProperty: Property) => {
-    setProperty(updatedProperty);
-    
-    try {
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: Property) => 
-          p.id === updatedProperty.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-      }
-    } catch (error) {
-      console.error("Error updating property in localStorage:", error);
+      updatePropertyTasks(property, updatedTasks, setProperty);
     }
   };
 

@@ -11,7 +11,11 @@ import { TaskList } from '@/components/tasks/TaskList';
 import { TaskConfirmDialog } from '@/components/tasks/TaskConfirmDialog';
 import { ExtendedTask } from '@/components/tasks/types';
 import { useNotifications } from '@/hooks/useNotifications';
-import { getNotificationsFromStorage, saveNotificationsToStorage } from '@/services/notificationService';
+import { 
+  removeTaskNotification, 
+  addTaskNotification, 
+  syncAllTaskNotifications 
+} from '@/utils/taskNotificationUtils';
 import { mockProperties } from '@/data/mockData';
 
 const Tasks = () => {
@@ -124,105 +128,6 @@ const Tasks = () => {
     loadNotifications();
     
     setIsConfirmDialogOpen(false);
-  };
-
-  // Function to remove task notification
-  const removeTaskNotification = (taskId: string) => {
-    try {
-      const notifications = getNotificationsFromStorage();
-      const updatedNotifications = notifications.filter(
-        (n) => !(n.type === 'task' && n.taskId === taskId)
-      );
-      saveNotificationsToStorage(updatedNotifications);
-    } catch (error) {
-      console.error("Error removing task notification:", error);
-    }
-  };
-
-  // Function to add task notification
-  const addTaskNotification = (propertyId: string, task: any) => {
-    try {
-      if (!task.completed) {
-        const notification = {
-          id: `notification-task-${task.id}`,
-          type: 'task',
-          taskId: task.id,
-          propertyId: propertyId,
-          message: `Tarea pendiente: ${task.title}`,
-          read: false,
-          createdAt: new Date().toISOString()
-        };
-    
-        const notifications = getNotificationsFromStorage();
-        
-        const existingIndex = notifications.findIndex(
-          (n) => n.taskId === task.id
-        );
-        
-        if (existingIndex >= 0) {
-          notifications[existingIndex] = notification;
-        } else {
-          notifications.push(notification);
-        }
-        
-        saveNotificationsToStorage(notifications);
-      }
-    } catch (error) {
-      console.error("Error adding task notification:", error);
-    }
-  };
-
-  // Function to sync all task notifications
-  const syncAllTaskNotifications = () => {
-    try {
-      // Get all properties
-      const savedProperties = localStorage.getItem('properties');
-      if (!savedProperties) return;
-      
-      const properties = JSON.parse(savedProperties);
-      
-      // Collect all pending tasks
-      const pendingTasks: {task: any, propertyId: string}[] = [];
-      properties.forEach((p: Property) => {
-        if (p.tasks) {
-          p.tasks.forEach(task => {
-            if (!task.completed) {
-              pendingTasks.push({task, propertyId: p.id});
-            }
-          });
-        }
-      });
-      
-      // Get current notifications
-      const notifications = getNotificationsFromStorage();
-      
-      // Filter non-task notifications
-      const nonTaskNotifications = notifications.filter(
-        (n) => n.type !== 'task'
-      );
-      
-      // Create new notifications for all pending tasks
-      const taskNotifications = pendingTasks.map(({task, propertyId}) => ({
-        id: `notification-task-${task.id}`,
-        type: 'task',
-        taskId: task.id,
-        propertyId: propertyId,
-        message: `Tarea pendiente: ${task.title}`,
-        read: false,
-        createdAt: task.createdDate
-      }));
-      
-      // Combine notifications
-      const updatedNotifications = [...nonTaskNotifications, ...taskNotifications];
-      
-      // Save updated notifications
-      saveNotificationsToStorage(updatedNotifications);
-      
-      // Reload notifications
-      loadNotifications();
-    } catch (error) {
-      console.error("Error syncing task notifications:", error);
-    }
   };
 
   return (
