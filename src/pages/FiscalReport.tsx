@@ -20,7 +20,7 @@ const FiscalReport = () => {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   
-  // Mock data for fiscal details
+  // Mock data for fiscal details - Updated to match MonthlyData type correctly
   const generateHistoricalData = (): PropertyHistoricalData[] => {
     if (!properties) return [];
     
@@ -34,8 +34,14 @@ const FiscalReport = () => {
           ? property.ibi / 12 
           : (monthRentAmount * 0.3);
         
+        // Convert month from number to string as required by MonthlyData type
+        const monthNames = [
+          'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        
         return {
-          month: idx + 1,
+          month: monthNames[idx], // Use string month name instead of number
           year: selectedYear,
           rentAmount: monthRentAmount,
           totalExpenses: monthTotalExpenses,
