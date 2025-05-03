@@ -40,13 +40,15 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock document.createElement for download functionality
-document.createElement = jest.fn().mockImplementation(() => ({
+const mockElement = {
   setAttribute: jest.fn(),
   click: jest.fn(),
   style: {},
   href: '',
   download: '',
-}));
+} as unknown as HTMLElement;
+
+document.createElement = jest.fn().mockImplementation(() => mockElement);
 
 // Mock toast
 jest.mock('sonner', () => ({
