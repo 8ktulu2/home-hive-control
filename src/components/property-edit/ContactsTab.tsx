@@ -4,6 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '@/components/ui/accordion';
 
 interface ContactsTabProps {
   property: Property;
@@ -17,57 +23,78 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
         <CardTitle>Contactos y Proveedores</CardTitle>
       </CardHeader>
       <CardContent className="overflow-visible">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ContactSection
-            title="Administrador de la Comunidad"
-            type="communityManager"
-            details={property.communityManagerDetails}
-            name={property.communityManager}
-            updateContactDetails={updateContactDetails}
-          />
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="communityManager">
+            <AccordionTrigger className="py-4">
+              <h3 className="font-medium text-left">Administrador de la Comunidad</h3>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ContactSection
+                type="communityManager"
+                details={property.communityManagerDetails}
+                name={property.communityManager}
+                updateContactDetails={updateContactDetails}
+              />
+            </AccordionContent>
+          </AccordionItem>
           
-          <ContactSection
-            title="Compañía de Seguros"
-            type="insuranceCompany"
-            details={property.insuranceDetails}
-            name={property.insuranceCompany}
-            updateContactDetails={updateContactDetails}
-          />
+          <AccordionItem value="insuranceCompany">
+            <AccordionTrigger className="py-4">
+              <h3 className="font-medium text-left">Compañía de Seguros</h3>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ContactSection
+                type="insuranceCompany"
+                details={property.insuranceDetails}
+                name={property.insuranceCompany}
+                updateContactDetails={updateContactDetails}
+              />
+            </AccordionContent>
+          </AccordionItem>
           
-          <ContactSection
-            title="Proveedor de Agua"
-            type="waterProvider"
-            details={property.waterProviderDetails}
-            name={property.waterProvider}
-            updateContactDetails={updateContactDetails}
-          />
+          <AccordionItem value="waterProvider">
+            <AccordionTrigger className="py-4">
+              <h3 className="font-medium text-left">Proveedor de Agua</h3>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ContactSection
+                type="waterProvider"
+                details={property.waterProviderDetails}
+                name={property.waterProvider}
+                updateContactDetails={updateContactDetails}
+              />
+            </AccordionContent>
+          </AccordionItem>
           
-          <ContactSection
-            title="Proveedor de Electricidad"
-            type="electricityProvider"
-            details={property.electricityProviderDetails}
-            name={property.electricityProvider}
-            updateContactDetails={updateContactDetails}
-          />
-        </div>
+          <AccordionItem value="electricityProvider">
+            <AccordionTrigger className="py-4">
+              <h3 className="font-medium text-left">Proveedor de Electricidad</h3>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ContactSection
+                type="electricityProvider"
+                details={property.electricityProviderDetails}
+                name={property.electricityProvider}
+                updateContactDetails={updateContactDetails}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
     </Card>
   );
 };
 
 interface ContactSectionProps {
-  title: string;
   type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany';
   details?: ContactDetails;
   name?: string;
   updateContactDetails: (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany', field: string, value: string) => void;
 }
 
-const ContactSection = ({ title, type, details, name, updateContactDetails }: ContactSectionProps) => {
+const ContactSection = ({ type, details, name, updateContactDetails }: ContactSectionProps) => {
   return (
-    <div className="space-y-4">
-      <h3 className="font-medium">{title}</h3>
-      
+    <div className="space-y-4 pt-2">
       <div className="space-y-2">
         <Label>Nombre</Label>
         <Input
