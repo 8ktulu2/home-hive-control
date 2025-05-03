@@ -2,9 +2,12 @@
 import React, { useState } from 'react';
 import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import FiscalDetailForm from './FiscalDetailForm';
-import { FileText } from 'lucide-react';
+import { FileText, FileSpreadsheet } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { exportFiscalDataToExcel } from '@/utils/excelExport';
+import { toast } from 'sonner';
 
 interface FiscalDetailContentProps {
   filteredData: PropertyHistoricalData[];
@@ -76,6 +79,38 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
     }));
   };
 
+  const handleExportExcel = (propertyId: string) => {
+    const data = fiscalData[propertyId];
+    if (!data) {
+      toast.error("No hay datos fiscales disponibles para exportar.");
+      return;
+    }
+    
+    const property = filteredData.find(p => p.propertyId === propertyId);
+    if (!property) {
+      toast.error("No se encontró la propiedad seleccionada.");
+      return;
+    }
+    
+    toast.info("Preparando exportación a Excel...", { duration: 2000 });
+    
+    setTimeout(() => {
+      try {
+        const filename = `Datos_Fiscales_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.xlsx`;
+        const success = exportFiscalDataToExcel(data, property.propertyName, selectedYear, filename);
+        
+        if (success) {
+          toast.success("Informe Excel exportado correctamente", { duration: 3000 });
+        } else {
+          toast.error("Error al exportar el informe Excel", { duration: 3000 });
+        }
+      } catch (error) {
+        console.error("Error exporting to Excel:", error);
+        toast.error("Error al exportar el informe Excel", { duration: 3000 });
+      }
+    }, 500);
+  };
+
   if (filteredData.length === 0) {
     return (
       <div className="text-center py-10">
@@ -122,6 +157,20 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
 
       {filteredData.map(property => (
         <div key={property.propertyId} className="mb-6 last:mb-0">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-medium">{property.propertyName}</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => handleExportExcel(property.propertyId)}
+              title="Exportar a Excel con tablas estructuradas (UTF-8)"
+            >
+              <FileSpreadsheet className="h-4 w-4" /> 
+              <span className="hidden sm:inline">Exportar</span>
+              <span className="sm:hidden">Excel</span>
+            </Button>
+          </div>
           <FiscalDetailForm
             initialData={fiscalData[property.propertyId]}
             onSave={(data) => handleSaveFiscalData(property.propertyId, data)}

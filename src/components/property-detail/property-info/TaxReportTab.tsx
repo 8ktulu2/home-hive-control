@@ -22,6 +22,7 @@ import IncomeSection from './tax-report/IncomeSection';
 import ExpensesSection from './tax-report/ExpensesSection';
 import ReductionsSection from './tax-report/ReductionsSection';
 import TaxReportSummary from './tax-report/TaxReportSummary';
+import { exportPropertyTaxDataToExcel } from '@/utils/excelExport';
 
 interface TaxReportTabProps {
   property: Property;
@@ -104,11 +105,23 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
   const taxableIncome = netIncome - reduction;
 
   const handleExportExcel = () => {
-    // This would be implemented with xlsx library
-    toast.info("Exportando a Excel...", { duration: 3000 });
+    toast.info("Preparando exportación a Excel...", { duration: 2000 });
+    
     setTimeout(() => {
-      toast.success("Informe Excel exportado correctamente", { duration: 3000 });
-    }, 1500);
+      try {
+        const filename = `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}.xlsx`;
+        const success = exportPropertyTaxDataToExcel(property, filename);
+        
+        if (success) {
+          toast.success("Informe Excel exportado correctamente", { duration: 3000 });
+        } else {
+          toast.error("Error al exportar el informe Excel", { duration: 3000 });
+        }
+      } catch (error) {
+        console.error("Error exporting to Excel:", error);
+        toast.error("Error al exportar el informe Excel", { duration: 3000 });
+      }
+    }, 500);
   };
 
   const handleExportPDF = () => {
@@ -151,10 +164,19 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
           Informe para Declaración de la Renta (IRPF)
         </h2>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={handleExportExcel} className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleExportExcel} 
+            className="flex items-center gap-2"
+            title="Exportar a Excel con tablas estructuradas (UTF-8)"
+          >
             <FileSpreadsheet className="h-4 w-4" /> Excel
           </Button>
-          <Button onClick={handleExportPDF} className="flex items-center gap-2">
+          <Button 
+            onClick={handleExportPDF} 
+            className="flex items-center gap-2"
+            title="Exportar a PDF con gráficos visuales"
+          >
             <FileText className="h-4 w-4" /> PDF
           </Button>
         </div>
