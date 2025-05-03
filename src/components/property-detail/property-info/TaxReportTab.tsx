@@ -7,11 +7,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import {
   FileText,
   FileSpreadsheet,
-  FilePdf,
   Home,
   Info,
   Users,
-  Cash,
+  Banknote,
   Percent,
   MinusCircle,
   HelpCircle,
@@ -132,7 +131,7 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
             <FileSpreadsheet className="h-4 w-4" /> Excel
           </Button>
           <Button onClick={handleExportPDF} className="flex items-center gap-2">
-            <FilePdf className="h-4 w-4" /> PDF
+            <FileText className="h-4 w-4" /> PDF
           </Button>
         </div>
       </div>
@@ -256,7 +255,7 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
                 <AccordionItem value="income">
                   <AccordionTrigger className="py-4">
                     <div className="flex items-center gap-2">
-                      <Cash className="h-5 w-5" />
+                      <Banknote className="h-5 w-5" />
                       <h3 className="font-medium text-left">Ingresos</h3>
                     </div>
                   </AccordionTrigger>
