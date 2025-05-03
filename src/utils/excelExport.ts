@@ -15,10 +15,6 @@ export const exportFiscalDataToExcel = (data: FiscalData, propertyName: string, 
   try {
     const workbook = XLSX.utils.book_new();
     
-    // Ensure proper UTF-8 support for Spanish characters
-    workbook.SST = [];
-    workbook.SSF = {};
-    
     // Create Ingresos sheet
     const ingresosData = [
       ['Concepto', 'Importe (€)'],
@@ -104,12 +100,11 @@ export const exportFiscalDataToExcel = (data: FiscalData, propertyName: string, 
     formatSheetStyles(infoSheet);
     XLSX.utils.book_append_sheet(workbook, infoSheet, 'Información Fiscal');
     
-    // Write the workbook to file
+    // Write the workbook to file - using proper typing
     XLSX.writeFile(workbook, filename, { 
-      bookType: 'xlsx', 
+      bookType: 'xlsx',
       type: 'binary',
-      cellStyles: true,
-      bookSST: true
+      cellStyles: true
     });
     
     return true;
@@ -157,10 +152,6 @@ const formatSheetStyles = (sheet: XLSX.WorkSheet) => {
 export const exportPropertyTaxDataToExcel = (property: Property, filename: string) => {
   try {
     const workbook = XLSX.utils.book_new();
-    
-    // Ensure proper UTF-8 support for Spanish characters
-    workbook.SST = [];
-    workbook.SSF = {};
     
     // Calculate values based on property data
     const monthlyRent = property.rent || 0;
@@ -277,12 +268,11 @@ export const exportPropertyTaxDataToExcel = (property: Property, filename: strin
     formatSheetStyles(infoSheet);
     XLSX.utils.book_append_sheet(workbook, infoSheet, 'Información Adicional');
     
-    // Write the workbook to file
+    // Write the workbook to file - using proper typing
     XLSX.writeFile(workbook, filename, { 
-      bookType: 'xlsx', 
+      bookType: 'xlsx',
       type: 'binary',
-      cellStyles: true,
-      bookSST: true
+      cellStyles: true
     });
     
     return true;
