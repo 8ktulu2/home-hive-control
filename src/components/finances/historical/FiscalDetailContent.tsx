@@ -4,9 +4,10 @@ import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import FiscalDetailForm from './FiscalDetailForm';
-import { FileText, FileSpreadsheet } from 'lucide-react';
+import { FileText, FileSpreadsheet, Download } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportFiscalDataToExcel } from '@/utils/excelExport';
+import { exportFiscalDataToPDF } from '@/utils/pdfExport';
 import { toast } from 'sonner';
 
 interface FiscalDetailContentProps {
@@ -97,8 +98,6 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
     setTimeout(() => {
       try {
         const filename = `Datos_Fiscales_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.xlsx`;
-        
-        // Call the export function with the correct number of arguments
         exportFiscalDataToExcel(data, property.propertyName, selectedYear, filename);
         
         toast.success("Informe Excel exportado correctamente", { duration: 3000 });
@@ -107,6 +106,34 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
         toast.error("Error al exportar el informe Excel", { duration: 3000 });
       }
     }, 500);
+  };
+
+  const handleExportPDF = (propertyId: string) => {
+    const data = fiscalData[propertyId];
+    if (!data) {
+      toast.error("No hay datos fiscales disponibles para exportar.");
+      return;
+    }
+    
+    const property = filteredData.find(p => p.propertyId === propertyId);
+    if (!property) {
+      toast.error("No se encontró la propiedad seleccionada.");
+      return;
+    }
+    
+    toast.info("Generando informe PDF detallado...", { duration: 3000 });
+    
+    setTimeout(() => {
+      try {
+        const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
+        exportFiscalDataToPDF(data, property.propertyName, selectedYear, filename);
+        
+        toast.success("Informe PDF generado correctamente", { duration: 3000 });
+      } catch (error) {
+        console.error("Error exporting to PDF:", error);
+        toast.error("Error al exportar el informe PDF", { duration: 3000 });
+      }
+    }, 1500);
   };
 
   if (filteredData.length === 0) {
@@ -157,17 +184,29 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
         <div key={property.propertyId} className="mb-6 last:mb-0">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-medium">{property.propertyName}</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1"
-              onClick={() => handleExportExcel(property.propertyId)}
-              title="Exportar a Excel con tablas estructuradas (UTF-8)"
-            >
-              <FileSpreadsheet className="h-4 w-4" /> 
-              <span className="hidden sm:inline">Exportar</span>
-              <span className="sm:hidden">Excel</span>
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() => handleExportExcel(property.propertyId)}
+                title="Exportar a Excel con tablas estructuradas (UTF-8)"
+              >
+                <FileSpreadsheet className="h-4 w-4" /> 
+                <span className="hidden sm:inline">Excel</span>
+                <span className="sm:hidden">XLS</span>
+              </Button>
+              <Button
+                size="sm"
+                className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700"
+                onClick={() => handleExportPDF(property.propertyId)}
+                title="Exportar a PDF con gráficos visuales y explicaciones detalladas"
+              >
+                <Download className="h-4 w-4" /> 
+                <span className="hidden sm:inline">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
           </div>
           <FiscalDetailForm
             initialData={fiscalData[property.propertyId]}

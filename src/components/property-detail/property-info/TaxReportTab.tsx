@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import {
   Percent,
   MinusCircle,
   HelpCircle,
+  Download,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
@@ -22,6 +24,7 @@ import ExpensesSection from './tax-report/ExpensesSection';
 import ReductionsSection from './tax-report/ReductionsSection';
 import TaxReportSummary from './tax-report/TaxReportSummary';
 import { exportPropertyTaxDataToExcel } from '@/utils/excelExport';
+import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 
 interface TaxReportTabProps {
   property: Property;
@@ -109,7 +112,6 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
     setTimeout(() => {
       try {
         const filename = `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}.xlsx`;
-        // Export the data to Excel - correctly handle the return value
         exportPropertyTaxDataToExcel(property, filename);
         
         toast.success("Informe Excel exportado correctamente", { duration: 3000 });
@@ -121,10 +123,17 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
   };
 
   const handleExportPDF = () => {
-    // This would be implemented with jspdf library
-    toast.info("Generando PDF...", { duration: 3000 });
+    toast.info("Generando informe PDF detallado...", { duration: 3000 });
     setTimeout(() => {
-      toast.success("Informe PDF generado correctamente", { duration: 3000 });
+      try {
+        const filename = `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}.pdf`;
+        exportPropertyTaxDataToPDF(property, filename);
+        
+        toast.success("Informe PDF generado correctamente", { duration: 3000 });
+      } catch (error) {
+        console.error("Error exporting to PDF:", error);
+        toast.error("Error al exportar el informe PDF", { duration: 3000 });
+      }
     }, 1500);
   };
 
@@ -164,16 +173,16 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
             variant="outline" 
             onClick={handleExportExcel} 
             className="flex items-center gap-2"
-            title="Exportar a Excel con tablas estructuradas (UTF-8)"
+            title="Exportar a Excel con tablas estructuradas"
           >
             <FileSpreadsheet className="h-4 w-4" /> Excel
           </Button>
           <Button 
             onClick={handleExportPDF} 
-            className="flex items-center gap-2"
-            title="Exportar a PDF con gráficos visuales"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            title="Exportar a PDF con gráficos visuales y explicaciones detalladas"
           >
-            <FileText className="h-4 w-4" /> PDF
+            <Download className="h-4 w-4" /> Exportar Informe PDF
           </Button>
         </div>
       </div>
