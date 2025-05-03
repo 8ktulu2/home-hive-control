@@ -4,6 +4,8 @@ export interface TaxInfo {
   propertyType?: 'residential' | 'commercial' | 'industrial' | 'land';
   propertyValue?: number; // Value for depreciation calculation (3%)
   furnitureValue?: number; // Value for furniture depreciation calculation (10%)
+  acquisitionCost?: number; // Property acquisition cost
+  landValue?: number; // Land value (not depreciable)
   
   // Tax deduction eligibility
   isPrimaryResidence?: boolean; // Is this the primary residence of the tenant?
@@ -14,6 +16,7 @@ export interface TaxInfo {
   
   // Direct tax deduction values
   mortgageInterest?: number; // Annual mortgage interest (deductible)
+  totalMortgagePayment?: number; // Total annual mortgage payment (non-deductible)
   subsidies?: number; // Annual subsidies received
   otherIncome?: number; // Other income related to the property
   

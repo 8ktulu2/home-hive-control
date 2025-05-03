@@ -1,3 +1,4 @@
+
 import { Property } from '@/types/property';
 
 export const mockProperties: Property[] = [
@@ -26,7 +27,7 @@ export const mockProperties: Property[] = [
       }
     ],
     mortgage: {
-      bank: 'BBVA',
+      lender: 'BBVA',
       monthlyPayment: 450,
       endDate: '2040-05-15'
     },
@@ -98,7 +99,7 @@ export const mockProperties: Property[] = [
       }
     ],
     mortgage: {
-      bank: 'Santander',
+      lender: 'Santander',
       monthlyPayment: 850,
       endDate: '2042-08-20'
     },

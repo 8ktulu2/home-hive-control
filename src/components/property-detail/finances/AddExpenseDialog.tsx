@@ -83,14 +83,16 @@ export const AddExpenseDialog = ({ onExpenseAdd }: AddExpenseDialogProps) => {
             </Label>
             <Select 
               value={newExpense.category}
-              onValueChange={(value) => setNewExpense({ ...newExpense, category: value })}
+              onValueChange={(value: 'mortgage' | 'insurance' | 'utilities' | 'maintenance' | 'repairs' | 'taxes' | 'administrative' | 'other') => 
+                setNewExpense({ ...newExpense, category: value })
+              }
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Selecciona una categoría" />
               </SelectTrigger>
               <SelectContent>
                 {expenseCategories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>
+                  <SelectItem key={category.id} value={category.id as any}>
                     {category.name}
                   </SelectItem>
                 ))}

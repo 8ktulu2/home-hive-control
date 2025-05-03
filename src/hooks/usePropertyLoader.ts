@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Property } from '@/types/property';
@@ -11,33 +10,59 @@ export const usePropertyLoader = (id: string | undefined) => {
   const isNewProperty = id === 'new';
   const navigate = useNavigate();
 
+  // Fix the issue with empty objects for required properties
+  const initializeEmptyProperty = (): Property => {
+    return {
+      id: `property-${Date.now()}`,
+      name: '',
+      address: '',
+      image: '/placeholder.svg',
+      rent: 0,
+      rentPaid: false,
+      expenses: 0,
+      netIncome: 0,
+      tenants: [],
+      mortgage: {
+        monthlyPayment: 0 // Set a default value for required field
+      },
+      homeInsurance: {
+        company: '', // Set default required values
+        cost: 0
+      },
+      lifeInsurance: {
+        company: '', // Set default required values 
+        cost: 0
+      }
+    };
+  };
+
+  // Fix the finding of payment history by ensuring we check month and year properties
+  const getCurrentMonthPayment = (property: Property) => {
+    if (property.paymentHistory && property.paymentHistory.length > 0) {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      
+      // Only check for month/year properties if they exist
+      const currentMonthPayment = property.paymentHistory.find(
+        payment => 
+          (payment as any).month === currentMonth && 
+          (payment as any).year === currentYear
+      );
+      
+      if (currentMonthPayment) {
+        return { ...property, rentPaid: currentMonthPayment.isPaid };
+      }
+    }
+    
+    return property;
+  };
+
   useEffect(() => {
     const loadProperty = async () => {
       if (isNewProperty) {
         // Create a basic empty property object for new property
-        const newProperty: Property = {
-          id: `property-${Date.now()}`,
-          name: '',
-          address: '',
-          image: '/placeholder.svg',
-          rent: 0,
-          expenses: 0,
-          rentPaid: false,
-          netIncome: 0,
-          tenants: [],
-          images: [],
-          otherUtilities: [],
-          contract: {
-            startDate: '',
-            endDate: '',
-            monthlyRent: 0,
-            paymentMethod: '',
-            deposit: 0
-          },
-          legalDocuments: [],
-          taxes: {},
-          maintenance: {}
-        };
+        const newProperty: Property = initializeEmptyProperty();
         setProperty(newProperty);
         setLoading(false);
         return;
@@ -99,19 +124,7 @@ export const usePropertyLoader = (id: string | undefined) => {
         if (!foundProperty.internetProviderDetails) foundProperty.internetProviderDetails = {};
         if (!foundProperty.insuranceDetails) foundProperty.insuranceDetails = {};
         
-        if (foundProperty.paymentHistory && foundProperty.paymentHistory.length > 0) {
-          const currentDate = new Date();
-          const currentMonth = currentDate.getMonth();
-          const currentYear = currentDate.getFullYear();
-          
-          const currentMonthPayment = foundProperty.paymentHistory.find(
-            payment => payment.month === currentMonth && payment.year === currentYear
-          );
-          
-          if (currentMonthPayment) {
-            foundProperty.rentPaid = currentMonthPayment.isPaid;
-          }
-        }
+        foundProperty = getCurrentMonthPayment(foundProperty);
         
         setProperty(foundProperty);
       } else {

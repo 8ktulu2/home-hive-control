@@ -28,6 +28,10 @@ export interface MonthlyExpense {
   recurring?: boolean;
   category?: 'mortgage' | 'insurance' | 'utilities' | 'maintenance' | 'repairs' | 'taxes' | 'administrative' | 'other';
   notes?: string;
+  propertyId?: string;
+  month?: number;
+  year?: number;
+  date?: string;
 }
 
 export interface FinancialMetrics {
@@ -50,6 +54,9 @@ export interface PaymentRecord {
   paymentMethod?: 'cash' | 'transfer' | 'card' | 'other';
   category?: string;
   isPaid: boolean;
+  month?: number;
+  year?: number;
+  notes?: string;
 }
 
 export interface Insurance {
