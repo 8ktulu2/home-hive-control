@@ -55,6 +55,8 @@ export interface TaxInfo {
   recentlyRenovated?: boolean;  // Rehabilitación en los últimos 2 años
   rentReduction?: boolean;      // Reducción de renta respecto a contrato anterior
   renovationYear?: number;      // Año de la rehabilitación
+  mortgageInterest?: number;    // Intereses de hipoteca deducibles (anual)
+  totalMortgagePayment?: number; // Cuota total de hipoteca (anual)
   additionalDeductions?: string[]; // Deducciones autonómicas adicionales
   notes?: string;               // Notas adicionales para información fiscal
 }

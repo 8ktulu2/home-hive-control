@@ -8,86 +8,124 @@ interface ExpensesSectionProps {
 }
 
 const ExpensesSection: React.FC<ExpensesSectionProps> = ({ property }) => {
-  // Calculate mortgage interest (for demonstration, estimated as 80% of payment)
-  const calculateMortgageInterest = () => {
-    if (property.mortgage?.monthlyPayment) {
-      const monthlyInterest = property.mortgage.monthlyPayment * 0.8; // 80% as interest (example)
-      return monthlyInterest * 12; // Annual interest
+  // Calculate mortgage interest
+  const getMortgageInterest = () => {
+    if (property.taxInfo?.mortgageInterest) {
+      return property.taxInfo.mortgageInterest;
+    } else if (property.mortgage?.monthlyPayment) {
+      // Estimate interest as 80% of total payment
+      return property.mortgage.monthlyPayment * 0.8 * 12;
     }
     return 0;
   };
 
-  const mortgageInterest = calculateMortgageInterest();
-  const ibi = property.ibi || 0;
-  const communityFee = property.communityFee || 0;
-  const homeInsurance = property.homeInsurance?.cost || 0;
-  
-  // Calculate amortization (3% of purchase value, example)
-  const amortization = 0; // This would need property purchase value
-  
-  // Sum all expenses
-  const totalExpenses = mortgageInterest + ibi + communityFee + homeInsurance + amortization;
+  const getTotalMortgagePayment = () => {
+    if (property.taxInfo?.totalMortgagePayment) {
+      return property.taxInfo.totalMortgagePayment;
+    } else if (property.mortgage?.monthlyPayment) {
+      return property.mortgage.monthlyPayment * 12;
+    }
+    return 0;
+  };
+
+  const hasAnyExpense = getMortgageInterest() > 0 || property.ibi || property.communityFee || 
+                       (property.homeInsurance?.cost ?? 0) > 0;
+
+  if (!hasAnyExpense) {
+    return <p className="text-sm text-muted-foreground">No hay gastos deducibles registrados</p>;
+  }
 
   return (
     <div className="space-y-4 pt-2">
-      {mortgageInterest > 0 && (
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Intereses de hipoteca</span>
-            <TaxInfoTooltip content="Los intereses de préstamos para la adquisición o mejora del inmueble son deducibles. Se declaran en el Apartado C de Renta Web (Art. 23, Ley 35/2006)." />
+      {(property.mortgage?.monthlyPayment || property.taxInfo?.mortgageInterest || property.taxInfo?.totalMortgagePayment) && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-medium">Hipoteca</span>
+            <TaxInfoTooltip content="Solo los intereses son deducibles como gasto, no el total de la cuota hipotecaria (Art. 23.1.a, Ley 35/2006)." />
           </div>
-          <p className="text-sm">{mortgageInterest.toLocaleString('es-ES')} €</p>
+          
+          <div className="ml-4 space-y-2">
+            {property.taxInfo?.totalMortgagePayment ? (
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-sm">Total cuota hipotecaria (informativo)</span>
+                  <p className="text-xs text-muted-foreground">No deducible en su totalidad</p>
+                </div>
+                <span className="text-sm font-medium">{property.taxInfo.totalMortgagePayment.toLocaleString('es-ES')} €/año</span>
+              </div>
+            ) : property.mortgage?.monthlyPayment ? (
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-sm">Total cuota hipotecaria (informativo)</span>
+                  <p className="text-xs text-muted-foreground">No deducible en su totalidad</p>
+                </div>
+                <span className="text-sm font-medium">{(property.mortgage.monthlyPayment * 12).toLocaleString('es-ES')} €/año</span>
+              </div>
+            ) : null}
+            
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-sm font-medium">Intereses de hipoteca</span>
+                <p className="text-xs text-muted-foreground">Gasto deducible</p>
+              </div>
+              <span className="text-sm font-medium">{getMortgageInterest().toLocaleString('es-ES')} €/año</span>
+            </div>
+          </div>
         </div>
       )}
       
-      {ibi > 0 && (
-        <div className="flex justify-between items-center">
+      {/* Show other expenses */}
+      {property.ibi && (
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">IBI (Impuesto sobre Bienes Inmuebles)</span>
-            <TaxInfoTooltip content="El Impuesto sobre Bienes Inmuebles (IBI) es completamente deducible en el año en que se paga." />
+            <span className="text-sm font-medium">IBI</span>
+            <TaxInfoTooltip content="El Impuesto sobre Bienes Inmuebles es un gasto deducible (Art. 23.1.a, Ley 35/2006)." />
           </div>
-          <p className="text-sm">{ibi.toLocaleString('es-ES')} €</p>
+          <span className="text-sm font-medium">{property.ibi.toLocaleString('es-ES')} €/año</span>
         </div>
       )}
       
-      {communityFee > 0 && (
-        <div className="flex justify-between items-center">
+      {property.communityFee && (
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Gastos de comunidad</span>
-            <TaxInfoTooltip content="Las cuotas de comunidad pagadas por el propietario son deducibles, incluidas derramas para reparaciones." />
+            <TaxInfoTooltip content="Las cuotas de comunidad son gastos deducibles (Art. 23.1.a, Ley 35/2006)." />
           </div>
-          <p className="text-sm">{communityFee.toLocaleString('es-ES')} €</p>
+          <span className="text-sm font-medium">{property.communityFee.toLocaleString('es-ES')} €/año</span>
         </div>
       )}
       
-      {homeInsurance > 0 && (
-        <div className="flex justify-between items-center">
+      {property.homeInsurance?.cost && (
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Seguro del hogar</span>
-            <TaxInfoTooltip content="Las primas de seguros de responsabilidad civil, incendio, robo, etc., son deducibles en su totalidad." />
+            <TaxInfoTooltip content="Las primas de seguros son gastos deducibles (Art. 23.1.a, Ley 35/2006)." />
           </div>
-          <p className="text-sm">{homeInsurance.toLocaleString('es-ES')} €</p>
+          <span className="text-sm font-medium">{property.homeInsurance.cost.toLocaleString('es-ES')} €/año</span>
         </div>
       )}
       
-      {amortization > 0 && (
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Amortización del inmueble</span>
-            <TaxInfoTooltip content="Se puede deducir un 3% anual del mayor valor entre: coste de adquisición o valor catastral (excluyendo el valor del suelo)." />
+      {property.monthlyExpenses && property.monthlyExpenses.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium">Otros gastos</span>
+            <TaxInfoTooltip content="Gastos de administración, suministros no repercutidos y otros gastos deducibles." />
           </div>
-          <p className="text-sm">{amortization.toLocaleString('es-ES')} €</p>
+          {property.monthlyExpenses.map(expense => (
+            <div key={expense.id} className="flex items-center justify-between pl-4">
+              <span className="text-sm">{expense.name}</span>
+              <span className="text-sm">{(expense.amount * 12).toLocaleString('es-ES')} €/año</span>
+            </div>
+          ))}
         </div>
       )}
       
-      <div className="border-t pt-2 mt-4">
-        <div className="flex justify-between items-center font-medium">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Total gastos deducibles</span>
-            <TaxInfoTooltip content="Los gastos deducibles reducen directamente los ingresos íntegros para calcular el rendimiento neto del alquiler." />
-          </div>
-          <p className="text-sm">{totalExpenses.toLocaleString('es-ES')} €</p>
-        </div>
+      {/* Add a note about expense limit */}
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <p className="text-xs text-muted-foreground">
+          <strong>Nota:</strong> Los gastos por intereses de hipoteca y reparación/conservación tienen un límite conjunto 
+          igual a los ingresos íntegros por inmueble (Art. 23.1.a, Ley 35/2006).
+        </p>
       </div>
     </div>
   );

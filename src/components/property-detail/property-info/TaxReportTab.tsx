@@ -40,8 +40,11 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
   const calculateDeductibleExpenses = () => {
     let expenses = 0;
     
-    // Mortgage interest (estimated as 80% of monthly payment for demonstration)
-    if (property.mortgage?.monthlyPayment) {
+    // Mortgage interest (use direct value from taxInfo if available)
+    if (property.taxInfo?.mortgageInterest) {
+      expenses += property.taxInfo.mortgageInterest;
+    } else if (property.mortgage?.monthlyPayment) {
+      // Fallback to estimated interest if not specified
       expenses += property.mortgage.monthlyPayment * 0.8 * 12; // 80% of payment as interest, for 12 months
     }
     
@@ -74,8 +77,29 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
   const expenses = calculateDeductibleExpenses();
   const netIncome = grossIncome - expenses;
   
-  // Apply reduction (default 50% for primary residence, could be made variable)
-  const reductionPercentage = 50;
+  // Determine reduction percentage based on property data
+  const calculateReductionPercentage = () => {
+    // Base reduction for primary residence
+    if (property.taxInfo?.isPrimaryResidence) {
+      // Young tenant in tensioned area: 70%
+      if (property.taxInfo?.isTensionedArea && property.taxInfo?.hasYoungTenant) {
+        return 70;
+      }
+      // Rent reduction in tensioned area: 90%
+      else if (property.taxInfo?.isTensionedArea && property.taxInfo?.rentReduction) {
+        return 90;
+      }
+      // Recent renovation: 60%
+      else if (property.taxInfo?.recentlyRenovated) {
+        return 60;
+      }
+      // Default reduction for primary residence
+      return 50;
+    }
+    return 0;
+  };
+  
+  const reductionPercentage = calculateReductionPercentage();
   const reduction = (netIncome * reductionPercentage) / 100;
   const taxableIncome = netIncome - reduction;
 
@@ -207,8 +231,20 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
                             <span className="text-sm font-medium">Tipo de inmueble</span>
                             <TaxInfoTooltip content="El tipo de inmueble determina qué reducciones fiscales son aplicables." />
                           </div>
-                          <p className="text-sm text-muted-foreground">Vivienda</p>
+                          <p className="text-sm text-muted-foreground">{property.taxInfo?.propertyType === 'residential' ? 'Vivienda' : property.taxInfo?.propertyType || 'No especificado'}</p>
                         </div>
+                        
+                        {property.taxInfo?.isTensionedArea !== undefined && (
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">Zona de mercado residencial tensionado</span>
+                              <TaxInfoTooltip content="Las viviendas en zonas tensionadas pueden acceder a reducciones fiscales adicionales." />
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {property.taxInfo?.isTensionedArea ? 'Sí' : 'No'}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </AccordionContent>
@@ -245,6 +281,19 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
                             </div>
                           </div>
                         ))}
+                        
+                        {/* Show young tenant information if applicable */}
+                        {property.taxInfo?.hasYoungTenant && property.taxInfo?.isTensionedArea && (
+                          <div className="mt-2 py-2 px-3 bg-blue-50 rounded-md">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-blue-800">Inquilino joven (18-35 años)</span>
+                              <TaxInfoTooltip content="Los inquilinos jóvenes en zonas tensionadas permiten acceder a una reducción del 70% sobre el rendimiento neto." />
+                            </div>
+                            <p className="text-xs text-blue-700 mt-1">
+                              Se aplica reducción del 70% según Ley 12/2023
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">No hay inquilinos registrados</p>
@@ -284,7 +333,11 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <ReductionsSection property={property} netIncome={netIncome} />
+                    <ReductionsSection 
+                      property={property} 
+                      netIncome={netIncome} 
+                      reductionPercentage={reductionPercentage} 
+                    />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>

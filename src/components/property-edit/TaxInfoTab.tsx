@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
 
 interface TaxInfoTabProps {
   property: Property;
@@ -15,6 +16,7 @@ interface TaxInfoTabProps {
 }
 
 const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
+  // Update field function
   const updateField = (field: string, value: any) => {
     setProperty({
       ...property,
@@ -24,6 +26,13 @@ const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
       }
     });
   };
+
+  // When isTensionedArea changes to false, reset hasYoungTenant to false
+  useEffect(() => {
+    if (property.taxInfo?.isTensionedArea === false && property.taxInfo?.hasYoungTenant === true) {
+      updateField('hasYoungTenant', false);
+    }
+  }, [property.taxInfo?.isTensionedArea]);
 
   const TaxTooltip = ({ content }: { content: string }) => (
     <TooltipProvider>
@@ -62,6 +71,7 @@ const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
                     cadastralReference: e.target.value
                   })}
                   placeholder="Ej: 9872023VH5797S0001WX"
+                  maxLength={20}
                 />
               </div>
               
@@ -75,7 +85,7 @@ const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
                   type="number"
                   value={property.taxInfo?.acquisitionCost || ''}
                   onChange={(e) => updateField('acquisitionCost', parseFloat(e.target.value) || 0)}
-                  placeholder="0"
+                  placeholder="Ejemplo: 150000"
                 />
               </div>
               
@@ -89,7 +99,7 @@ const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
                   type="number"
                   value={property.taxInfo?.landValue || ''}
                   onChange={(e) => updateField('landValue', parseFloat(e.target.value) || 0)}
-                  placeholder="0"
+                  placeholder="Ejemplo: 50000"
                 />
               </div>
               
@@ -161,27 +171,38 @@ const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
                     <p className="text-xs text-muted-foreground">
                       Puede incrementar la reducción hasta el 90% (Ley 12/2023)
                     </p>
+                    <a 
+                      href="https://www.mivau.gob.es/es/vivienda/consultar-zonas-tensionadas" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:underline"
+                    >
+                      Consultar zonas tensionadas
+                    </a>
                   </div>
                 </div>
                 
-                <div className="flex items-start space-x-2 mt-2">
-                  <Checkbox
-                    id="hasYoungTenant"
-                    checked={property.taxInfo?.hasYoungTenant || false}
-                    onCheckedChange={(checked) => updateField('hasYoungTenant', checked)}
-                  />
-                  <div className="grid gap-1.5 leading-none">
-                    <Label
-                      htmlFor="hasYoungTenant"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Inquilino joven (18-35 años)
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Puede incrementar la reducción en zonas tensionadas
-                    </p>
+                {/* Solo mostrar este campo si isTensionedArea es true */}
+                {property.taxInfo?.isTensionedArea && (
+                  <div className="flex items-start space-x-2 mt-2 animate-fadeIn">
+                    <Checkbox
+                      id="hasYoungTenant"
+                      checked={property.taxInfo?.hasYoungTenant || false}
+                      onCheckedChange={(checked) => updateField('hasYoungTenant', checked)}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="hasYoungTenant"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Inquilino joven (18-35 años)
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Permite incrementar la reducción al 70% en zonas tensionadas
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 <div className="flex items-start space-x-2 mt-2">
                   <Checkbox
@@ -201,6 +222,80 @@ const TaxInfoTab: React.FC<TaxInfoTabProps> = ({ property, setProperty }) => {
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-start space-x-2 mt-2">
+                  <Checkbox
+                    id="rentReduction"
+                    checked={property.taxInfo?.rentReduction || false}
+                    onCheckedChange={(checked) => updateField('rentReduction', checked)}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="rentReduction"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Reducción de renta ≥5% respecto a contrato anterior
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Puede incrementar la reducción hasta el 90% en zonas tensionadas
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <Label>Información de Hipoteca</Label>
+              <TaxTooltip content="Solo los intereses de la hipoteca son deducibles, no el total de la cuota hipotecaria (Art. 23, Ley 35/2006)." />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div className="space-y-2">
+                <Label htmlFor="totalMortgagePayment">Total Cuota Hipotecaria (€/año)</Label>
+                <Input
+                  id="totalMortgagePayment"
+                  type="number"
+                  value={property.taxInfo?.totalMortgagePayment || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    updateField('totalMortgagePayment', value);
+                    
+                    // Si los intereses son mayores que el total, actualizarlos
+                    const interest = property.taxInfo?.mortgageInterest || 0;
+                    if (interest > value && value > 0) {
+                      updateField('mortgageInterest', value);
+                      toast.warning("Los intereses se han ajustado para no superar la cuota total");
+                    }
+                  }}
+                  placeholder="Ejemplo: 6000 €/año"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="mortgageInterest">Intereses de Hipoteca (€/año, deducibles)</Label>
+                <Input
+                  id="mortgageInterest"
+                  type="number"
+                  value={property.taxInfo?.mortgageInterest || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    const totalPayment = property.taxInfo?.totalMortgagePayment || 0;
+                    
+                    if (value > totalPayment && totalPayment > 0) {
+                      toast.error("Los intereses no pueden superar la cuota total de la hipoteca");
+                      return;
+                    }
+                    
+                    updateField('mortgageInterest', value);
+                  }}
+                  placeholder="Ejemplo: 2000 €/año, ver cuadro de amortización"
+                  className={property.taxInfo?.mortgageInterest > (property.taxInfo?.totalMortgagePayment || 0) && (property.taxInfo?.totalMortgagePayment || 0) > 0 ? "border-red-500" : ""}
+                />
+                {property.taxInfo?.mortgageInterest > (property.taxInfo?.totalMortgagePayment || 0) && (property.taxInfo?.totalMortgagePayment || 0) > 0 && (
+                  <p className="text-xs text-red-500">Los intereses no pueden superar la cuota total</p>
+                )}
               </div>
             </div>
           </div>
