@@ -1,6 +1,6 @@
 
 import { Property } from '@/types/property';
-import { Building2, Water, Lightbulb, Shield } from 'lucide-react';
+import { Building2, Droplet, Lightbulb, Shield } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
@@ -90,7 +90,7 @@ const ContactsTab = ({ property, onContactClick }: ContactsTabProps) => {
           onClick={() => onContactClick?.('waterProvider')}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Water className="h-4 w-4 text-gray-500" />
+            <Droplet className="h-4 w-4 text-gray-500" />
             <h3 className="font-medium">{property.waterProvider || 'Agua'}</h3>
           </div>
           {property.waterProviderDetails?.phone && (

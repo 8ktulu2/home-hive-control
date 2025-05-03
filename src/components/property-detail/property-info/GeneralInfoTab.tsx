@@ -6,19 +6,19 @@ import {
   Bath, 
   Ruler, 
   Calendar, 
-  BankNote, 
+  Banknote, 
   FileText,
-  Water,
+  Droplet,
   Lightbulb,
-  GasPump,
   Wifi
 } from 'lucide-react';
 
 interface GeneralInfoTabProps {
   property: Property;
+  onTenantClick?: (tenant: any) => void;
 }
 
-const GeneralInfoTab = ({ property }: GeneralInfoTabProps) => {
+const GeneralInfoTab = ({ property, onTenantClick }: GeneralInfoTabProps) => {
   const hasAddress = Boolean(property.address);
   const hasCadastralRef = Boolean(property.cadastralReference);
   const hasSquareMeters = Boolean(property.squareMeters);
@@ -113,7 +113,7 @@ const GeneralInfoTab = ({ property }: GeneralInfoTabProps) => {
               
               {property.contract?.deposit && (
                 <div className="flex items-start gap-2">
-                  <BankNote className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
+                  <Banknote className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
                   <div>
                     <p className="font-medium">Fianza</p>
                     <p className="text-sm text-gray-600">{property.contract?.deposit} €</p>
@@ -123,7 +123,7 @@ const GeneralInfoTab = ({ property }: GeneralInfoTabProps) => {
               
               {property.contract?.paymentMethod && (
                 <div className="flex items-start gap-2">
-                  <BankNote className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
+                  <Banknote className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
                   <div>
                     <p className="font-medium">Forma de pago</p>
                     <p className="text-sm text-gray-600">{property.contract?.paymentMethod}</p>
@@ -148,7 +148,7 @@ const GeneralInfoTab = ({ property }: GeneralInfoTabProps) => {
             <div className="grid grid-cols-1 gap-3">
               {hasWaterProvider && (
                 <div className="flex items-start gap-2">
-                  <Water className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
+                  <Droplet className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
                   <div>
                     <p className="font-medium">Agua</p>
                     <p className="text-sm text-gray-600">{property.waterProvider}</p>
@@ -178,7 +178,7 @@ const GeneralInfoTab = ({ property }: GeneralInfoTabProps) => {
               
               {hasGasProvider && (
                 <div className="flex items-start gap-2">
-                  <GasPump className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
+                  <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
                   <div>
                     <p className="font-medium">Gas</p>
                     <p className="text-sm text-gray-600">{property.gasProvider}</p>

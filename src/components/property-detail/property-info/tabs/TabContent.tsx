@@ -28,11 +28,17 @@ const TabContent: React.FC<TabContentProps> = ({
   return (
     <>
       <TabsContent value="general">
-        <GeneralInfoTab property={property} onTenantClick={onTenantClick} />
+        <GeneralInfoTab 
+          property={property} 
+          onTenantClick={onTenantClick} 
+        />
       </TabsContent>
 
       <TabsContent value="contacts">
-        <ContactsTab property={property} onContactClick={onContactClick} />
+        <ContactsTab 
+          property={property} 
+          onContactClick={(type) => onContactClick(type, property[`${type}Details`])} 
+        />
       </TabsContent>
 
       <TabsContent value="inventory">

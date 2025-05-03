@@ -1,4 +1,3 @@
-
 import { Property, ContactDetails } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from '@/components/ui/accordion';
-import { Building2, Water, Lightbulb, Shield } from 'lucide-react';
+import { Building2, Droplet, Lightbulb, Shield } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
@@ -62,7 +61,7 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
           <AccordionItem value="waterProvider">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
-                <Water className="h-5 w-5" />
+                <Droplet className="h-5 w-5" />
                 <h3 className="font-medium text-left">Proveedor de Agua</h3>
               </div>
             </AccordionTrigger>
