@@ -48,7 +48,9 @@ const mockElement = {
   download: '',
 } as unknown as HTMLElement;
 
-document.createElement = jest.fn().mockImplementation(() => mockElement);
+// Fix the type error by properly typing the mock implementation
+const createElementMock = jest.fn<() => HTMLElement>(() => mockElement);
+document.createElement = createElementMock;
 
 // Mock toast
 jest.mock('sonner', () => ({

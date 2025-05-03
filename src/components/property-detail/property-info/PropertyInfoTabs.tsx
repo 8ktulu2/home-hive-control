@@ -45,11 +45,11 @@ const PropertyInfoTabs = ({ property }: PropertyInfoTabsProps) => {
 
   return (
     <>
-      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="contacts">Contactos</TabsTrigger>
-          <TabsTrigger value="inventory">Inventario</TabsTrigger>
+      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4 w-full grid grid-cols-3 h-auto">
+          <TabsTrigger value="general" className="py-2 text-xs sm:text-sm">General</TabsTrigger>
+          <TabsTrigger value="contacts" className="py-2 text-xs sm:text-sm">Contactos</TabsTrigger>
+          <TabsTrigger value="inventory" className="py-2 text-xs sm:text-sm">Inventario</TabsTrigger>
         </TabsList>
 
         <TabContent 

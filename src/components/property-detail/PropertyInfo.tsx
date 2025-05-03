@@ -1,8 +1,7 @@
 
-import { Property, Tenant, ContactDetails, InventoryItem } from '@/types/property';
+import { Property } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PropertyInfoTabs from './property-info/PropertyInfoTabs';
 
 interface PropertyInfoProps {
@@ -11,14 +10,14 @@ interface PropertyInfoProps {
 
 const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Home className="h-5 w-5" />
-          <span>Información General</span>
+          <span className="truncate">Información General</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <PropertyInfoTabs property={initialProperty} />
       </CardContent>
     </Card>
