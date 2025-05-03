@@ -97,13 +97,11 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
     setTimeout(() => {
       try {
         const filename = `Datos_Fiscales_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.xlsx`;
-        const success = exportFiscalDataToExcel(data, property.propertyName, selectedYear, filename);
         
-        if (success) {
-          toast.success("Informe Excel exportado correctamente", { duration: 3000 });
-        } else {
-          toast.error("Error al exportar el informe Excel", { duration: 3000 });
-        }
+        // Call the export function with the correct number of arguments
+        exportFiscalDataToExcel(data, property.propertyName, selectedYear, filename);
+        
+        toast.success("Informe Excel exportado correctamente", { duration: 3000 });
       } catch (error) {
         console.error("Error exporting to Excel:", error);
         toast.error("Error al exportar el informe Excel", { duration: 3000 });

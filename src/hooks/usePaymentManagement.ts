@@ -49,7 +49,52 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
     return newPayment;
   };
   
-  // Update rent paid status
+  // Handle payment update for a specific month and year
+  const handlePaymentUpdate = (month: number, year: number, isPaid: boolean, notes?: string) => {
+    if (!property) return;
+    
+    setIsUpdatingPayment(true);
+    
+    try {
+      // Check if a payment record already exists for this month/year
+      const existingPayment = property.paymentHistory?.find(
+        p => p.month === month && p.year === year
+      );
+      
+      if (existingPayment) {
+        // Update existing payment
+        const updatedHistory = property.paymentHistory?.map(payment => 
+          payment.month === month && payment.year === year
+            ? { ...payment, isPaid, notes: notes || payment.notes }
+            : payment
+        );
+        
+        setProperty({
+          ...property,
+          paymentHistory: updatedHistory,
+          // Update rentPaid if this is the current month
+          rentPaid: month === new Date().getMonth() && year === new Date().getFullYear() ? isPaid : property.rentPaid
+        });
+      } else {
+        // Create new payment record
+        addPaymentRecord({
+          month,
+          year,
+          isPaid,
+          notes
+        });
+      }
+      
+      toast.success(isPaid ? 'Pago registrado con éxito' : 'Estado de pago actualizado');
+    } catch (error) {
+      console.error('Error updating payment:', error);
+      toast.error('Error al actualizar el pago');
+    } finally {
+      setIsUpdatingPayment(false);
+    }
+  };
+  
+  // Update rent paid status for current month
   const updateRentPaidStatus = async (status: boolean) => {
     if (!property) return;
     
@@ -89,10 +134,15 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
     }
   };
   
+  // Add a handler to make the naming consistent with the usage in PropertyDetail.tsx
+  const handleRentPaidChange = updateRentPaidStatus;
+  
   return {
     isUpdatingPayment,
     getCurrentMonthPayment,
     addPaymentRecord,
-    updateRentPaidStatus
+    updateRentPaidStatus,
+    handlePaymentUpdate,
+    handleRentPaidChange
   };
 }

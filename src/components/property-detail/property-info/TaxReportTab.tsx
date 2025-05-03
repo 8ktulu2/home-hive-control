@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
@@ -110,13 +109,10 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
     setTimeout(() => {
       try {
         const filename = `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}.xlsx`;
-        const success = exportPropertyTaxDataToExcel(property, filename);
+        // Export the data to Excel - correctly handle the return value
+        exportPropertyTaxDataToExcel(property, filename);
         
-        if (success) {
-          toast.success("Informe Excel exportado correctamente", { duration: 3000 });
-        } else {
-          toast.error("Error al exportar el informe Excel", { duration: 3000 });
-        }
+        toast.success("Informe Excel exportado correctamente", { duration: 3000 });
       } catch (error) {
         console.error("Error exporting to Excel:", error);
         toast.error("Error al exportar el informe Excel", { duration: 3000 });
