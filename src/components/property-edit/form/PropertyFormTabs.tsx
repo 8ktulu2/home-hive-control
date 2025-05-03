@@ -41,16 +41,18 @@ const PropertyFormTabs = ({
 }: PropertyFormTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="w-full overflow-x-auto pb-2">
-        <TabsList className="mb-6 w-full h-auto">
-          <TabsTrigger value="basic" className="py-2">Información Básica</TabsTrigger>
-          <TabsTrigger value="tenants" className="py-2">Inquilinos</TabsTrigger>
-          <TabsTrigger value="contacts" className="py-2">Contactos</TabsTrigger>
-          <TabsTrigger value="finances" className="py-2">Finanzas</TabsTrigger>
+      <div className="w-full mb-6">
+        <TabsList className="w-full flex flex-wrap h-auto gap-1">
+          <div className="grid grid-cols-2 md:grid-cols-4 w-full gap-1">
+            <TabsTrigger value="basic" className="py-2 text-xs md:text-sm">Información Básica</TabsTrigger>
+            <TabsTrigger value="tenants" className="py-2 text-xs md:text-sm">Inquilinos</TabsTrigger>
+            <TabsTrigger value="contacts" className="py-2 text-xs md:text-sm">Contactos</TabsTrigger>
+            <TabsTrigger value="finances" className="py-2 text-xs md:text-sm">Finanzas</TabsTrigger>
+          </div>
         </TabsList>
       </div>
       
-      <TabsContent value="basic" className="mt-2 overflow-x-visible">
+      <TabsContent value="basic" className="mt-2">
         <BasicInfoTab 
           property={property}
           imageInputRef={imageInputRef}
@@ -60,7 +62,7 @@ const PropertyFormTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="tenants" className="mt-2 overflow-x-visible">
+      <TabsContent value="tenants" className="mt-2">
         <TenantsTab
           property={property}
           addTenant={addTenant}
@@ -69,14 +71,14 @@ const PropertyFormTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="contacts" className="mt-2 overflow-x-visible">
+      <TabsContent value="contacts" className="mt-2">
         <ContactsTab
           property={property}
           updateContactDetails={updateContactDetails}
         />
       </TabsContent>
 
-      <TabsContent value="finances" className="mt-2 overflow-x-visible">
+      <TabsContent value="finances" className="mt-2">
         <FinancesTab
           property={property}
           setProperty={setProperty}
