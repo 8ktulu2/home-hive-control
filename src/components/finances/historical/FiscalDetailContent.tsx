@@ -3,7 +3,7 @@ import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import FiscalDetailForm from './FiscalDetailForm';
-import { FileText, FilePdf } from 'lucide-react';
+import { FileText, FileDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportFiscalDataToPDF } from '@/utils/pdfExport';
 import { toast } from 'sonner';
@@ -160,7 +160,7 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
               onClick={() => handleExportPDF(property.propertyId)}
               title="Exportar informe fiscal detallado con gráficos y explicaciones"
             >
-              <FilePdf className="h-4 w-4" /> 
+              <FileDown className="h-4 w-4" /> 
               <span className="hidden sm:inline">Generar Informe Fiscal</span>
               <span className="sm:hidden">PDF</span>
             </Button>

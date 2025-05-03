@@ -12,7 +12,7 @@ import {
   Percent,
   MinusCircle,
   HelpCircle,
-  FilePdf,
+  FileDown,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
@@ -154,7 +154,7 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
           title="Exportar a PDF con gráficos visuales y explicaciones detalladas"
         >
-          <FilePdf className="h-4 w-4" /> Generar Informe PDF
+          <FileDown className="h-4 w-4" /> Generar Informe PDF
         </Button>
       </div>
 

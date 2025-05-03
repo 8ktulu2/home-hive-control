@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FiscalData } from '@/components/finances/historical/types';
@@ -539,29 +538,35 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
     currentY = addPieChart(doc, pieData, 60, currentY + 40, 25, 'Ingresos vs Gastos');
     
     // Add bar chart for expense breakdown
-    const expenseBreakdown = [
-      { name: 'IBI', value: ibi, color: '#3498db' },
-      { name: 'Comunidad', value: communityFee, color: '#9b59b6' },
-      { name: 'Hipoteca', value: mortgageInterest, color: '#e74c3c' },
-      { name: 'Seguro', value: homeInsurance, color: '#f1c40f' },
-      { name: 'Amort. Inmueble', value: buildingDepreciation, color: '#1abc9c' },
-      { name: 'Amort. Mobiliario', value: furnitureDepreciation, color: '#d35400' }
-    ];
+    const calculateDeductibleExpenses = () => {
+      const expenseBreakdown = [
+        { label: 'IBI', value: ibi, color: '#3498db' },
+        { label: 'Comunidad', value: communityFee, color: '#9b59b6' },
+        { label: 'Hipoteca', value: mortgageInterest, color: '#e74c3c' },
+        { label: 'Seguro', value: homeInsurance, color: '#f1c40f' },
+        { label: 'Amort. Inmueble', value: buildingDepreciation, color: '#1abc9c' },
+        { label: 'Amort. Mobiliario', value: furnitureDepreciation, color: '#d35400' }
+      ];
+      
+      // Filter out zero values
+      const filteredExpenses = expenseBreakdown.filter(expense => expense.value > 0);
+      
+      // Add other expenses
+      let otherExpensesTotal = 0;
+      if (property.monthlyExpenses && property.monthlyExpenses.length > 0) {
+        property.monthlyExpenses.forEach(expense => {
+          otherExpensesTotal += expense.amount * 12;
+        });
+      }
+      
+      if (otherExpensesTotal > 0) {
+        filteredExpenses.push({ label: 'Otros', value: otherExpensesTotal, color: '#7f8c8d' });
+      }
+      
+      return filteredExpenses;
+    };
     
-    // Filter out zero values
-    const filteredExpenses = expenseBreakdown.filter(expense => expense.value > 0);
-    
-    // Add other expenses
-    let otherExpensesTotal = 0;
-    if (property.monthlyExpenses && property.monthlyExpenses.length > 0) {
-      property.monthlyExpenses.forEach(expense => {
-        otherExpensesTotal += expense.amount * 12;
-      });
-    }
-    
-    if (otherExpensesTotal > 0) {
-      filteredExpenses.push({ name: 'Otros', value: otherExpensesTotal, color: '#7f8c8d' });
-    }
+    const filteredExpenses = calculateDeductibleExpenses();
     
     currentY = addBarChart(doc, filteredExpenses, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
     
