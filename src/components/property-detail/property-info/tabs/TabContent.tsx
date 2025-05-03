@@ -33,8 +33,8 @@ const TabContent: React.FC<TabContentProps> = ({
         <InventoryTab
           property={property}
           onAddInventoryClick={onAddInventoryClick}
-          onEditItem={onEditInventoryItem}
-          onDeleteItem={onDeleteInventoryItem}
+          onEditInventoryItem={onEditInventoryItem}
+          onDeleteInventoryItem={onDeleteInventoryItem}
         />
       );
     default:

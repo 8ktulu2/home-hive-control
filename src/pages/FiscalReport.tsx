@@ -10,9 +10,13 @@ import { toast } from 'sonner';
 import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 import PropertySelector from '@/components/finances/historical/PropertySelector';
 import FiscalDetailContent from '@/components/finances/historical/FiscalDetailContent';
+import { mockProperties } from '@/data/mockData';
 
 const FiscalReport = () => {
-  const { properties, isLoading } = usePropertyLoader();
+  // Just use mock properties directly instead of trying to use usePropertyLoader without an ID
+  const properties = mockProperties;
+  const isLoading = false;
+  
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   
@@ -95,11 +99,9 @@ const FiscalReport = () => {
           </CardHeader>
           <CardContent>
             <PropertySelector 
-              properties={properties || []}
-              selectedPropertyId={selectedPropertyId}
-              onSelectProperty={setSelectedPropertyId}
-              selectedYear={selectedYear}
-              onSelectYear={setSelectedYear}
+              properties={properties}
+              selectedProperty={selectedPropertyId || "all"}
+              onPropertyChange={setSelectedPropertyId}
             />
           </CardContent>
         </Card>
