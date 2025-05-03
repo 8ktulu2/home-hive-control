@@ -1,3 +1,4 @@
+
 export interface Property {
   id: string;
   name: string;
@@ -16,6 +17,9 @@ export interface Property {
   communityManager?: string;
   waterProvider?: string;
   electricityProvider?: string;
+  gasProvider?: string;
+  internetProvider?: string;
+  otherUtilities?: Utility[];
   tenants?: Tenant[];
   mortgage?: Mortgage;
   ibi?: number;
@@ -28,10 +32,71 @@ export interface Property {
   communityManagerDetails?: ContactDetails;
   waterProviderDetails?: ContactDetails;
   electricityProviderDetails?: ContactDetails;
+  gasProviderDetails?: ContactDetails;
+  internetProviderDetails?: ContactDetails;
   homeInsurance?: Insurance;
   lifeInsurance?: Insurance;
   monthlyExpenses?: MonthlyExpense[];
   inventory?: InventoryItem[];
+  contract?: Contract;
+  legalDocuments?: LegalDocument[];
+  taxes?: Tax;
+  maintenance?: Maintenance;
+}
+
+export interface Utility {
+  id: string;
+  name: string;
+  provider?: string;
+  contractNumber?: string;
+  accountHolder?: string;
+  initialReading?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  notes?: string;
+}
+
+export interface Contract {
+  startDate?: string;
+  endDate?: string;
+  monthlyRent?: number;
+  paymentMethod?: string;
+  deposit?: number;
+  inventoryNotes?: string;
+}
+
+export interface LegalDocument {
+  id: string;
+  type: 'deed' | 'energyCertificate' | 'habitabilityCertificate' | 'technicalInspection' | 'other';
+  name: string;
+  dateIssued?: string;
+  expiryDate?: string;
+  fileUrl?: string;
+  notes?: string;
+}
+
+export interface Tax {
+  ibiAmount?: number;
+  ibiContactPhone?: string;
+  ibiContactEmail?: string;
+  ibiOrganization?: string;
+  ibiAddress?: string;
+  otherTaxes?: {
+    name: string;
+    amount: number;
+    dueDate?: string;
+  }[];
+}
+
+export interface Maintenance {
+  plumberContact?: string;
+  electricianContact?: string;
+  applianceInstructions?: string;
+  otherMaintenance?: {
+    type: string;
+    contact: string;
+    notes?: string;
+  }[];
 }
 
 export interface Tenant {
@@ -40,6 +105,9 @@ export interface Tenant {
   phone?: string;
   email?: string;
   identificationNumber?: string;
+  alternativeAddress?: string;
+  references?: string;
+  economicSolvency?: string;
 }
 
 export interface Mortgage {
@@ -55,6 +123,7 @@ export interface Insurance {
   renewalDate?: string;
   isPaid?: boolean;
   paymentFrequency?: 'monthly' | 'quarterly' | 'annually';
+  type?: 'property' | 'liability' | 'nonPayment' | 'other';
 }
 
 export interface Document {

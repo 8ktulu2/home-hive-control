@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -142,10 +143,10 @@ const PropertyEdit = () => {
 
   return (
     <Layout>
-      <div className="max-w-full overflow-x-hidden">
+      <div className="max-w-full overflow-hidden">
         <PropertyFormHeader isNewProperty={isNewProperty} propertyName={property.name || 'Nueva propiedad'} />
 
-        <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <PropertyFormTabs
             property={property}
             setProperty={setProperty}

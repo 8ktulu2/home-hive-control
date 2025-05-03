@@ -25,7 +25,18 @@ export const usePropertyLoader = (id: string | undefined) => {
           rentPaid: false,
           netIncome: 0,
           tenants: [],
-          images: [] // Inicializamos el array de imágenes
+          images: [],
+          otherUtilities: [],
+          contract: {
+            startDate: '',
+            endDate: '',
+            monthlyRent: 0,
+            paymentMethod: '',
+            deposit: 0
+          },
+          legalDocuments: [],
+          taxes: {},
+          maintenance: {}
         };
         setProperty(newProperty);
         setLoading(false);
@@ -76,6 +87,17 @@ export const usePropertyLoader = (id: string | undefined) => {
         if (!foundProperty.lifeInsurance) foundProperty.lifeInsurance = {};
         if (!foundProperty.documents) foundProperty.documents = [];
         if (!foundProperty.images) foundProperty.images = [];
+        if (!foundProperty.otherUtilities) foundProperty.otherUtilities = [];
+        if (!foundProperty.contract) foundProperty.contract = {};
+        if (!foundProperty.legalDocuments) foundProperty.legalDocuments = [];
+        if (!foundProperty.taxes) foundProperty.taxes = {};
+        if (!foundProperty.maintenance) foundProperty.maintenance = {};
+        if (!foundProperty.communityManagerDetails) foundProperty.communityManagerDetails = {};
+        if (!foundProperty.waterProviderDetails) foundProperty.waterProviderDetails = {};
+        if (!foundProperty.electricityProviderDetails) foundProperty.electricityProviderDetails = {};
+        if (!foundProperty.gasProviderDetails) foundProperty.gasProviderDetails = {};
+        if (!foundProperty.internetProviderDetails) foundProperty.internetProviderDetails = {};
+        if (!foundProperty.insuranceDetails) foundProperty.insuranceDetails = {};
         
         if (foundProperty.paymentHistory && foundProperty.paymentHistory.length > 0) {
           const currentDate = new Date();

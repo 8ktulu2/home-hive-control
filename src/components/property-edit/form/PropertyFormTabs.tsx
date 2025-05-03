@@ -6,6 +6,7 @@ import BasicInfoTab from '../BasicInfoTab';
 import TenantsTab from '../TenantsTab';
 import ContactsTab from '../ContactsTab';
 import FinancesTab from '../FinancesTab';
+import UtilitiesTab from '../UtilitiesTab';
 import { RefObject } from 'react';
 
 interface PropertyFormTabsProps {
@@ -41,14 +42,13 @@ const PropertyFormTabs = ({
 }: PropertyFormTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="w-full mb-6">
-        <TabsList className="w-full flex flex-wrap h-auto gap-1">
-          <div className="grid grid-cols-2 md:grid-cols-4 w-full gap-1">
-            <TabsTrigger value="basic" className="py-2 text-xs md:text-sm">Información Básica</TabsTrigger>
-            <TabsTrigger value="tenants" className="py-2 text-xs md:text-sm">Inquilinos</TabsTrigger>
-            <TabsTrigger value="contacts" className="py-2 text-xs md:text-sm">Contactos</TabsTrigger>
-            <TabsTrigger value="finances" className="py-2 text-xs md:text-sm">Finanzas</TabsTrigger>
-          </div>
+      <div className="w-full mb-6 overflow-visible">
+        <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-1">
+          <TabsTrigger value="basic" className="py-2 text-xs md:text-sm">Información Básica</TabsTrigger>
+          <TabsTrigger value="tenants" className="py-2 text-xs md:text-sm">Inquilinos</TabsTrigger>
+          <TabsTrigger value="utilities" className="py-2 text-xs md:text-sm">Suministros</TabsTrigger>
+          <TabsTrigger value="contacts" className="py-2 text-xs md:text-sm">Contactos</TabsTrigger>
+          <TabsTrigger value="finances" className="py-2 text-xs md:text-sm">Finanzas</TabsTrigger>
         </TabsList>
       </div>
       
@@ -68,6 +68,13 @@ const PropertyFormTabs = ({
           addTenant={addTenant}
           updateTenant={updateTenant}
           removeTenant={removeTenant}
+        />
+      </TabsContent>
+      
+      <TabsContent value="utilities" className="mt-2">
+        <UtilitiesTab
+          property={property}
+          setProperty={setProperty}
         />
       </TabsContent>
 

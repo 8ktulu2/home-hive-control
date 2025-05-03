@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from '@/components/ui/accordion';
+import { Building2, Water, Lightbulb, Shield } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
@@ -23,10 +24,13 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
         <CardTitle>Contactos y Proveedores</CardTitle>
       </CardHeader>
       <CardContent className="overflow-visible">
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion type="single" collapsible className="w-full" defaultValue="communityManager">
           <AccordionItem value="communityManager">
             <AccordionTrigger className="py-4">
-              <h3 className="font-medium text-left">Administrador de la Comunidad</h3>
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                <h3 className="font-medium text-left">Administrador de la Comunidad</h3>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <ContactSection
@@ -40,7 +44,10 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
           
           <AccordionItem value="insuranceCompany">
             <AccordionTrigger className="py-4">
-              <h3 className="font-medium text-left">Compañía de Seguros</h3>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                <h3 className="font-medium text-left">Compañía de Seguros</h3>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <ContactSection
@@ -54,7 +61,10 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
           
           <AccordionItem value="waterProvider">
             <AccordionTrigger className="py-4">
-              <h3 className="font-medium text-left">Proveedor de Agua</h3>
+              <div className="flex items-center gap-2">
+                <Water className="h-5 w-5" />
+                <h3 className="font-medium text-left">Proveedor de Agua</h3>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <ContactSection
@@ -68,7 +78,10 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
           
           <AccordionItem value="electricityProvider">
             <AccordionTrigger className="py-4">
-              <h3 className="font-medium text-left">Proveedor de Electricidad</h3>
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5" />
+                <h3 className="font-medium text-left">Proveedor de Electricidad</h3>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <ContactSection
