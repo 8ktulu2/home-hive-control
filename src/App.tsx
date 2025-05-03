@@ -12,6 +12,7 @@ import Historical from "./pages/Historical";
 import PropertyEdit from "./pages/PropertyEdit";
 import Documents from "./pages/Documents";
 import Tasks from "./pages/Tasks";
+import FiscalReport from "./pages/FiscalReport";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="/historical" element={<Historical />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/fiscal-report" element={<FiscalReport />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

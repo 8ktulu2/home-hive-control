@@ -1,11 +1,8 @@
 
-import React from 'react';
-import { TabsContent } from '@/components/ui/tabs';
+import { Property, Tenant, InventoryItem } from '@/types/property';
 import GeneralInfoTab from '../GeneralInfoTab';
 import ContactsTab from '../ContactsTab';
 import InventoryTab from '../InventoryTab';
-import TaxReportTab from '../TaxReportTab';
-import { Property, InventoryItem, Tenant } from '@/types/property';
 
 interface TabContentProps {
   activeTab: string;
@@ -26,38 +23,23 @@ const TabContent: React.FC<TabContentProps> = ({
   onEditInventoryItem,
   onDeleteInventoryItem
 }) => {
-  return (
-    <>
-      <TabsContent value="general">
-        <GeneralInfoTab 
-          property={property} 
-          onTenantClick={onTenantClick} 
-        />
-      </TabsContent>
-
-      <TabsContent value="contacts">
-        <ContactsTab 
-          property={property} 
-          onContactClick={(type) => onContactClick(type, property[`${type}Details`])} 
-        />
-      </TabsContent>
-
-      <TabsContent value="inventory">
-        <InventoryTab 
+  switch (activeTab) {
+    case 'general':
+      return <GeneralInfoTab property={property} onTenantClick={onTenantClick} />;
+    case 'contacts':
+      return <ContactsTab property={property} onContactClick={onContactClick} />;
+    case 'inventory':
+      return (
+        <InventoryTab
           property={property}
           onAddInventoryClick={onAddInventoryClick}
-          onEditInventoryItem={onEditInventoryItem}
-          onDeleteInventoryItem={onDeleteInventoryItem}
+          onEditItem={onEditInventoryItem}
+          onDeleteItem={onDeleteInventoryItem}
         />
-      </TabsContent>
-      
-      <TabsContent value="taxreport">
-        <TaxReportTab 
-          property={property}
-        />
-      </TabsContent>
-    </>
-  );
+      );
+    default:
+      return <GeneralInfoTab property={property} onTenantClick={onTenantClick} />;
+  }
 };
 
 export default TabContent;

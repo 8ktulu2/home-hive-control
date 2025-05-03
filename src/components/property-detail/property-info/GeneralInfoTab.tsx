@@ -1,3 +1,4 @@
+
 import { Property } from '@/types/property';
 import { 
   Building, 
@@ -34,27 +35,31 @@ const GeneralInfoTab = ({ property, onTenantClick }: GeneralInfoTabProps) => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4">
-        {hasAddress && (
-          <div className="flex items-start gap-2">
-            <Building className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-500" />
-            <div>
-              <p className="font-medium">Dirección</p>
-              <p className="text-sm text-gray-600">{property.address}</p>
+        {/* Basic Property Information - Split into Two Rows */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {hasAddress && (
+            <div className="flex items-start gap-2">
+              <Building className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-500" />
+              <div>
+                <p className="font-medium">Dirección</p>
+                <p className="text-sm text-gray-600">{property.address}</p>
+              </div>
             </div>
-          </div>
-        )}
-        
-        {hasCadastralRef && (
-          <div className="flex items-start gap-2">
-            <FileText className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-500" />
-            <div>
-              <p className="font-medium">Referencia Catastral</p>
-              <p className="text-sm text-gray-600">{property.cadastralReference}</p>
+          )}
+          
+          {hasCadastralRef && (
+            <div className="flex items-start gap-2">
+              <FileText className="h-5 w-5 mt-0.5 flex-shrink-0 text-gray-500" />
+              <div>
+                <p className="font-medium">Referencia Catastral</p>
+                <p className="text-sm text-gray-600">{property.cadastralReference}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+        {/* Property Features - Always in a three-column grid on larger screens, one column on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {hasSquareMeters && (
             <div className="flex items-start gap-2">
               <Ruler className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
@@ -145,7 +150,7 @@ const GeneralInfoTab = ({ property, onTenantClick }: GeneralInfoTabProps) => {
         {(hasWaterProvider || hasElectricityProvider || hasGasProvider || hasInternetProvider || hasOtherUtilities) && (
           <div className="mt-4">
             <h3 className="font-medium text-gray-800 mb-2">Suministros</h3>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {hasWaterProvider && (
                 <div className="flex items-start gap-2">
                   <Droplet className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />

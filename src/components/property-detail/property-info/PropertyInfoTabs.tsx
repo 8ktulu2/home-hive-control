@@ -3,7 +3,7 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TabContent from './tabs/TabContent';
 import { Property, Tenant, InventoryItem } from '@/types/property';
-import { FileText, Users, Mail, Box, FileSpreadsheet } from 'lucide-react';
+import { FileText, Users, Mail, Box } from 'lucide-react';
 
 interface PropertyInfoTabsProps {
   property: Property;
@@ -47,12 +47,6 @@ const PropertyInfoTabs: React.FC<PropertyInfoTabsProps> = ({
             className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
           >
             <Box className="h-4 w-4" /> Inventario
-          </TabsTrigger>
-          <TabsTrigger 
-            value="taxreport" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
-          >
-            <FileSpreadsheet className="h-4 w-4" /> Informe Fiscal
           </TabsTrigger>
         </TabsList>
       </div>
