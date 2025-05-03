@@ -42,6 +42,21 @@ export interface Property {
   legalDocuments?: LegalDocument[];
   taxes?: Tax;
   maintenance?: Maintenance;
+  taxInfo?: TaxInfo; // Nueva propiedad para información fiscal
+}
+
+export interface TaxInfo {
+  acquisitionCost?: number;     // Coste de adquisición del inmueble
+  landValue?: number;           // Valor del suelo (no se amortiza)
+  propertyType?: 'residential' | 'commercial' | 'garage' | 'storage' | 'land' | 'industrial' | 'office' | 'tourist';
+  isPrimaryResidence?: boolean; // Es vivienda habitual del inquilino (reducción 50%)
+  isTensionedArea?: boolean;    // Está en zona de mercado tensionado
+  hasYoungTenant?: boolean;     // Inquilino joven (18-35 años)
+  recentlyRenovated?: boolean;  // Rehabilitación en los últimos 2 años
+  rentReduction?: boolean;      // Reducción de renta respecto a contrato anterior
+  renovationYear?: number;      // Año de la rehabilitación
+  additionalDeductions?: string[]; // Deducciones autonómicas adicionales
+  notes?: string;               // Notas adicionales para información fiscal
 }
 
 export interface Utility {

@@ -4,6 +4,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import GeneralInfoTab from '../GeneralInfoTab';
 import ContactsTab from '../ContactsTab';
 import InventoryTab from '../InventoryTab';
+import TaxReportTab from '../TaxReportTab';
 import { Property, InventoryItem, Tenant } from '@/types/property';
 
 interface TabContentProps {
@@ -47,6 +48,12 @@ const TabContent: React.FC<TabContentProps> = ({
           onAddInventoryClick={onAddInventoryClick}
           onEditInventoryItem={onEditInventoryItem}
           onDeleteInventoryItem={onDeleteInventoryItem}
+        />
+      </TabsContent>
+      
+      <TabsContent value="taxreport">
+        <TaxReportTab 
+          property={property}
         />
       </TabsContent>
     </>

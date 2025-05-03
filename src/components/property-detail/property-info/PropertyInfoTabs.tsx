@@ -1,79 +1,72 @@
 
-import { useState } from 'react';
-import { Property, InventoryItem } from '@/types/property';
+import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PropertyInfoDialogs from './components/PropertyInfoDialogs';
-import { usePropertyInfoDialogs } from './hooks/usePropertyInfoDialogs';
-import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 import TabContent from './tabs/TabContent';
+import { Property, Tenant, InventoryItem } from '@/types/property';
+import { FileText, Users, Mail, Box, FileSpreadsheet } from 'lucide-react';
 
 interface PropertyInfoTabsProps {
   property: Property;
+  activeTab: string;
+  setActiveTab: (value: string) => void;
+  onTenantClick: (tenant: Tenant) => void;
+  onContactClick: (title: string, details: any) => void;
+  onAddInventoryClick: () => void;
+  onEditInventoryItem: (item: InventoryItem) => void;
+  onDeleteInventoryItem: (itemId: string) => void;
 }
 
-const PropertyInfoTabs = ({ property }: PropertyInfoTabsProps) => {
-  const [currentProperty, setCurrentProperty] = useState<Property>(property);
-  const [activeTab, setActiveTab] = useState("general");
-  
-  const { handleAddInventoryItem, handleDeleteInventoryItem, handleEditInventoryItem } = useInventoryManagement(
-    currentProperty,
-    setCurrentProperty
-  );
-
-  const {
-    selectedContact,
-    setSelectedContact,
-    selectedTenant,
-    setSelectedTenant,
-    isInventoryDialogOpen,
-    editingInventoryItem,
-    handleContactClick,
-    handleTenantClick,
-    handleInventoryDialogOpen,
-    handleInventoryDialogClose,
-    handleEditInventoryItemClick
-  } = usePropertyInfoDialogs(currentProperty, setCurrentProperty);
-
-  const handleInventoryItemSave = (item: Omit<InventoryItem, 'id'>) => {
-    if (editingInventoryItem) {
-      handleEditInventoryItem({ ...item, id: editingInventoryItem.id });
-    } else {
-      handleAddInventoryItem(item);
-    }
-    handleInventoryDialogClose();
-  };
-
+const PropertyInfoTabs: React.FC<PropertyInfoTabsProps> = ({
+  property,
+  activeTab,
+  setActiveTab,
+  onTenantClick,
+  onContactClick,
+  onAddInventoryClick,
+  onEditInventoryItem,
+  onDeleteInventoryItem
+}) => {
   return (
-    <>
-      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4 w-full grid grid-cols-3 h-auto">
-          <TabsTrigger value="general" className="py-2 text-xs sm:text-sm">General</TabsTrigger>
-          <TabsTrigger value="contacts" className="py-2 text-xs sm:text-sm">Contactos</TabsTrigger>
-          <TabsTrigger value="inventory" className="py-2 text-xs sm:text-sm">Inventario</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <div className="border-b mb-4">
+        <TabsList className="bg-transparent h-auto p-0 w-full rounded-none flex flex-nowrap overflow-auto">
+          <TabsTrigger 
+            value="general" 
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2"
+          >
+            <FileText className="h-4 w-4" /> Información General
+          </TabsTrigger>
+          <TabsTrigger 
+            value="contacts" 
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
+          >
+            <Mail className="h-4 w-4" /> Contactos
+          </TabsTrigger>
+          <TabsTrigger 
+            value="inventory" 
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
+          >
+            <Box className="h-4 w-4" /> Inventario
+          </TabsTrigger>
+          <TabsTrigger 
+            value="taxreport" 
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
+          >
+            <FileSpreadsheet className="h-4 w-4" /> Informe Fiscal
+          </TabsTrigger>
         </TabsList>
-
-        <TabContent 
-          activeTab={activeTab}
-          property={currentProperty}
-          onTenantClick={handleTenantClick}
-          onContactClick={handleContactClick}
-          onAddInventoryClick={handleInventoryDialogOpen}
-          onEditInventoryItem={handleEditInventoryItemClick}
-          onDeleteInventoryItem={handleDeleteInventoryItem}
-        />
-      </Tabs>
-
-      <PropertyInfoDialogs 
-        selectedContact={selectedContact}
-        selectedTenant={selectedTenant}
-        isInventoryDialogOpen={isInventoryDialogOpen}
-        editingInventoryItem={editingInventoryItem}
-        onContactClose={() => setSelectedContact(null)}
-        onTenantClose={() => setSelectedTenant(null)}
-        onInventoryClose={handleInventoryDialogClose}
-        onInventorySave={handleInventoryItemSave}
+      </div>
+      
+      <TabContent 
+        activeTab={activeTab}
+        property={property}
+        onTenantClick={onTenantClick}
+        onContactClick={onContactClick}
+        onAddInventoryClick={onAddInventoryClick}
+        onEditInventoryItem={onEditInventoryItem}
+        onDeleteInventoryItem={onDeleteInventoryItem}
       />
-    </>
+    </Tabs>
   );
 };
 
