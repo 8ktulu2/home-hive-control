@@ -1,116 +1,8 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FiscalData } from '@/components/finances/historical/types';
 import { Property, TaxInfo } from '@/types/property';
-
-/**
- * Creates a pie chart in the PDF document
- */
-const addPieChart = (
-  doc: jsPDF,
-  data: { label: string; value: number; color: string }[],
-  x: number,
-  y: number,
-  radius: number,
-  title: string
-) => {
-  // Draw title
-  doc.setFontSize(12);
-  doc.text(title, x, y - radius - 10);
-  
-  let startAngle = 0;
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-  
-  // Draw each segment of the pie chart
-  data.forEach((segment) => {
-    const segmentAngle = (segment.value / total) * 360;
-    const endAngle = startAngle + segmentAngle;
-    
-    // Convert degrees to radians
-    const startRad = (startAngle * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
-    
-    // Draw pie segment using ellipse instead of arc
-    doc.setFillColor(segment.color);
-    
-    // Start at center point
-    doc.moveTo(x, y);
-    
-    // Draw an ellipse segment (approximation of an arc)
-    // Using lines and curves to create the arc since direct arc is not available
-    const startX = x + radius * Math.cos(startRad);
-    const startY = y + radius * Math.sin(startRad);
-    const endX = x + radius * Math.cos(endRad);
-    const endY = y + radius * Math.sin(endRad);
-    
-    // Draw a triangle from center to the arc points
-    doc.triangle(x, y, startX, startY, endX, endY, 'F');
-    
-    // Update start angle for next segment
-    startAngle = endAngle;
-  });
-  
-  // Draw legend with percentage and values
-  let legendY = y + radius + 10;
-  data.forEach((segment) => {
-    // Draw color box
-    doc.setFillColor(segment.color);
-    doc.rect(x - radius, legendY, 5, 5, 'F');
-    
-    // Calculate percentage
-    const percentage = ((segment.value / total) * 100).toFixed(1);
-    
-    // Draw label with value and percentage
-    doc.setFontSize(10);
-    doc.text(`${segment.label}: ${segment.value.toLocaleString('es-ES')} € (${percentage}%)`, x - radius + 8, legendY + 4);
-    
-    legendY += 10;
-  });
-  
-  return legendY;  // Return the Y position after the chart for further content
-};
-
-/**
- * Creates a bar chart in the PDF document
- */
-const addBarChart = (
-  doc: jsPDF,
-  data: { label: string; value: number; color: string }[],
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  title: string
-) => {
-  // Draw title
-  doc.setFontSize(12);
-  doc.text(title, x, y - 5);
-  
-  const maxValue = Math.max(...data.map(item => item.value));
-  const barWidth = width / data.length / 1.5;
-  const gap = barWidth / 2;
-  
-  // Draw bars
-  data.forEach((bar, index) => {
-    const barHeight = (bar.value / maxValue) * height;
-    const barX = x + index * (barWidth + gap);
-    const barY = y + height - barHeight;
-    
-    doc.setFillColor(bar.color);
-    doc.rect(barX, barY, barWidth, barHeight, 'F');
-    
-    // Draw value on top of bar
-    doc.setFontSize(8);
-    doc.text(bar.value.toLocaleString('es-ES') + ' €', barX, barY - 2, { align: 'left' });
-    
-    // Draw label under bar
-    doc.setFontSize(8);
-    const label = bar.label.length > 10 ? bar.label.substring(0, 10) + '...' : bar.label;
-    doc.text(label, barX, y + height + 10, { align: 'left' });
-  });
-  
-  return y + height + 20;  // Return the Y position after the chart
-};
 
 /**
  * Adds a formatted header to the PDF document
@@ -167,11 +59,19 @@ const addExplanatoryText = (doc: jsPDF, text: string, y: number) => {
 const addDetailedExplanations = (doc: jsPDF, y: number) => {
   doc.setFontSize(14);
   doc.setTextColor(44, 62, 80);
-  doc.text("Guía Completa sobre Deducciones Fiscales", 105, y, { align: 'center' });
+  doc.text("Guía Detallada para la Declaración de la Renta", 105, y, { align: 'center' });
   y += 10;
   
   // Add explanations for each expense type
   const explanations = [
+    {
+      title: "Amortización del Inmueble (3%)",
+      content: "La amortización del inmueble es uno de los gastos más importantes a nivel fiscal para el propietario. Se calcula aplicando un 3% anual sobre el mayor de estos valores: (1) el valor catastral de la construcción (excluyendo el valor del suelo), o (2) el coste de adquisición de la construcción (también excluyendo el suelo). Es fundamental entender que SOLO se amortiza la construcción, nunca el suelo, ya que este no se deteriora con el tiempo. Para calcular correctamente esta amortización, debe disponer del valor catastral desglosado entre suelo y construcción (disponible en el recibo del IBI o solicitándolo al Catastro). Si utiliza el coste de adquisición, debe aplicar el porcentaje que corresponde a la construcción según la escritura o, en su defecto, un porcentaje estimado basado en la zona (en áreas urbanas suele oscilar entre el 60-80% para la construcción). Esta amortización es deducible aunque no represente un desembolso real de dinero."
+    },
+    {
+      title: "Amortización del Mobiliario (10%)",
+      content: "El mobiliario y los enseres del inmueble se amortizan a un ritmo del 10% anual sobre su valor de adquisición. A diferencia del inmueble, el mobiliario se amortiza completamente, no hay valor residual. Es imprescindible conservar las facturas de compra de todos los elementos amortizables como prueba ante una posible inspección fiscal. Se consideran elementos amortizables: muebles, electrodomésticos (lavadora, nevera, horno, etc.), instalaciones no fijas (aire acondicionado portátil), equipos electrónicos, menaje, cortinas, alfombras, etc. La amortización se calcula de forma lineal durante la vida útil estimada de cada elemento, que Hacienda establece en 10 años para el mobiliario general. Si el elemento estuviera parcialmente amortizado antes de destinarlo al alquiler, sólo podrá amortizar la parte pendiente. Los elementos de poco valor (menos de 300€) pueden amortizarse íntegramente en el año de adquisición."
+    },
     {
       title: "IBI (Impuesto sobre Bienes Inmuebles)",
       content: "El IBI es 100% deducible en el rendimiento del capital inmobiliario. Debe conservar el recibo de pago a nombre del propietario como justificante. Si hay varios propietarios, cada uno puede deducir la parte proporcional según su porcentaje de propiedad."
@@ -185,20 +85,12 @@ const addDetailedExplanations = (doc: jsPDF, y: number) => {
       content: "Las cuotas de comunidad de propietarios son completamente deducibles. Conserve los recibos o certificado del administrador. Incluyen gastos como portería, limpieza, ascensor, etc."
     },
     {
-      title: "Amortización del Inmueble",
-      content: "Se calcula como el 3% del mayor de: (a) valor catastral de la construcción (sin suelo) o (b) coste de adquisición de la construcción (sin suelo). Es deducible automáticamente aunque no represente un desembolso efectivo. No se amortiza el valor del suelo."
-    },
-    {
-      title: "Amortización del Mobiliario",
-      content: "El mobiliario y enseres se amortizan al 10% anual. Es necesario tener documentado su valor (facturas de compra). Se considera mobiliario: muebles, electrodomésticos, instalaciones (como aire acondicionado), etc."
+      title: "Gastos de Reparación y Conservación",
+      content: "Son deducibles los gastos para mantener el inmueble en condiciones normales de uso. No son deducibles las ampliaciones o mejoras. Estos gastos junto con los intereses del préstamo están limitados a los ingresos íntegros."
     },
     {
       title: "Seguros de Hogar",
       content: "Son deducibles las primas de seguros del inmueble (continente y contenido). También son deducibles los seguros de responsabilidad civil y defensa jurídica relacionados con el inmueble."
-    },
-    {
-      title: "Gastos de Reparación y Conservación",
-      content: "Son deducibles los gastos para mantener el inmueble en condiciones normales de uso. No son deducibles las ampliaciones o mejoras. Estos gastos junto con los intereses del préstamo están limitados a los ingresos íntegros."
     },
     {
       title: "Gastos de Formalización",
@@ -226,9 +118,6 @@ const addDetailedExplanations = (doc: jsPDF, y: number) => {
     }
   ];
 
-  // Draw explanations in a table format
-  doc.setFillColor(240, 240, 245);
-  
   // Gastos deducibles
   y = addSectionTitle(doc, "GASTOS DEDUCIBLES: DETALLE Y JUSTIFICACIÓN", y);
   
@@ -518,63 +407,11 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
     
     currentY = (doc as any).lastAutoTable.finalY + 15;
     
-    // If we've used more than 3/4 of the page, add a new page for charts
-    if (currentY > 180) {
-      doc.addPage();
-      currentY = 20;
-    } else {
-      currentY += 10;
-    }
-    
-    // Add visualization section
-    currentY = addSectionTitle(doc, 'VISUALIZACIÓN GRÁFICA', currentY);
-    
-    // Add pie chart for income vs expenses
-    const pieData = [
-      { label: 'Ingresos', value: annualRent, color: '#2ecc71' },
-      { label: 'Gastos', value: totalExpenses, color: '#e74c3c' }
-    ];
-    
-    currentY = addPieChart(doc, pieData, 60, currentY + 40, 25, 'Ingresos vs Gastos');
-    
-    // Add bar chart for expense breakdown
-    const calculateDeductibleExpenses = () => {
-      const expenseBreakdown = [
-        { label: 'IBI', value: ibi, color: '#3498db' },
-        { label: 'Comunidad', value: communityFee, color: '#9b59b6' },
-        { label: 'Hipoteca', value: mortgageInterest, color: '#e74c3c' },
-        { label: 'Seguro', value: homeInsurance, color: '#f1c40f' },
-        { label: 'Amort. Inmueble', value: buildingDepreciation, color: '#1abc9c' },
-        { label: 'Amort. Mobiliario', value: furnitureDepreciation, color: '#d35400' }
-      ];
-      
-      // Filter out zero values
-      const filteredExpenses = expenseBreakdown.filter(expense => expense.value > 0);
-      
-      // Add other expenses
-      let otherExpensesTotal = 0;
-      if (property.monthlyExpenses && property.monthlyExpenses.length > 0) {
-        property.monthlyExpenses.forEach(expense => {
-          otherExpensesTotal += expense.amount * 12;
-        });
-      }
-      
-      if (otherExpensesTotal > 0) {
-        filteredExpenses.push({ label: 'Otros', value: otherExpensesTotal, color: '#7f8c8d' });
-      }
-      
-      return filteredExpenses;
-    };
-    
-    const filteredExpenses = calculateDeductibleExpenses();
-    
-    currentY = addBarChart(doc, filteredExpenses, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
-    
-    // Add a new page for educational content
+    // Add a new page for detailed explanations on amortization
     doc.addPage();
     currentY = 20;
     
-    // Add detailed explanations
+    // Add detailed explanations specific to amortization
     currentY = addDetailedExplanations(doc, currentY);
     
     // Add footer to all pages
@@ -744,39 +581,6 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
     });
     
     currentY = (doc as any).lastAutoTable.finalY + 15;
-    
-    // If we've used more than 3/4 of the page, add a new page for charts
-    if (currentY > 180) {
-      doc.addPage();
-      currentY = 20;
-    } else {
-      currentY += 10;
-    }
-    
-    // Add visualization section
-    currentY = addSectionTitle(doc, 'VISUALIZACIÓN GRÁFICA', currentY);
-    
-    // Add pie chart for income vs expenses
-    const pieData = [
-      { label: 'Ingresos', value: data.totalIncome || 0, color: '#2ecc71' },
-      { label: 'Gastos', value: data.totalExpenses || 0, color: '#e74c3c' }
-    ];
-    
-    currentY = addPieChart(doc, pieData, 60, currentY + 40, 25, 'Ingresos vs Gastos');
-    
-    // Add bar chart for expense breakdown - only show non-zero values
-    const barDataItems = [
-      { label: 'IBI', value: data.ibi || 0, color: '#3498db' },
-      { label: 'Comunidad', value: data.communityFees || 0, color: '#9b59b6' },
-      { label: 'Hipoteca', value: data.mortgageInterest || 0, color: '#e74c3c' },
-      { label: 'Seguro', value: data.homeInsurance || 0, color: '#f1c40f' },
-      { label: 'Mant.', value: data.maintenance || 0, color: '#1abc9c' },
-      { label: 'Otros', value: (data.otherExpenses || 0) + (data.utilities || 0), color: '#d35400' }
-    ].filter(item => item.value > 0);
-    
-    if (barDataItems.length > 0) {
-      currentY = addBarChart(doc, barDataItems, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
-    }
     
     // Add a new page for educational content
     doc.addPage();

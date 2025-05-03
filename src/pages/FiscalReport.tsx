@@ -102,7 +102,7 @@ const FiscalReport = () => {
               }, 1500);
             }}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 ml-auto"
-            title="Exportar a PDF con gráficos visuales y explicaciones detalladas"
+            title="Exportar a PDF con explicaciones detalladas"
           >
             <FileDown className="h-4 w-4" /> Generar Informe PDF
           </Button>

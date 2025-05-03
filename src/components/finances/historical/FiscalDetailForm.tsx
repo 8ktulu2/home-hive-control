@@ -17,7 +17,6 @@ import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { FileText } from 'lucide-react';
 
 interface FiscalDetailFormProps {
   initialData: FiscalData;
@@ -96,64 +95,6 @@ const FiscalDetailForm = ({
     toast.success("Datos fiscales actualizados correctamente");
   };
 
-  const exportToCSV = () => {
-    // Get current form values
-    const data = form.getValues();
-    
-    // Create CSV content
-    const headers = [
-      "Concepto", "Importe (€)"
-    ];
-    
-    const rows = [
-      ["INGRESOS", ""],
-      ["Ingresos por alquiler", data.rentalIncome || 0],
-      ["Subvenciones", data.subsidies || 0],
-      ["Otros ingresos", data.otherIncome || 0],
-      ["TOTAL INGRESOS", data.totalIncome || 0],
-      ["", ""],
-      ["GASTOS DEDUCIBLES", ""],
-      ["IBI", data.ibi || 0],
-      ["Gastos de comunidad", data.communityFees || 0],
-      ["Intereses hipoteca", data.mortgageInterest || 0],
-      ["Seguro de hogar", data.homeInsurance || 0],
-      ["Mantenimiento y reparaciones", data.maintenance || 0],
-      ["Honorarios de agencia", data.agencyFees || 0],
-      ["Gastos administrativos", data.administrativeFees || 0],
-      ["Amortización inmueble (3%)", data.buildingDepreciation || 0],
-      ["Amortización mobiliario (10%)", data.furnitureDepreciation || 0],
-      ["Suministros", data.utilities || 0],
-      ["Tasas municipales", data.municipalTaxes || 0],
-      ["Gastos legales", data.legalFees || 0],
-      ["Saldos de dudoso cobro", data.badDebts || 0],
-      ["Otros gastos", data.otherExpenses || 0],
-      ["TOTAL GASTOS", data.totalExpenses || 0],
-      ["", ""],
-      ["RENDIMIENTO NETO", data.netProfit || 0],
-      ["Reducción aplicable (" + reduction + "%)", (data.netProfit || 0) * (reduction / 100)],
-      ["RENDIMIENTO NETO REDUCIDO", data.reducedNetProfit || 0]
-    ];
-    
-    // Convert to CSV string
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n");
-    
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Datos_IRPF_${propertyName}_${selectedYear}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success("Datos exportados a CSV correctamente");
-  };
-
   // Check conditions for higher reductions
   const handleReductionChange = (inTensionedArea: boolean, rentLowered: boolean, youngTenant: boolean, recentlyRenovated: boolean) => {
     let newReduction = 50; // Default reduction
@@ -176,16 +117,8 @@ const FiscalDetailForm = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4">
         <h3 className="text-lg font-semibold">Datos IRPF - {propertyName} ({selectedYear})</h3>
-        <Button 
-          variant="outline" 
-          onClick={exportToCSV}
-          className="flex items-center gap-2"
-        >
-          <FileText className="h-4 w-4" /> 
-          Exportar a CSV
-        </Button>
       </div>
       
       <Form {...form}>
@@ -440,7 +373,8 @@ const FiscalDetailForm = ({
                         />
                       </FormControl>
                       <FormDescription>
-                        3% del valor de adquisición (sin suelo) o catastral
+                        3% del valor de adquisición (sin suelo) o catastral de la construcción. 
+                        Solo se amortiza la construcción, nunca el suelo.
                       </FormDescription>
                     </FormItem>
                   )}
@@ -463,7 +397,8 @@ const FiscalDetailForm = ({
                         />
                       </FormControl>
                       <FormDescription>
-                        10% del coste de muebles y electrodomésticos
+                        10% del coste de muebles, electrodomésticos y enseres. 
+                        Se amortiza por completo durante 10 años.
                       </FormDescription>
                     </FormItem>
                   )}
@@ -580,6 +515,33 @@ const FiscalDetailForm = ({
                     </FormItem>
                   )}
                 />
+              </div>
+              
+              <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                <h4 className="font-medium mb-3">Guía de amortizaciones</h4>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="font-medium">Amortización del inmueble (3%)</p>
+                    <p className="text-muted-foreground">Se amortiza solamente el valor de la construcción (nunca el suelo). Se aplica el 3% sobre el mayor de:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1 text-muted-foreground">
+                      <li>Valor catastral de la construcción (excluido el suelo)</li>
+                      <li>Valor de adquisición de la construcción (excluido el suelo)</li>
+                    </ul>
+                    <p className="text-muted-foreground mt-1">El valor del suelo puede obtenerse del recibo del IBI, donde figura desglosado, o de la escritura de compra.</p>
+                  </div>
+                  
+                  <div>
+                    <p className="font-medium">Amortización del mobiliario (10%)</p>
+                    <p className="text-muted-foreground">Se aplica el 10% sobre el valor de adquisición de:</p>
+                    <ul className="list-disc pl-5 mt-1 space-y-1 text-muted-foreground">
+                      <li>Muebles y enseres (sofás, mesas, sillas, armarios, etc.)</li>
+                      <li>Electrodomésticos (lavadora, nevera, horno, microondas, etc.)</li>
+                      <li>Instalaciones no fijas (aires acondicionados portátiles, etc.)</li>
+                      <li>Otros elementos (cortinas, alfombras, lámparas, etc.)</li>
+                    </ul>
+                    <p className="text-muted-foreground mt-1">Es importante conservar las facturas de compra como justificante. Los elementos de valor inferior a 300€ pueden amortizarse íntegramente en el año de adquisición.</p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
