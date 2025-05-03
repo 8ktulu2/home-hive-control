@@ -55,13 +55,13 @@ const BasicInfoTab = ({
   };
 
   return (
-    <Card>
+    <Card className="overflow-visible">
       <CardHeader>
         <CardTitle>Información Básica</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="w-full md:w-1/3 flex flex-col items-center gap-2">
+      <CardContent className="space-y-4 overflow-visible">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="w-full lg:w-1/3 flex flex-col items-center gap-2">
             <MainPropertyImage
               image={property.image}
               imageInputRef={imageInputRef}

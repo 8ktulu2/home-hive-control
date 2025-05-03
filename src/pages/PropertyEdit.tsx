@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -143,27 +142,29 @@ const PropertyEdit = () => {
 
   return (
     <Layout>
-      <PropertyFormHeader isNewProperty={isNewProperty} propertyName={property.name || 'Nueva propiedad'} />
+      <div className="max-w-full overflow-x-hidden">
+        <PropertyFormHeader isNewProperty={isNewProperty} propertyName={property.name || 'Nueva propiedad'} />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <PropertyFormTabs
-          property={property}
-          setProperty={setProperty}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          imageInputRef={imageInputRef}
-          handleImageUpload={handleImageUpload}
-          handleImageChange={handleImageChange}
-          calculateTotalExpenses={calculateTotalExpenses}
-          addTenant={addTenant}
-          updateTenant={updateTenant}
-          removeTenant={removeTenant}
-          updateContactDetails={updateContactDetails}
-          updateInsuranceCompany={updateInsuranceCompany}
-        />
+        <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
+          <PropertyFormTabs
+            property={property}
+            setProperty={setProperty}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            imageInputRef={imageInputRef}
+            handleImageUpload={handleImageUpload}
+            handleImageChange={handleImageChange}
+            calculateTotalExpenses={calculateTotalExpenses}
+            addTenant={addTenant}
+            updateTenant={updateTenant}
+            removeTenant={removeTenant}
+            updateContactDetails={updateContactDetails}
+            updateInsuranceCompany={updateInsuranceCompany}
+          />
 
-        <PropertyFormActions isNewProperty={isNewProperty} />
-      </form>
+          <PropertyFormActions isNewProperty={isNewProperty} />
+        </form>
+      </div>
     </Layout>
   );
 };

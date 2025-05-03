@@ -16,38 +16,40 @@ const ContactsTab = ({ property, updateContactDetails }: ContactsTabProps) => {
       <CardHeader>
         <CardTitle>Contactos y Proveedores</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ContactSection
-          title="Administrador de la Comunidad"
-          type="communityManager"
-          details={property.communityManagerDetails}
-          name={property.communityManager}
-          updateContactDetails={updateContactDetails}
-        />
-        
-        <ContactSection
-          title="Compañía de Seguros"
-          type="insuranceCompany"
-          details={property.insuranceDetails}
-          name={property.insuranceCompany}
-          updateContactDetails={updateContactDetails}
-        />
-        
-        <ContactSection
-          title="Proveedor de Agua"
-          type="waterProvider"
-          details={property.waterProviderDetails}
-          name={property.waterProvider}
-          updateContactDetails={updateContactDetails}
-        />
-        
-        <ContactSection
-          title="Proveedor de Electricidad"
-          type="electricityProvider"
-          details={property.electricityProviderDetails}
-          name={property.electricityProvider}
-          updateContactDetails={updateContactDetails}
-        />
+      <CardContent className="overflow-visible">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ContactSection
+            title="Administrador de la Comunidad"
+            type="communityManager"
+            details={property.communityManagerDetails}
+            name={property.communityManager}
+            updateContactDetails={updateContactDetails}
+          />
+          
+          <ContactSection
+            title="Compañía de Seguros"
+            type="insuranceCompany"
+            details={property.insuranceDetails}
+            name={property.insuranceCompany}
+            updateContactDetails={updateContactDetails}
+          />
+          
+          <ContactSection
+            title="Proveedor de Agua"
+            type="waterProvider"
+            details={property.waterProviderDetails}
+            name={property.waterProvider}
+            updateContactDetails={updateContactDetails}
+          />
+          
+          <ContactSection
+            title="Proveedor de Electricidad"
+            type="electricityProvider"
+            details={property.electricityProviderDetails}
+            name={property.electricityProvider}
+            updateContactDetails={updateContactDetails}
+          />
+        </div>
       </CardContent>
     </Card>
   );

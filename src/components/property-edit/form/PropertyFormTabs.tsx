@@ -41,14 +41,16 @@ const PropertyFormTabs = ({
 }: PropertyFormTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="mb-6 w-full justify-start">
-        <TabsTrigger value="basic">Información Básica</TabsTrigger>
-        <TabsTrigger value="tenants">Inquilinos</TabsTrigger>
-        <TabsTrigger value="contacts">Contactos</TabsTrigger>
-        <TabsTrigger value="finances">Finanzas</TabsTrigger>
-      </TabsList>
+      <div className="w-full overflow-x-auto pb-2">
+        <TabsList className="mb-6 w-full h-auto">
+          <TabsTrigger value="basic" className="py-2">Información Básica</TabsTrigger>
+          <TabsTrigger value="tenants" className="py-2">Inquilinos</TabsTrigger>
+          <TabsTrigger value="contacts" className="py-2">Contactos</TabsTrigger>
+          <TabsTrigger value="finances" className="py-2">Finanzas</TabsTrigger>
+        </TabsList>
+      </div>
       
-      <TabsContent value="basic">
+      <TabsContent value="basic" className="mt-2 overflow-x-visible">
         <BasicInfoTab 
           property={property}
           imageInputRef={imageInputRef}
@@ -58,7 +60,7 @@ const PropertyFormTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="tenants">
+      <TabsContent value="tenants" className="mt-2 overflow-x-visible">
         <TenantsTab
           property={property}
           addTenant={addTenant}
@@ -67,14 +69,14 @@ const PropertyFormTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="contacts">
+      <TabsContent value="contacts" className="mt-2 overflow-x-visible">
         <ContactsTab
           property={property}
           updateContactDetails={updateContactDetails}
         />
       </TabsContent>
 
-      <TabsContent value="finances">
+      <TabsContent value="finances" className="mt-2 overflow-x-visible">
         <FinancesTab
           property={property}
           setProperty={setProperty}

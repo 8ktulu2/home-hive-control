@@ -16,14 +16,14 @@ interface TenantsTabProps {
 const TenantsTab = ({ property, addTenant, updateTenant, removeTenant }: TenantsTabProps) => {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
         <CardTitle>Inquilinos</CardTitle>
         <Button type="button" size="sm" onClick={addTenant}>
           <Plus className="h-4 w-4 mr-2" />
           Añadir Inquilino
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-visible">
         {property.tenants && property.tenants.length > 0 ? (
           <div className="space-y-6">
             {property.tenants.map((tenant, index) => (
@@ -44,7 +44,7 @@ const TenantsTab = ({ property, addTenant, updateTenant, removeTenant }: Tenants
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor={`tenant-${index}-name`}>Nombre</Label>
                     <Input
