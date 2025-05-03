@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FiscalData } from '@/components/finances/historical/types';
@@ -31,10 +30,21 @@ const addPieChart = (
     const startRad = (startAngle * Math.PI) / 180;
     const endRad = (endAngle * Math.PI) / 180;
     
-    // Draw pie segment
+    // Draw pie segment using ellipse instead of arc
     doc.setFillColor(segment.color);
+    
+    // Start at center point
     doc.moveTo(x, y);
-    doc.arc(x, y, radius, startRad, endRad, 'F');
+    
+    // Draw an ellipse segment (approximation of an arc)
+    // Using lines and curves to create the arc since direct arc is not available
+    const startX = x + radius * Math.cos(startRad);
+    const startY = y + radius * Math.sin(startRad);
+    const endX = x + radius * Math.cos(endRad);
+    const endY = y + radius * Math.sin(endRad);
+    
+    // Draw a triangle from center to the arc points
+    doc.triangle(x, y, startX, startY, endX, endY, 'F');
     
     // Update start angle for next segment
     startAngle = endAngle;
