@@ -27,15 +27,24 @@ const FiscalReport = () => {
     return properties.map(property => ({
       propertyId: property.id,
       propertyName: property.name,
-      months: Array(12).fill(0).map((_, idx) => ({
-        month: idx + 1,
-        year: selectedYear,
-        rentAmount: property.rent || 0,
-        totalExpenses: property.ibi 
+      months: Array(12).fill(0).map((_, idx) => {
+        // Calculate estimated expenses
+        const monthRentAmount = property.rent || 0;
+        const monthTotalExpenses = property.ibi 
           ? property.ibi / 12 
-          : (property.rent ? property.rent * 0.3 : 0),
-        date: new Date(selectedYear, idx, 1)
-      }))
+          : (monthRentAmount * 0.3);
+        
+        return {
+          month: idx + 1,
+          year: selectedYear,
+          rentAmount: monthRentAmount,
+          totalExpenses: monthTotalExpenses,
+          wasRented: true, // Assuming always rented for simplicity
+          expenses: [],    // Empty expenses array 
+          netIncome: monthRentAmount - monthTotalExpenses,
+          date: new Date(selectedYear, idx, 1)
+        };
+      })
     }));
   };
 

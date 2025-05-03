@@ -27,7 +27,46 @@ const TabContent: React.FC<TabContentProps> = ({
     case 'general':
       return <GeneralInfoTab property={property} onTenantClick={onTenantClick} />;
     case 'contacts':
-      return <ContactsTab property={property} onContactClick={onContactClick} />;
+      return <ContactsTab 
+        property={property} 
+        onContactClick={(type) => {
+          // Extract the appropriate details based on the contact type
+          let title = '';
+          let details = {};
+          
+          switch(type) {
+            case 'communityManager':
+              title = 'Administrador Comunidad';
+              details = property.communityManagerDetails || {};
+              break;
+            case 'insuranceCompany':
+              title = 'Compañía de Seguros';
+              details = property.insuranceDetails || {};
+              break;
+            case 'waterProvider':
+              title = 'Proveedor de Agua';
+              details = property.waterProviderDetails || {};
+              break;
+            case 'electricityProvider':
+              title = 'Proveedor de Electricidad';
+              details = property.electricityProviderDetails || {};
+              break;
+            case 'gasProvider':
+              title = 'Proveedor de Gas';
+              details = property.gasProviderDetails || {};
+              break;
+            case 'internetProvider':
+              title = 'Proveedor de Internet';
+              details = property.internetProviderDetails || {};
+              break;
+            default:
+              title = type;
+              break;
+          }
+          
+          onContactClick(title, details);
+        }} 
+      />;
     case 'inventory':
       return (
         <InventoryTab
