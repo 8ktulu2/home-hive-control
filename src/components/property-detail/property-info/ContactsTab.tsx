@@ -1,6 +1,5 @@
-
 import { Property } from '@/types/property';
-import { Building2, Droplet, Lightbulb, Shield } from 'lucide-react';
+import { Building2, Droplet, Lightbulb, Shield, Flame, Wifi } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
@@ -126,7 +125,7 @@ const ContactsTab = ({ property, onContactClick }: ContactsTabProps) => {
           onClick={() => onContactClick?.('gasProvider')}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Lightbulb className="h-4 w-4 text-gray-500" />
+            <Flame className="h-4 w-4 text-gray-500" />
             <h3 className="font-medium">{property.gasProvider || 'Gas'}</h3>
           </div>
           {property.gasProviderDetails?.phone && (
@@ -144,7 +143,7 @@ const ContactsTab = ({ property, onContactClick }: ContactsTabProps) => {
           onClick={() => onContactClick?.('internetProvider')}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Lightbulb className="h-4 w-4 text-gray-500" />
+            <Wifi className="h-4 w-4 text-gray-500" />
             <h3 className="font-medium">{property.internetProvider || 'Internet'}</h3>
           </div>
           {property.internetProviderDetails?.phone && (

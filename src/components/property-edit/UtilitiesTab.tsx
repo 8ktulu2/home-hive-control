@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Property, Utility } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Droplet, Lightbulb, Wifi } from 'lucide-react';
+import { Plus, Droplet, Lightbulb, Wifi, Flame } from 'lucide-react';
 import { 
   Accordion,
   AccordionContent,
@@ -125,7 +126,7 @@ const UtilitiesTab = ({ property, setProperty }: UtilitiesTabProps) => {
           <AccordionItem value="gas" className="border-b">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
+                <Flame className="h-5 w-5" />
                 <h3 className="font-medium text-left">Gas</h3>
               </div>
             </AccordionTrigger>

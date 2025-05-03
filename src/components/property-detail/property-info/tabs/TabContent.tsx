@@ -4,12 +4,12 @@ import { TabsContent } from '@/components/ui/tabs';
 import GeneralInfoTab from '../GeneralInfoTab';
 import ContactsTab from '../ContactsTab';
 import InventoryTab from '../InventoryTab';
-import { Property, InventoryItem } from '@/types/property';
+import { Property, InventoryItem, Tenant } from '@/types/property';
 
 interface TabContentProps {
   activeTab: string;
   property: Property;
-  onTenantClick: (tenant: any) => void;
+  onTenantClick: (tenant: Tenant) => void;
   onContactClick: (title: string, details: any) => void;
   onAddInventoryClick: () => void;
   onEditInventoryItem: (item: InventoryItem) => void;

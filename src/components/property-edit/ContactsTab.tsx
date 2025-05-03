@@ -9,7 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from '@/components/ui/accordion';
-import { Building2, Droplet, Lightbulb, Shield } from 'lucide-react';
+import { Building2, Droplet, Lightbulb, Shield, Flame, Wifi } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;

@@ -1,4 +1,3 @@
-
 import { Property } from '@/types/property';
 import { 
   Building, 
@@ -10,6 +9,7 @@ import {
   FileText,
   Droplet,
   Lightbulb,
+  Flame,
   Wifi
 } from 'lucide-react';
 
@@ -178,7 +178,7 @@ const GeneralInfoTab = ({ property, onTenantClick }: GeneralInfoTabProps) => {
               
               {hasGasProvider && (
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
+                  <Flame className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-500" />
                   <div>
                     <p className="font-medium">Gas</p>
                     <p className="text-sm text-gray-600">{property.gasProvider}</p>
