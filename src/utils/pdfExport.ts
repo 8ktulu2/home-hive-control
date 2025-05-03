@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FiscalData } from '@/components/finances/historical/types';
@@ -50,16 +51,19 @@ const addPieChart = (
     startAngle = endAngle;
   });
   
-  // Draw legend
+  // Draw legend with percentage and values
   let legendY = y + radius + 10;
   data.forEach((segment) => {
     // Draw color box
     doc.setFillColor(segment.color);
     doc.rect(x - radius, legendY, 5, 5, 'F');
     
-    // Draw label
+    // Calculate percentage
+    const percentage = ((segment.value / total) * 100).toFixed(1);
+    
+    // Draw label with value and percentage
     doc.setFontSize(10);
-    doc.text(`${segment.label}: ${segment.value.toLocaleString('es-ES')} €`, x - radius + 8, legendY + 4);
+    doc.text(`${segment.label}: ${segment.value.toLocaleString('es-ES')} € (${percentage}%)`, x - radius + 8, legendY + 4);
     
     legendY += 10;
   });
@@ -159,6 +163,142 @@ const addExplanatoryText = (doc: jsPDF, text: string, y: number) => {
 };
 
 /**
+ * Adds detailed explanations about tax deductions
+ */
+const addDetailedExplanations = (doc: jsPDF, y: number) => {
+  doc.setFontSize(14);
+  doc.setTextColor(44, 62, 80);
+  doc.text("Guía Completa sobre Deducciones Fiscales", 105, y, { align: 'center' });
+  y += 10;
+  
+  // Add explanations for each expense type
+  const explanations = [
+    {
+      title: "IBI (Impuesto sobre Bienes Inmuebles)",
+      content: "El IBI es 100% deducible en el rendimiento del capital inmobiliario. Debe conservar el recibo de pago a nombre del propietario como justificante. Si hay varios propietarios, cada uno puede deducir la parte proporcional según su porcentaje de propiedad."
+    },
+    {
+      title: "Intereses de Préstamos",
+      content: "Solo son deducibles los intereses (no la amortización del capital). Debe solicitar a su banco un certificado anual que detalle la parte correspondiente a intereses. Los intereses están limitados junto con los gastos de conservación y reparación a los ingresos íntegros."
+    },
+    {
+      title: "Gastos de Comunidad",
+      content: "Las cuotas de comunidad de propietarios son completamente deducibles. Conserve los recibos o certificado del administrador. Incluyen gastos como portería, limpieza, ascensor, etc."
+    },
+    {
+      title: "Amortización del Inmueble",
+      content: "Se calcula como el 3% del mayor de: (a) valor catastral de la construcción (sin suelo) o (b) coste de adquisición de la construcción (sin suelo). Es deducible automáticamente aunque no represente un desembolso efectivo. No se amortiza el valor del suelo."
+    },
+    {
+      title: "Amortización del Mobiliario",
+      content: "El mobiliario y enseres se amortizan al 10% anual. Es necesario tener documentado su valor (facturas de compra). Se considera mobiliario: muebles, electrodomésticos, instalaciones (como aire acondicionado), etc."
+    },
+    {
+      title: "Seguros de Hogar",
+      content: "Son deducibles las primas de seguros del inmueble (continente y contenido). También son deducibles los seguros de responsabilidad civil y defensa jurídica relacionados con el inmueble."
+    },
+    {
+      title: "Gastos de Reparación y Conservación",
+      content: "Son deducibles los gastos para mantener el inmueble en condiciones normales de uso. No son deducibles las ampliaciones o mejoras. Estos gastos junto con los intereses del préstamo están limitados a los ingresos íntegros."
+    },
+    {
+      title: "Gastos de Formalización",
+      content: "Honorarios de abogados, notaría, registro, etc. relacionados con el contrato de alquiler son deducibles. También los gastos de agencia inmobiliaria por buscar inquilino."
+    },
+  ];
+  
+  // Add reduction explanations
+  const reductionExplanations = [
+    {
+      title: "Reducción General del 50%",
+      content: "Aplicable a todos los alquileres de viviendas que sean residencia habitual del inquilino. Esta reducción se aplica sobre el rendimiento neto (ingresos menos gastos deducibles)."
+    },
+    {
+      title: "Reducción del 60%",
+      content: "Para viviendas rehabilitadas en los últimos 2 años y destinadas al alquiler como vivienda habitual. Se exige que las obras mejoren la eficiencia energética."
+    },
+    {
+      title: "Reducción del 70%",
+      content: "Para alquileres a jóvenes (18-35 años) en zonas de mercado residencial tensionado, siempre que sea su vivienda habitual. Es necesario tener documentado que el inquilino está en ese rango de edad."
+    },
+    {
+      title: "Reducción del 90%",
+      content: "Para viviendas en zonas tensionadas con rebaja de renta de al menos un 5% respecto al contrato anterior. Se debe poder documentar esta reducción con los contratos anteriores y actuales."
+    }
+  ];
+
+  // Draw explanations in a table format
+  doc.setFillColor(240, 240, 245);
+  
+  // Gastos deducibles
+  y = addSectionTitle(doc, "GASTOS DEDUCIBLES: DETALLE Y JUSTIFICACIÓN", y);
+  
+  explanations.forEach(exp => {
+    doc.setFillColor(245, 245, 250);
+    doc.rect(25, y, 160, 8, 'F');
+    
+    doc.setFontSize(10);
+    doc.setTextColor(44, 62, 80);
+    doc.setFont(undefined, 'bold');
+    doc.text(exp.title, 30, y + 5);
+    doc.setFont(undefined, 'normal');
+    
+    y += 10;
+    
+    const contentLines = doc.splitTextToSize(exp.content, 150);
+    doc.setTextColor(80, 80, 80);
+    doc.text(contentLines, 30, y);
+    
+    y += (contentLines.length * 5) + 8;
+  });
+  
+  // Check if need a new page
+  if (y > 260) {
+    doc.addPage();
+    y = 20;
+  }
+  
+  // Reducciones fiscales
+  y = addSectionTitle(doc, "REDUCCIONES FISCALES: REQUISITOS Y APLICACIÓN", y);
+  
+  reductionExplanations.forEach(exp => {
+    doc.setFillColor(245, 245, 250);
+    doc.rect(25, y, 160, 8, 'F');
+    
+    doc.setFontSize(10);
+    doc.setTextColor(44, 62, 80);
+    doc.setFont(undefined, 'bold');
+    doc.text(exp.title, 30, y + 5);
+    doc.setFont(undefined, 'normal');
+    
+    y += 10;
+    
+    const contentLines = doc.splitTextToSize(exp.content, 150);
+    doc.setTextColor(80, 80, 80);
+    doc.text(contentLines, 30, y);
+    
+    y += (contentLines.length * 5) + 8;
+  });
+  
+  // Final advice
+  y += 5;
+  doc.setFillColor(235, 245, 251);
+  doc.rect(25, y, 160, 25, 'F');
+  
+  doc.setFontSize(10);
+  doc.setTextColor(41, 128, 185);
+  doc.setFont(undefined, 'bold');
+  doc.text("RECOMENDACIÓN IMPORTANTE:", 30, y + 6);
+  doc.setFont(undefined, 'normal');
+  
+  const adviceText = "Conserve todos los justificantes (facturas, recibos, certificados bancarios) durante al menos 4 años, que es el plazo de prescripción fiscal. La reducción por alquiler de vivienda habitual requiere que conste expresamente en el contrato que se destina a tal fin. Considere consultar con un asesor fiscal para optimizar su declaración.";
+  const adviceLines = doc.splitTextToSize(adviceText, 150);
+  doc.text(adviceLines, 30, y + 12);
+  
+  return y + 30;
+};
+
+/**
  * Exports property tax data to PDF
  */
 export const exportPropertyTaxDataToPDF = (property: Property, filename: string) => {
@@ -225,7 +365,7 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
     // Add other monthly expenses
     if (property.monthlyExpenses) {
       property.monthlyExpenses.forEach(expense => {
-        totalExpenses += expense.amount;
+        totalExpenses += expense.amount * 12; // Annual expenses
       });
     }
     
@@ -288,7 +428,7 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
     // Add monthly expenses if they exist
     if (property.monthlyExpenses && property.monthlyExpenses.length > 0) {
       property.monthlyExpenses.forEach(expense => {
-        expensesBody.push([expense.name, expense.amount.toLocaleString('es-ES')]);
+        expensesBody.push([expense.name, (expense.amount * 12).toLocaleString('es-ES')]);
       });
     }
     
@@ -399,57 +539,38 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
     currentY = addPieChart(doc, pieData, 60, currentY + 40, 25, 'Ingresos vs Gastos');
     
     // Add bar chart for expense breakdown
-    const barData = [
-      { label: 'IBI', value: ibi, color: '#3498db' },
-      { label: 'Comunidad', value: communityFee, color: '#9b59b6' },
-      { label: 'Hipoteca', value: mortgageInterest, color: '#e74c3c' },
-      { label: 'Seguro', value: homeInsurance, color: '#f1c40f' },
-      { label: 'Amort. Inmueble', value: buildingDepreciation, color: '#1abc9c' },
-      { label: 'Amort. Mobiliario', value: furnitureDepreciation, color: '#d35400' }
+    const expenseBreakdown = [
+      { name: 'IBI', value: ibi, color: '#3498db' },
+      { name: 'Comunidad', value: communityFee, color: '#9b59b6' },
+      { name: 'Hipoteca', value: mortgageInterest, color: '#e74c3c' },
+      { name: 'Seguro', value: homeInsurance, color: '#f1c40f' },
+      { name: 'Amort. Inmueble', value: buildingDepreciation, color: '#1abc9c' },
+      { name: 'Amort. Mobiliario', value: furnitureDepreciation, color: '#d35400' }
     ];
     
-    currentY = addBarChart(doc, barData, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
+    // Filter out zero values
+    const filteredExpenses = expenseBreakdown.filter(expense => expense.value > 0);
+    
+    // Add other expenses
+    let otherExpensesTotal = 0;
+    if (property.monthlyExpenses && property.monthlyExpenses.length > 0) {
+      property.monthlyExpenses.forEach(expense => {
+        otherExpensesTotal += expense.amount * 12;
+      });
+    }
+    
+    if (otherExpensesTotal > 0) {
+      filteredExpenses.push({ name: 'Otros', value: otherExpensesTotal, color: '#7f8c8d' });
+    }
+    
+    currentY = addBarChart(doc, filteredExpenses, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
     
     // Add a new page for educational content
     doc.addPage();
     currentY = 20;
     
-    // Add information section
-    currentY = addSectionTitle(doc, 'INFORMACIÓN PARA LA DECLARACIÓN', currentY);
-    
-    // Add explanatory text about tax declarations
-    currentY = addExplanatoryText(doc,
-      'La declaración de los rendimientos del capital inmobiliario se realiza en el apartado C de la declaración ' +
-      'de la Renta (casillas 0062 a 0075). A continuación se detallan los principales aspectos a tener en cuenta:', currentY);
-    
-    // Create explanatory table
-    autoTable(doc, {
-      startY: currentY + 5,
-      head: [['Concepto', 'Explicación']],
-      body: [
-        ['IBI', 'Impuesto sobre Bienes Inmuebles. Deducible al 100%.'],
-        ['Intereses hipotecarios', 'Solo son deducibles los intereses (no el capital). No pueden superar, junto con los gastos de reparación, los ingresos íntegros.'],
-        ['Amortización inmueble', 'Se calcula como el 3% del valor de la construcción (excluido el suelo).'],
-        ['Amortización mobiliario', 'Se calcula como el 10% del valor del mobiliario.'],
-        ['Reducción 50%', 'Aplicable a viviendas habituales (Art. 23.2, Ley 35/2006).'],
-        ['Reducción 60%', 'Para viviendas habituales recientemente rehabilitadas (Ley 12/2023).'],
-        ['Reducción 70%', 'Para inquilinos jóvenes (18-35 años) en zonas tensionadas (Ley 12/2023).'],
-        ['Reducción 90%', 'Para viviendas en zonas tensionadas con rebaja de renta ≥5% (Ley 12/2023).']
-      ],
-      theme: 'striped',
-      headStyles: { fillColor: [52, 73, 94], textColor: 255 },
-      bodyStyles: { textColor: 50 },
-      alternateRowStyles: { fillColor: [245, 245, 245] }
-    });
-    
-    currentY = (doc as any).lastAutoTable.finalY + 15;
-    
-    // Add legal notice
-    currentY = addExplanatoryText(doc,
-      'IMPORTANTE: Este informe tiene carácter informativo y no sustituye al asesoramiento profesional. ' +
-      'La normativa fiscal puede variar y se recomienda consultar con un asesor fiscal para casos particulares. ' +
-      'Documento generado el ' + new Date().toLocaleDateString('es-ES') + ' para el año fiscal ' + 
-      new Date().getFullYear() + '.', currentY);
+    // Add detailed explanations
+    currentY = addDetailedExplanations(doc, currentY);
     
     // Add footer to all pages
     const pageCount = doc.getNumberOfPages();
@@ -467,6 +588,12 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
         'Informe Fiscal Inmueble: ' + property.name, 
         20, 
         290
+      );
+      doc.text(
+        'Documento generado el ' + new Date().toLocaleDateString('es-ES'),
+        190, 
+        290,
+        { align: 'right' }
       );
     }
     
@@ -517,23 +644,28 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
     // Add expenses section
     currentY = addSectionTitle(doc, 'GASTOS DEDUCIBLES', currentY);
     
-    // Create expenses table
-    const expensesBody = [
-      ['IBI', (data.ibi || 0).toLocaleString('es-ES')],
-      ['Gastos de comunidad', (data.communityFees || 0).toLocaleString('es-ES')],
-      ['Intereses hipotecarios', (data.mortgageInterest || 0).toLocaleString('es-ES')],
-      ['Seguro de hogar', (data.homeInsurance || 0).toLocaleString('es-ES')],
-      ['Mantenimiento y reparaciones', (data.maintenance || 0).toLocaleString('es-ES')],
-      ['Honorarios de agencia', (data.agencyFees || 0).toLocaleString('es-ES')],
-      ['Gastos administrativos', (data.administrativeFees || 0).toLocaleString('es-ES')],
-      ['Amortización inmueble', (data.buildingDepreciation || 0).toLocaleString('es-ES')],
-      ['Amortización mobiliario', (data.furnitureDepreciation || 0).toLocaleString('es-ES')],
-      ['Suministros', (data.utilities || 0).toLocaleString('es-ES')],
-      ['Tasas municipales', (data.municipalTaxes || 0).toLocaleString('es-ES')],
-      ['Gastos legales', (data.legalFees || 0).toLocaleString('es-ES')],
-      ['Saldos de dudoso cobro', (data.badDebts || 0).toLocaleString('es-ES')],
-      ['Otros gastos', (data.otherExpenses || 0).toLocaleString('es-ES')]
-    ];
+    // Create expenses table - removing zero values
+    const expensesItems = [
+      { name: 'IBI', value: data.ibi || 0 },
+      { name: 'Gastos de comunidad', value: data.communityFees || 0 },
+      { name: 'Intereses hipotecarios', value: data.mortgageInterest || 0 },
+      { name: 'Seguro de hogar', value: data.homeInsurance || 0 },
+      { name: 'Mantenimiento y reparaciones', value: data.maintenance || 0 },
+      { name: 'Honorarios de agencia', value: data.agencyFees || 0 },
+      { name: 'Gastos administrativos', value: data.administrativeFees || 0 },
+      { name: 'Amortización inmueble', value: data.buildingDepreciation || 0 },
+      { name: 'Amortización mobiliario', value: data.furnitureDepreciation || 0 },
+      { name: 'Suministros', value: data.utilities || 0 },
+      { name: 'Tasas municipales', value: data.municipalTaxes || 0 },
+      { name: 'Gastos legales', value: data.legalFees || 0 },
+      { name: 'Saldos de dudoso cobro', value: data.badDebts || 0 },
+      { name: 'Otros gastos', value: data.otherExpenses || 0 }
+    ].filter(item => item.value > 0);
+    
+    const expensesBody = expensesItems.map(item => [item.name, item.value.toLocaleString('es-ES')]);
+    
+    // Add total row
+    expensesBody.push(['TOTAL GASTOS', (data.totalExpenses || 0).toLocaleString('es-ES')]);
     
     autoTable(doc, {
       startY: currentY,
@@ -627,58 +759,26 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
     
     currentY = addPieChart(doc, pieData, 60, currentY + 40, 25, 'Ingresos vs Gastos');
     
-    // Add bar chart for expense breakdown
-    const barData = [
+    // Add bar chart for expense breakdown - only show non-zero values
+    const barDataItems = [
       { label: 'IBI', value: data.ibi || 0, color: '#3498db' },
       { label: 'Comunidad', value: data.communityFees || 0, color: '#9b59b6' },
       { label: 'Hipoteca', value: data.mortgageInterest || 0, color: '#e74c3c' },
       { label: 'Seguro', value: data.homeInsurance || 0, color: '#f1c40f' },
       { label: 'Mant.', value: data.maintenance || 0, color: '#1abc9c' },
       { label: 'Otros', value: (data.otherExpenses || 0) + (data.utilities || 0), color: '#d35400' }
-    ];
+    ].filter(item => item.value > 0);
     
-    currentY = addBarChart(doc, barData, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
+    if (barDataItems.length > 0) {
+      currentY = addBarChart(doc, barDataItems, 110, currentY - 20, 80, 40, 'Desglose de Gastos');
+    }
     
     // Add a new page for educational content
     doc.addPage();
     currentY = 20;
     
-    // Add information section
-    currentY = addSectionTitle(doc, 'INFORMACIÓN PARA LA DECLARACIÓN', currentY);
-    
-    // Add explanatory text about tax declarations
-    currentY = addExplanatoryText(doc,
-      'La declaración de los rendimientos del capital inmobiliario se realiza en el apartado C de la declaración ' +
-      'de la Renta (casillas 0062 a 0075). A continuación se detallan los principales aspectos a tener en cuenta:', currentY);
-    
-    // Create explanatory table
-    autoTable(doc, {
-      startY: currentY + 5,
-      head: [['Concepto', 'Explicación']],
-      body: [
-        ['IBI', 'Impuesto sobre Bienes Inmuebles. Deducible al 100%.'],
-        ['Intereses hipotecarios', 'Solo son deducibles los intereses (no el capital). No pueden superar, junto con los gastos de reparación, los ingresos íntegros.'],
-        ['Amortización inmueble', 'Se calcula como el 3% del valor de la construcción (excluido el suelo).'],
-        ['Amortización mobiliario', 'Se calcula como el 10% del valor del mobiliario.'],
-        ['Reducción 50%', 'Aplicable a viviendas habituales (Art. 23.2, Ley 35/2006).'],
-        ['Reducción 60%', 'Para viviendas habituales recientemente rehabilitadas (Ley 12/2023).'],
-        ['Reducción 70%', 'Para inquilinos jóvenes (18-35 años) en zonas tensionadas (Ley 12/2023).'],
-        ['Reducción 90%', 'Para viviendas en zonas tensionadas con rebaja de renta ≥5% (Ley 12/2023).']
-      ],
-      theme: 'striped',
-      headStyles: { fillColor: [52, 73, 94], textColor: 255 },
-      bodyStyles: { textColor: 50 },
-      alternateRowStyles: { fillColor: [245, 245, 245] }
-    });
-    
-    currentY = (doc as any).lastAutoTable.finalY + 15;
-    
-    // Add legal notice
-    currentY = addExplanatoryText(doc,
-      'IMPORTANTE: Este informe tiene carácter informativo y no sustituye al asesoramiento profesional. ' +
-      'La normativa fiscal puede variar y se recomienda consultar con un asesor fiscal para casos particulares. ' +
-      'Documento generado el ' + new Date().toLocaleDateString('es-ES') + ' para el año fiscal ' + 
-      selectedYear + '.', currentY);
+    // Add detailed explanations
+    currentY = addDetailedExplanations(doc, currentY);
     
     // Add footer to all pages
     const pageCount = doc.getNumberOfPages();
@@ -696,6 +796,12 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
         'Informe Fiscal Inmueble: ' + propertyName + ' - Año ' + selectedYear, 
         20, 
         290
+      );
+      doc.text(
+        'Documento generado el ' + new Date().toLocaleDateString('es-ES'),
+        190, 
+        290,
+        { align: 'right' }
       );
     }
     

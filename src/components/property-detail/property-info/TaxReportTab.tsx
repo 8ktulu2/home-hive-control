@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import {
   FileText,
-  FileSpreadsheet,
   Home,
   Info,
   Users,
@@ -14,7 +12,7 @@ import {
   Percent,
   MinusCircle,
   HelpCircle,
-  Download,
+  FilePdf,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
@@ -23,7 +21,6 @@ import IncomeSection from './tax-report/IncomeSection';
 import ExpensesSection from './tax-report/ExpensesSection';
 import ReductionsSection from './tax-report/ReductionsSection';
 import TaxReportSummary from './tax-report/TaxReportSummary';
-import { exportPropertyTaxDataToExcel } from '@/utils/excelExport';
 import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 
 interface TaxReportTabProps {
@@ -106,22 +103,6 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
   const reduction = (netIncome * reductionPercentage) / 100;
   const taxableIncome = netIncome - reduction;
 
-  const handleExportExcel = () => {
-    toast.info("Preparando exportación a Excel...", { duration: 2000 });
-    
-    setTimeout(() => {
-      try {
-        const filename = `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}.xlsx`;
-        exportPropertyTaxDataToExcel(property, filename);
-        
-        toast.success("Informe Excel exportado correctamente", { duration: 3000 });
-      } catch (error) {
-        console.error("Error exporting to Excel:", error);
-        toast.error("Error al exportar el informe Excel", { duration: 3000 });
-      }
-    }, 500);
-  };
-
   const handleExportPDF = () => {
     toast.info("Generando informe PDF detallado...", { duration: 3000 });
     setTimeout(() => {
@@ -129,7 +110,7 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
         const filename = `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}.pdf`;
         exportPropertyTaxDataToPDF(property, filename);
         
-        toast.success("Informe PDF generado correctamente", { duration: 3000 });
+        toast.success("Informe fiscal PDF generado correctamente", { duration: 3000 });
       } catch (error) {
         console.error("Error exporting to PDF:", error);
         toast.error("Error al exportar el informe PDF", { duration: 3000 });
@@ -168,23 +149,13 @@ const TaxReportTab: React.FC<TaxReportTabProps> = ({ property }) => {
           <FileText className="h-5 w-5" />
           Informe para Declaración de la Renta (IRPF)
         </h2>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={handleExportExcel} 
-            className="flex items-center gap-2"
-            title="Exportar a Excel con tablas estructuradas"
-          >
-            <FileSpreadsheet className="h-4 w-4" /> Excel
-          </Button>
-          <Button 
-            onClick={handleExportPDF} 
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-            title="Exportar a PDF con gráficos visuales y explicaciones detalladas"
-          >
-            <Download className="h-4 w-4" /> Exportar Informe PDF
-          </Button>
-        </div>
+        <Button 
+          onClick={handleExportPDF} 
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+          title="Exportar a PDF con gráficos visuales y explicaciones detalladas"
+        >
+          <FilePdf className="h-4 w-4" /> Generar Informe PDF
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
