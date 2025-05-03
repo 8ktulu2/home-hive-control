@@ -1,207 +1,164 @@
 
+import { Property, TaxReport } from '@/types/property';
 import * as XLSX from 'xlsx';
-import { TaxReport } from '@/types/property';
 
-// Base styling function for cells
-const applyCellStyle = (ws: XLSX.WorkSheet, cell: string, style: Partial<XLSX.CellStyle>) => {
-  if (!ws['!cols']) ws['!cols'] = [];
-  if (!ws['!rows']) ws['!rows'] = [];
-  
-  const c = XLSX.utils.decode_cell(cell);
-  if (!ws[cell]) ws[cell] = { v: "" };
-  
-  if (!ws[cell].s) ws[cell].s = {};
-  Object.assign(ws[cell].s, style);
-};
+// Define custom cell styles for Excel
+interface CustomCellStyle {
+  font?: { bold?: boolean };
+  fill?: { fgColor?: { rgb: string } };
+  border?: {
+    top?: { style: string };
+    bottom?: { style: string };
+    left?: { style: string };
+    right?: { style: string };
+  };
+}
 
-// Apply styling to a range of cells
-const applyCellRangeStyle = (ws: XLSX.WorkSheet, range: string, style: Partial<XLSX.CellStyle>) => {
-  const [start, end] = range.split(':');
-  const startCell = XLSX.utils.decode_cell(start);
-  const endCell = XLSX.utils.decode_cell(end);
-  
-  for (let r = startCell.r; r <= endCell.r; ++r) {
-    for (let c = startCell.c; c <= endCell.c; ++c) {
-      const cell = XLSX.utils.encode_cell({r, c});
-      applyCellStyle(ws, cell, style);
-    }
+// Helper function to apply basic styles to worksheets
+const applyBasicStyles = (worksheet: XLSX.WorkSheet, headerRowIndex = 0) => {
+  if (!worksheet['!cols']) {
+    worksheet['!cols'] = [];
   }
-};
-
-// Convert euros to fixed decimal format
-const formatEuro = (amount: number): string => {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2
-  }).format(amount);
-};
-
-// Format a percentage
-const formatPercent = (value: number): string => {
-  return `${(value * 100).toFixed(0)}%`;
-};
-
-// Set column widths for better readability
-const setColumnWidths = (ws: XLSX.WorkSheet, widths: number[]) => {
-  if (!ws['!cols']) ws['!cols'] = [];
+  // Auto-size columns
+  worksheet['!cols'] = Array(10).fill({ wch: 15 });
   
-  for (let i = 0; i < widths.length; i++) {
-    ws['!cols'][i] = { wch: widths[i] };
-  }
-};
-
-// Create a basic table header with styling
-const createTableHeader = (ws: XLSX.WorkSheet, headers: string[], row: number) => {
-  // Add header rows
-  for (let i = 0; i < headers.length; i++) {
-    const cell = XLSX.utils.encode_cell({r: row, c: i});
-    ws[cell] = { v: headers[i] };
+  // Apply header styles
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const headerCell = XLSX.utils.encode_cell({ r: headerRowIndex, c: C });
+    if (!worksheet[headerCell]) continue;
     
-    // Apply header styling
-    applyCellStyle(ws, cell, {
-      font: { bold: true, color: { rgb: "000000" } },
+    if (!worksheet[headerCell].s) worksheet[headerCell].s = {};
+    worksheet[headerCell].s = {
+      font: { bold: true },
       fill: { fgColor: { rgb: "E6F0FA" } },
       border: {
-        top: { style: 'thin', color: { rgb: "000000" } },
-        bottom: { style: 'thin', color: { rgb: "000000" } },
-        left: { style: 'thin', color: { rgb: "000000" } },
-        right: { style: 'thin', color: { rgb: "000000" } }
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' }
       }
-    });
+    };
   }
+  
+  return worksheet;
 };
 
-// Create the income tab in the Excel report
-const createIncomeSheet = (wb: XLSX.WorkBook, report: TaxReport) => {
-  const ws = XLSX.utils.aoa_to_sheet([]);
+// Export property tax data to Excel
+export const exportPropertyTaxDataToExcel = (property: Property, taxInfo: any) => {
+  const workbook = XLSX.utils.book_new();
   
-  // Add title
-  ws['A1'] = { v: "INFORME DE INGRESOS" };
-  applyCellStyle(ws, 'A1', { 
-    font: { bold: true, sz: 14, color: { rgb: "000000" } },
-  });
-  
-  // Add header
-  createTableHeader(ws, ["Concepto", "Importe (€)"], 3);
-  
-  // Add data rows
-  const rows = [
-    ["Ingresos por alquiler", report.rentalIncome],
-    ["Subvenciones", report.subsidies],
-    ["Otros ingresos", report.otherIncome]
+  // Income sheet
+  const incomeData = [
+    ['Concepto', 'Importe (€)'],
+    ['Ingresos por alquiler', property.rent ? property.rent * 12 : 0],
+    ['Otros ingresos', 0],
+    ['Total ingresos', property.rent ? property.rent * 12 : 0],
   ];
   
-  let r = 4;
-  for (const row of rows) {
-    ws[XLSX.utils.encode_cell({r, c: 0})] = { v: row[0] };
-    applyCellStyle(ws, XLSX.utils.encode_cell({r, c: 0}), {
-      border: {
-        top: { style: 'thin', color: { rgb: "000000" } },
-        bottom: { style: 'thin', color: { rgb: "000000" } },
-        left: { style: 'thin', color: { rgb: "000000" } },
-        right: { style: 'thin', color: { rgb: "000000" } }
-      }
-    });
-    
-    ws[XLSX.utils.encode_cell({r, c: 1})] = { v: row[1] };
-    applyCellStyle(ws, XLSX.utils.encode_cell({r, c: 1}), {
-      numFmt: "€#,##0.00",
-      border: {
-        top: { style: 'thin', color: { rgb: "000000" } },
-        bottom: { style: 'thin', color: { rgb: "000000" } },
-        left: { style: 'thin', color: { rgb: "000000" } },
-        right: { style: 'thin', color: { rgb: "000000" } }
-      }
-    });
-    
-    r++;
-  }
+  const incomeSheet = XLSX.utils.aoa_to_sheet(incomeData);
+  applyBasicStyles(incomeSheet);
+  XLSX.utils.book_append_sheet(workbook, incomeSheet, 'Ingresos');
   
-  // Add total row
-  ws[XLSX.utils.encode_cell({r, c: 0})] = { v: "TOTAL INGRESOS" };
-  applyCellStyle(ws, XLSX.utils.encode_cell({r, c: 0}), {
-    font: { bold: true },
-    fill: { fgColor: { rgb: "F7F7F7" } },
-    border: {
-      top: { style: 'thin', color: { rgb: "000000" } },
-      bottom: { style: 'thin', color: { rgb: "000000" } },
-      left: { style: 'thin', color: { rgb: "000000" } },
-      right: { style: 'thin', color: { rgb: "000000" } }
-    }
+  // Expenses sheet
+  const expensesData = [
+    ['Concepto', 'Importe (€)'],
+    ['IBI', property.ibi || 0],
+    ['Comunidad', property.communityFee || 0],
+    ['Intereses hipoteca', taxInfo?.mortgageInterest || 0],
+    ['Seguro de hogar', property.homeInsurance?.cost || 0],
+    ['Seguro de vida', property.lifeInsurance?.cost || 0],
+    ['Mantenimiento', 0],
+    ['Amortización inmueble', 0],
+    ['Otros gastos', 0],
+    ['Total gastos', 0],
+  ];
+  
+  const expensesSheet = XLSX.utils.aoa_to_sheet(expensesData);
+  applyBasicStyles(expensesSheet);
+  XLSX.utils.book_append_sheet(workbook, expensesSheet, 'Gastos');
+  
+  // Summary sheet
+  const summaryData = [
+    ['Concepto', 'Importe (€)'],
+    ['Total ingresos', property.rent ? property.rent * 12 : 0],
+    ['Total gastos deducibles', 0],
+    ['Rendimiento neto', 0],
+    ['Reducción (%)', 0],
+    ['Base imponible', 0],
+  ];
+  
+  const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+  applyBasicStyles(summarySheet);
+  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen');
+  
+  // Write file
+  XLSX.writeFile(workbook, `Informe_Fiscal_${property.name || 'Propiedad'}.xlsx`, { 
+    bookType: 'xlsx', 
+    cellStyles: true,
+    type: "binary"
   });
-  
-  ws[XLSX.utils.encode_cell({r, c: 1})] = { 
-    v: report.totalIncome,
-    f: "SUM(B5:B7)"
-  };
-  applyCellStyle(ws, XLSX.utils.encode_cell({r, c: 1}), {
-    font: { bold: true },
-    fill: { fgColor: { rgb: "F7F7F7" } },
-    numFmt: "€#,##0.00",
-    border: {
-      top: { style: 'thin', color: { rgb: "000000" } },
-      bottom: { style: 'thin', color: { rgb: "000000" } },
-      left: { style: 'thin', color: { rgb: "000000" } },
-      right: { style: 'thin', color: { rgb: "000000" } }
-    }
-  });
-  
-  // Set column widths
-  setColumnWidths(ws, [30, 15]);
-  
-  // Set worksheet range
-  ws['!ref'] = "A1:" + XLSX.utils.encode_cell({r: r, c: 1});
-  
-  // Add to workbook
-  XLSX.utils.book_append_sheet(wb, ws, "Ingresos");
-  return wb;
 };
 
-// Export the report to Excel
-export const exportToExcel = (report: TaxReport) => {
-  try {
-    // Create a new workbook
-    const wb = XLSX.utils.book_new();
-    
-    // Create sheets
-    createIncomeSheet(wb, report);
-    // Add more sheets as needed...
-    
-    // Write the file with correct options for UTF-8 support
-    XLSX.writeFile(wb, `Informe_Tributario_${report.propertyName.replace(/\s+/g, '_')}.xlsx`, { 
-      bookType: 'xlsx', 
-      type: 'binary', 
-      cellStyles: true
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error exporting to Excel:", error);
-    return false;
-  }
-};
-
-// Export an expanded report with more details
-export const exportDetailedExcel = (report: TaxReport) => {
-  try {
-    // Create a new workbook
-    const wb = XLSX.utils.book_new();
-    
-    // Create sheets (income, expenses, summary, explanations)
-    createIncomeSheet(wb, report);
-    // Add more detailed sheets...
-    
-    // Write the file with correct options
-    XLSX.writeFile(wb, `Informe_Tributario_Detallado_${report.propertyName.replace(/\s+/g, '_')}.xlsx`, {
-      bookType: 'xlsx',
-      type: 'binary',
-      cellStyles: true
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error exporting to detailed Excel:", error);
-    return false;
-  }
+// Export fiscal data to Excel
+export const exportFiscalDataToExcel = (reportData: TaxReport) => {
+  const workbook = XLSX.utils.book_new();
+  
+  // Income sheet
+  const incomeData = [
+    ['Concepto', 'Importe (€)'],
+    ['Ingresos por alquiler', reportData.rentalIncome || 0],
+    ['Subsidios', reportData.subsidies || 0],
+    ['Otros ingresos', reportData.otherIncome || 0],
+    ['Total ingresos', reportData.totalIncome || 0],
+  ];
+  
+  const incomeSheet = XLSX.utils.aoa_to_sheet(incomeData);
+  applyBasicStyles(incomeSheet);
+  XLSX.utils.book_append_sheet(workbook, incomeSheet, 'Ingresos');
+  
+  // Expenses sheet
+  const expensesData = [
+    ['Concepto', 'Importe (€)'],
+    ['IBI', reportData.ibi || 0],
+    ['Comunidad', reportData.communityFees || 0],
+    ['Intereses hipotecarios', reportData.mortgageInterest || 0],
+    ['Seguro de hogar', reportData.homeInsurance || 0],
+    ['Mantenimiento y reparaciones', reportData.maintenance || 0],
+    ['Gastos administrativos', reportData.administrativeFees || 0],
+    ['Honorarios de agencia', reportData.agencyFees || 0],
+    ['Amortización inmueble', reportData.propertyDepreciation || 0],
+    ['Amortización mobiliario', reportData.furnitureDepreciation || 0],
+    ['Suministros', reportData.utilities || 0],
+    ['Tasas municipales', reportData.municipalTaxes || 0],
+    ['Gastos legales', reportData.legalFees || 0],
+    ['Saldos dudoso cobro', reportData.badDebts || 0],
+    ['Otros gastos', reportData.otherExpenses || 0],
+    ['Total gastos', reportData.totalExpenses || 0],
+  ];
+  
+  const expensesSheet = XLSX.utils.aoa_to_sheet(expensesData);
+  applyBasicStyles(expensesSheet);
+  XLSX.utils.book_append_sheet(workbook, expensesSheet, 'Gastos Deducibles');
+  
+  // Summary sheet
+  const summaryData = [
+    ['Concepto', 'Importe (€)'],
+    ['Ingresos Íntegros', reportData.totalIncome || 0],
+    ['Total Gastos Deducibles', reportData.totalExpenses || 0],
+    ['Rendimiento Neto', reportData.netProfit || 0],
+    ['Reducción', reportData.applicableReduction || 0],
+    ['Base Imponible', reportData.reducedNetProfit || 0],
+  ];
+  
+  const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+  applyBasicStyles(summarySheet);
+  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen');
+  
+  // Write file
+  XLSX.writeFile(workbook, `Informe_Fiscal_${reportData.propertyName || 'Propiedad'}.xlsx`, { 
+    bookType: 'xlsx',
+    cellStyles: true,
+    type: "binary"
+  });
 };

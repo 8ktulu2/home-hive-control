@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Property } from '@/types/property';
@@ -46,8 +47,8 @@ export const usePropertyLoader = (id: string | undefined) => {
       // Only check for month/year properties if they exist
       const currentMonthPayment = property.paymentHistory.find(
         payment => 
-          (payment as any).month === currentMonth && 
-          (payment as any).year === currentYear
+          payment.month === currentMonth && 
+          payment.year === currentYear
       );
       
       if (currentMonthPayment) {
@@ -107,9 +108,9 @@ export const usePropertyLoader = (id: string | undefined) => {
       if (foundProperty) {
         // Ensure all needed property objects exist to prevent null reference errors
         if (!foundProperty.tenants) foundProperty.tenants = [];
-        if (!foundProperty.mortgage) foundProperty.mortgage = {};
-        if (!foundProperty.homeInsurance) foundProperty.homeInsurance = {};
-        if (!foundProperty.lifeInsurance) foundProperty.lifeInsurance = {};
+        if (!foundProperty.mortgage) foundProperty.mortgage = { monthlyPayment: 0 };
+        if (!foundProperty.homeInsurance) foundProperty.homeInsurance = { company: '', cost: 0 };
+        if (!foundProperty.lifeInsurance) foundProperty.lifeInsurance = { company: '', cost: 0 };
         if (!foundProperty.documents) foundProperty.documents = [];
         if (!foundProperty.images) foundProperty.images = [];
         if (!foundProperty.otherUtilities) foundProperty.otherUtilities = [];

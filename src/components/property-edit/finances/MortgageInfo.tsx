@@ -120,3 +120,5 @@ export const MortgageInfo = ({ mortgage, onMortgageChange }: MortgageInfoProps) 
     </div>
   );
 };
+
+export default MortgageInfo;

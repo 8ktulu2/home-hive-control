@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import MortgageInfo from './finances/MortgageInfo';
+import { MortgageInfo } from './finances/MortgageInfo';
 import InsuranceInfo from './finances/InsuranceInfo';
 
 interface FinancesTabProps {
@@ -70,6 +70,13 @@ const FinancesTab = ({
       rentPaid: checked,
     });
   };
+
+  const handleMortgageChange = (mortgage: any) => {
+    setProperty({
+      ...property,
+      mortgage
+    });
+  };
   
   return (
     <div className="space-y-6 overflow-visible">
@@ -103,9 +110,8 @@ const FinancesTab = ({
             </div>
 
             <MortgageInfo
-              property={property}
-              updateNumericValue={updateNumericValue}
-              setProperty={setProperty}
+              mortgage={property.mortgage}
+              onMortgageChange={handleMortgageChange}
             />
           </div>
 

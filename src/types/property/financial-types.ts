@@ -1,4 +1,5 @@
 
+
 export interface Mortgage {
   lender?: string;
   monthlyPayment: number;
@@ -72,3 +73,4 @@ export interface Insurance {
   contactEmail?: string;
   notes?: string;
 }
+

@@ -1,4 +1,5 @@
 
+
 export interface TaxInfo {
   // Property specific information
   propertyType?: 'residential' | 'commercial' | 'industrial' | 'land';
@@ -65,3 +66,4 @@ export interface TaxReport {
   // Generated on
   generatedDate: string; // When this report was generated
 }
+
