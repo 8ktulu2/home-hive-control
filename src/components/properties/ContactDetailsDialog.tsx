@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Phone } from 'lucide-react';
 
 interface ContactDetailsDialogProps {
   isOpen: boolean;
@@ -30,21 +31,38 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
           {details?.phone && (
             <div className="grid grid-cols-4 items-center gap-4">
               <span className="text-right font-medium">Teléfono:</span>
-              <span className="col-span-3">{details.phone}</span>
+              <div className="col-span-3 flex items-center gap-2">
+                <a href={`tel:${details.phone}`} className="text-primary hover:underline">
+                  {details.phone}
+                </a>
+                <Phone className="h-4 w-4 text-gray-500" />
+              </div>
             </div>
           )}
           
           {details?.email && (
             <div className="grid grid-cols-4 items-center gap-4">
               <span className="text-right font-medium">Email:</span>
-              <span className="col-span-3">{details.email}</span>
+              <a 
+                href={`mailto:${details.email}`} 
+                className="col-span-3 text-primary hover:underline"
+              >
+                {details.email}
+              </a>
             </div>
           )}
           
           {details?.website && (
             <div className="grid grid-cols-4 items-center gap-4">
               <span className="text-right font-medium">Sitio web:</span>
-              <span className="col-span-3">{details.website}</span>
+              <a 
+                href={details.website.startsWith('http') ? details.website : `https://${details.website}`}
+                target="_blank"
+                rel="noopener noreferrer" 
+                className="col-span-3 text-primary hover:underline"
+              >
+                {details.website}
+              </a>
             </div>
           )}
           

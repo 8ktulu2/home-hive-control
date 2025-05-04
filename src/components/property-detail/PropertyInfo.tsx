@@ -6,6 +6,7 @@ import PropertyInfoTabs from './property-info/PropertyInfoTabs';
 import { useState } from 'react';
 import TenantDialog from './dialogs/TenantDialog';
 import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
+import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
 
 interface PropertyInfoProps {
   property: Property;
@@ -73,6 +74,15 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
           tenant={selectedTenant} 
           onClose={handleCloseTenantDialog} 
         />
+
+        {selectedContact && (
+          <ContactDetailsDialog
+            isOpen={!!selectedContact}
+            onClose={handleCloseContactDialog}
+            title={selectedContact.title}
+            details={selectedContact.details}
+          />
+        )}
       </CardContent>
     </Card>
   );

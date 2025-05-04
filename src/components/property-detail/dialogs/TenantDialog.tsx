@@ -2,6 +2,7 @@
 import { Tenant } from '@/types/property';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Phone } from 'lucide-react';
 
 interface TenantDialogProps {
   tenant: Tenant | null;
@@ -24,14 +25,21 @@ const TenantDialog = ({ tenant, onClose }: TenantDialogProps) => {
           {tenant.phone && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Teléfono:</Label>
-              <span className="col-span-3">{tenant.phone}</span>
+              <div className="col-span-3 flex items-center gap-2">
+                <a href={`tel:${tenant.phone}`} className="text-primary hover:underline flex items-center gap-2">
+                  {tenant.phone}
+                  <Phone className="h-4 w-4" />
+                </a>
+              </div>
             </div>
           )}
           
           {tenant.email && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Email:</Label>
-              <span className="col-span-3">{tenant.email}</span>
+              <a href={`mailto:${tenant.email}`} className="col-span-3 text-primary hover:underline">
+                {tenant.email}
+              </a>
             </div>
           )}
           
