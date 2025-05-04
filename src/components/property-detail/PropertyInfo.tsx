@@ -26,7 +26,7 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
     handleInventoryDialogOpen,
     handleInventoryDialogClose,
     handleEditInventoryItemClick
-  } = usePropertyInfoDialogs(initialProperty, () => {});
+  } = usePropertyInfoDialogs();
 
   const handleAddInventoryClick = () => {
     handleInventoryDialogOpen(null);

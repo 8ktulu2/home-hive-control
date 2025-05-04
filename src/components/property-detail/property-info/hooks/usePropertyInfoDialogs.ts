@@ -1,12 +1,9 @@
 
 import { useState } from 'react';
-import { Property, Tenant, ContactDetails } from '@/types/property';
+import { Tenant, ContactDetails, InventoryItem } from '@/types/property';
 import { useInventoryDialog } from './useInventoryDialog';
 
-export const usePropertyInfoDialogs = (
-  currentProperty: Property,
-  setCurrentProperty: React.Dispatch<React.SetStateAction<Property>>
-) => {
+export const usePropertyInfoDialogs = () => {
   const [selectedContact, setSelectedContact] = useState<{
     title: string;
     details: ContactDetails;
