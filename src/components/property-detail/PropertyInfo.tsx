@@ -29,7 +29,7 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
   } = usePropertyInfoDialogs();
 
   const handleAddInventoryClick = () => {
-    handleInventoryDialogOpen(null);
+    handleInventoryDialogOpen();
   };
 
   const handleEditInventoryItem = (item: InventoryItem) => {

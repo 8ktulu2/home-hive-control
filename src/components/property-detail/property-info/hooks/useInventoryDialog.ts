@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Property, InventoryItem } from '@/types/property';
+import { InventoryItem } from '@/types/property';
 
 export const useInventoryDialog = () => {
   const [isInventoryDialogOpen, setIsInventoryDialogOpen] = useState(false);
