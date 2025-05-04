@@ -41,6 +41,27 @@ const TenantDialog = ({ tenant, onClose }: TenantDialogProps) => {
               <span className="col-span-3">{tenant.identificationNumber}</span>
             </div>
           )}
+          
+          {tenant.alternativeAddress && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Dirección Alternativa:</Label>
+              <span className="col-span-3">{tenant.alternativeAddress}</span>
+            </div>
+          )}
+          
+          {tenant.references && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Referencias:</Label>
+              <span className="col-span-3">{tenant.references}</span>
+            </div>
+          )}
+          
+          {tenant.economicSolvency && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Solvencia Económica:</Label>
+              <span className="col-span-3">{tenant.economicSolvency}</span>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

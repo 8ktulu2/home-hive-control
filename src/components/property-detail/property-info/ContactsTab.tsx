@@ -1,12 +1,14 @@
-import { Property } from '@/types/property';
-import { Building2, Droplet, Lightbulb, Shield, Flame, Wifi } from 'lucide-react';
+
+import { Property, Tenant } from '@/types/property';
+import { Building2, Droplet, Lightbulb, Shield, Flame, Wifi, Users, User } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
   onContactClick?: (type: string) => void;
+  onTenantClick?: (tenant: Tenant) => void;
 }
 
-const ContactsTab = ({ property, onContactClick }: ContactsTabProps) => {
+const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabProps) => {
   // Check if each contact section has any data
   const hasCommunityManager = property.communityManager || 
                             (property.communityManagerDetails && 
@@ -32,10 +34,13 @@ const ContactsTab = ({ property, onContactClick }: ContactsTabProps) => {
                             (property.internetProviderDetails && 
                             Object.values(property.internetProviderDetails).some(v => Boolean(v)));
   
-  // If no contact info at all, show empty state
+  // Check if there are any tenants
+  const hasTenants = property.tenants && property.tenants.length > 0;
+  
+  // If no contact info and no tenants, show empty state
   const hasAnyContactInfo = hasCommunityManager || hasInsuranceCompany || 
                            hasWaterProvider || hasElectricityProvider ||
-                           hasGasProvider || hasInternetProvider;
+                           hasGasProvider || hasInternetProvider || hasTenants;
   
   if (!hasAnyContactInfo) {
     return (
@@ -47,6 +52,50 @@ const ContactsTab = ({ property, onContactClick }: ContactsTabProps) => {
   
   return (
     <div className="space-y-4">
+      {/* Tenant information section - new section added */}
+      {hasTenants && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="h-5 w-5 text-gray-500" />
+            <h3 className="font-medium text-lg">Inquilinos</h3>
+          </div>
+          <div className="space-y-3">
+            {property.tenants?.map((tenant) => (
+              <div 
+                key={tenant.id}
+                className="p-3 border rounded-md hover:bg-gray-50 cursor-pointer"
+                onClick={() => onTenantClick?.(tenant)}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <User className="h-4 w-4 text-gray-500" />
+                  <h3 className="font-medium">{tenant.name}</h3>
+                </div>
+                {tenant.phone && (
+                  <p className="text-sm text-gray-600 ml-6">Tel: {tenant.phone}</p>
+                )}
+                {tenant.email && (
+                  <p className="text-sm text-gray-600 ml-6">Email: {tenant.email}</p>
+                )}
+                {tenant.identificationNumber && (
+                  <p className="text-sm text-gray-600 ml-6">DNI/NIE: {tenant.identificationNumber}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Service providers */}
+      {(hasCommunityManager || hasInsuranceCompany || hasWaterProvider || 
+        hasElectricityProvider || hasGasProvider || hasInternetProvider) && (
+        <div className="mt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Building2 className="h-5 w-5 text-gray-500" />
+            <h3 className="font-medium text-lg">Proveedores de Servicios</h3>
+          </div>
+        </div>
+      )}
+      
       {hasCommunityManager && (
         <div 
           className="p-3 border rounded-md hover:bg-gray-50 cursor-pointer"

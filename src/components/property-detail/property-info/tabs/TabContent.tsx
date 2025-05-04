@@ -29,6 +29,7 @@ const TabContent: React.FC<TabContentProps> = ({
     case 'contacts':
       return <ContactsTab 
         property={property} 
+        onTenantClick={onTenantClick}
         onContactClick={(type) => {
           // Extract the appropriate details based on the contact type
           let title = '';
