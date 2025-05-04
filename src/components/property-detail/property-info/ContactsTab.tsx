@@ -1,6 +1,6 @@
 
 import { Property, Tenant } from '@/types/property';
-import { Building2, Droplet, Lightbulb, Shield, Flame, Wifi, Users, User, Phone } from 'lucide-react';
+import { Building2, Droplet, Lightbulb, Shield, Flame, Wifi, Users, User } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
@@ -70,14 +70,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{tenant.name}</span>
                 </div>
-                {tenant.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a href={`tel:${tenant.phone}`} className="text-sm text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
-                      {tenant.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -102,18 +94,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <Building2 className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{property.communityManager || 'Administrador de Finca'}</span>
                 </div>
-                {property.communityManagerDetails?.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a 
-                      href={`tel:${property.communityManagerDetails.phone}`} 
-                      className="text-sm text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {property.communityManagerDetails.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             )}
             
@@ -126,18 +106,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <Shield className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{property.insuranceCompany || 'Seguro'}</span>
                 </div>
-                {property.insuranceDetails?.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a 
-                      href={`tel:${property.insuranceDetails.phone}`} 
-                      className="text-sm text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {property.insuranceDetails.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             )}
             
@@ -150,18 +118,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <Droplet className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{property.waterProvider || 'Agua'}</span>
                 </div>
-                {property.waterProviderDetails?.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a 
-                      href={`tel:${property.waterProviderDetails.phone}`} 
-                      className="text-sm text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {property.waterProviderDetails.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             )}
             
@@ -174,18 +130,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <Lightbulb className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{property.electricityProvider || 'Electricidad'}</span>
                 </div>
-                {property.electricityProviderDetails?.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a 
-                      href={`tel:${property.electricityProviderDetails.phone}`} 
-                      className="text-sm text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {property.electricityProviderDetails.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             )}
             
@@ -198,18 +142,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <Flame className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{property.gasProvider || 'Gas'}</span>
                 </div>
-                {property.gasProviderDetails?.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a 
-                      href={`tel:${property.gasProviderDetails.phone}`} 
-                      className="text-sm text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {property.gasProviderDetails.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             )}
             
@@ -222,18 +154,6 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
                   <Wifi className="h-4 w-4 text-gray-500" />
                   <span className="font-medium">{property.internetProvider || 'Internet'}</span>
                 </div>
-                {property.internetProviderDetails?.phone && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <a 
-                      href={`tel:${property.internetProviderDetails.phone}`} 
-                      className="text-sm text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {property.internetProviderDetails.phone}
-                    </a>
-                  </div>
-                )}
               </div>
             )}
           </div>

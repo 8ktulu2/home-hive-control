@@ -1,8 +1,7 @@
 
 import { Tenant } from '@/types/property';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Phone } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Phone, Mail, UserCheck, Home, FileText, Wallet } from 'lucide-react';
 
 interface TenantDialogProps {
   tenant: Tenant | null;
@@ -17,18 +16,16 @@ const TenantDialog = ({ tenant, onClose }: TenantDialogProps) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{tenant.name}</DialogTitle>
-          <DialogDescription>
-            Información de contacto del inquilino
-          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {tenant.phone && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Teléfono:</Label>
-              <div className="col-span-3 flex items-center gap-2">
-                <a href={`tel:${tenant.phone}`} className="text-primary hover:underline flex items-center gap-2">
+              <div className="text-right">
+                <Phone className="h-5 w-5 ml-auto text-primary" />
+              </div>
+              <div className="col-span-3">
+                <a href={`tel:${tenant.phone}`} className="text-primary hover:underline">
                   {tenant.phone}
-                  <Phone className="h-4 w-4" />
                 </a>
               </div>
             </div>
@@ -36,7 +33,9 @@ const TenantDialog = ({ tenant, onClose }: TenantDialogProps) => {
           
           {tenant.email && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Email:</Label>
+              <div className="text-right">
+                <Mail className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <a href={`mailto:${tenant.email}`} className="col-span-3 text-primary hover:underline">
                 {tenant.email}
               </a>
@@ -45,28 +44,36 @@ const TenantDialog = ({ tenant, onClose }: TenantDialogProps) => {
           
           {tenant.identificationNumber && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">DNI/NIE:</Label>
+              <div className="text-right">
+                <UserCheck className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <span className="col-span-3">{tenant.identificationNumber}</span>
             </div>
           )}
           
           {tenant.alternativeAddress && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Dirección Alternativa:</Label>
+              <div className="text-right">
+                <Home className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <span className="col-span-3">{tenant.alternativeAddress}</span>
             </div>
           )}
           
           {tenant.references && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Referencias:</Label>
+              <div className="text-right">
+                <FileText className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <span className="col-span-3">{tenant.references}</span>
             </div>
           )}
           
           {tenant.economicSolvency && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Solvencia Económica:</Label>
+              <div className="text-right">
+                <Wallet className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <span className="col-span-3">{tenant.economicSolvency}</span>
             </div>
           )}

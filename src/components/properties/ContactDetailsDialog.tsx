@@ -3,11 +3,10 @@ import { ContactDetails } from '@/types/property';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Phone } from 'lucide-react';
+import { Phone, Mail, Globe, User, FileText } from 'lucide-react';
 
 interface ContactDetailsDialogProps {
   isOpen: boolean;
@@ -22,27 +21,27 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            Información de contacto
-          </DialogDescription>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
           {details?.phone && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <span className="text-right font-medium">Teléfono:</span>
-              <div className="col-span-3 flex items-center gap-2">
+              <div className="text-right">
+                <Phone className="h-5 w-5 ml-auto text-primary" />
+              </div>
+              <div className="col-span-3">
                 <a href={`tel:${details.phone}`} className="text-primary hover:underline">
                   {details.phone}
                 </a>
-                <Phone className="h-4 w-4 text-gray-500" />
               </div>
             </div>
           )}
           
           {details?.email && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <span className="text-right font-medium">Email:</span>
+              <div className="text-right">
+                <Mail className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <a 
                 href={`mailto:${details.email}`} 
                 className="col-span-3 text-primary hover:underline"
@@ -54,7 +53,9 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
           
           {details?.website && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <span className="text-right font-medium">Sitio web:</span>
+              <div className="text-right">
+                <Globe className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <a 
                 href={details.website.startsWith('http') ? details.website : `https://${details.website}`}
                 target="_blank"
@@ -68,14 +69,18 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
           
           {details?.contactPerson && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <span className="text-right font-medium">Persona de contacto:</span>
+              <div className="text-right">
+                <User className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <span className="col-span-3">{details.contactPerson}</span>
             </div>
           )}
           
           {details?.notes && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <span className="text-right font-medium">Notas:</span>
+              <div className="text-right">
+                <FileText className="h-5 w-5 ml-auto text-primary" />
+              </div>
               <span className="col-span-3">{details.notes}</span>
             </div>
           )}
