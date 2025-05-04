@@ -3,7 +3,7 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TabContent from './tabs/TabContent';
 import { Property, Tenant, InventoryItem } from '@/types/property';
-import { FileText, Users, Mail, Box } from 'lucide-react';
+import { FileText, Users, Box } from 'lucide-react';
 
 interface PropertyInfoTabsProps {
   property: Property;
@@ -32,21 +32,21 @@ const PropertyInfoTabs: React.FC<PropertyInfoTabsProps> = ({
         <TabsList className="bg-transparent h-auto p-0 w-full rounded-none flex flex-nowrap overflow-auto">
           <TabsTrigger 
             value="general" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2"
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm"
           >
-            <FileText className="h-4 w-4" /> Información General
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4" /> Información
           </TabsTrigger>
           <TabsTrigger 
             value="contacts" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm" 
           >
-            <Mail className="h-4 w-4" /> Contactos
+            <Users className="h-3 w-3 sm:h-4 sm:w-4" /> Contactos
           </TabsTrigger>
           <TabsTrigger 
             value="inventory" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none min-w-fit flex items-center gap-2 pb-2" 
+            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm" 
           >
-            <Box className="h-4 w-4" /> Inventario
+            <Box className="h-3 w-3 sm:h-4 sm:w-4" /> Inventario
           </TabsTrigger>
         </TabsList>
       </div>

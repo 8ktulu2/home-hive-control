@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import PropertyInfoTabs from './property-info/PropertyInfoTabs';
 import { useState } from 'react';
+import TenantDialog from './dialogs/TenantDialog';
+import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
 
 interface PropertyInfoProps {
   property: Property;
@@ -12,24 +14,38 @@ interface PropertyInfoProps {
 const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
   const [activeTab, setActiveTab] = useState('general');
   
-  const handleTenantClick = (tenant: Tenant) => {
-    // Handle tenant click event in the future
-  };
-
-  const handleContactClick = (title: string, details: any) => {
-    // Handle contact click event in the future 
-  };
+  const {
+    selectedTenant,
+    setSelectedTenant,
+    selectedContact,
+    setSelectedContact,
+    isInventoryDialogOpen,
+    editingInventoryItem,
+    handleContactClick,
+    handleTenantClick,
+    handleInventoryDialogOpen,
+    handleInventoryDialogClose,
+    handleEditInventoryItemClick
+  } = usePropertyInfoDialogs(initialProperty, () => {});
 
   const handleAddInventoryClick = () => {
-    // Handle adding inventory item in the future
+    handleInventoryDialogOpen(null);
   };
 
   const handleEditInventoryItem = (item: InventoryItem) => {
-    // Handle editing inventory item in the future
+    handleEditInventoryItemClick(item);
   };
 
   const handleDeleteInventoryItem = (itemId: string) => {
     // Handle deleting inventory item in the future
+  };
+
+  const handleCloseContactDialog = () => {
+    setSelectedContact(null);
+  };
+
+  const handleCloseTenantDialog = () => {
+    setSelectedTenant(null);
   };
 
   return (
@@ -50,6 +66,12 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
           onAddInventoryClick={handleAddInventoryClick}
           onEditInventoryItem={handleEditInventoryItem}
           onDeleteInventoryItem={handleDeleteInventoryItem}
+        />
+
+        {/* Dialogs */}
+        <TenantDialog 
+          tenant={selectedTenant} 
+          onClose={handleCloseTenantDialog} 
         />
       </CardContent>
     </Card>
