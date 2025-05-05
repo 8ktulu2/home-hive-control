@@ -20,6 +20,15 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
     details = {};
   }
   
+  // Get the phone number from any available property
+  const phoneNumber = details.phone || details.contactPhone;
+  
+  // Get the email from any available property
+  const emailAddress = details.email || details.contactEmail;
+  
+  // Get the contact person from any available property
+  const contactPersonName = details.contactPerson || details.accountHolder || details.provider;
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -28,29 +37,29 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
-          {(details.phone || details.contactPhone) && (
+          {phoneNumber && (
             <div className="grid grid-cols-4 items-center gap-4">
               <div className="text-right">
                 <Phone className="h-5 w-5 ml-auto text-primary" />
               </div>
               <div className="col-span-3">
-                <a href={`tel:${details.phone || details.contactPhone}`} className="text-primary hover:underline">
-                  {details.phone || details.contactPhone}
+                <a href={`tel:${phoneNumber}`} className="text-primary hover:underline">
+                  {phoneNumber}
                 </a>
               </div>
             </div>
           )}
           
-          {(details.email || details.contactEmail) && (
+          {emailAddress && (
             <div className="grid grid-cols-4 items-center gap-4">
               <div className="text-right">
                 <Mail className="h-5 w-5 ml-auto text-primary" />
               </div>
               <a 
-                href={`mailto:${details.email || details.contactEmail}`} 
+                href={`mailto:${emailAddress}`} 
                 className="col-span-3 text-primary hover:underline"
               >
-                {details.email || details.contactEmail}
+                {emailAddress}
               </a>
             </div>
           )}
@@ -71,13 +80,13 @@ const ContactDetailsDialog = ({ isOpen, onClose, title, details }: ContactDetail
             </div>
           )}
           
-          {(details.contactPerson || details.accountHolder || details.provider) && (
+          {contactPersonName && (
             <div className="grid grid-cols-4 items-center gap-4">
               <div className="text-right">
                 <User className="h-5 w-5 ml-auto text-primary" />
               </div>
               <span className="col-span-3">
-                {details.contactPerson || details.accountHolder || details.provider}
+                {contactPersonName}
               </span>
             </div>
           )}
