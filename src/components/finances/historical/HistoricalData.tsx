@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Property } from '@/types/property';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +38,8 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
         months: []
       };
       
-      for (const month of months) {
+      for (let i = 0; i < months.length; i++) {
+        const month = months[i];
         const rentAmount = property.rent * (0.9 + Math.random() * 0.2);
         const wasRented = Math.random() > 0.2; // 80% probabilidad de estar alquilado
         
@@ -75,13 +75,15 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
         const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
         const netIncome = wasRented ? rentAmount - totalExpenses : -totalExpenses;
         
+        // Add date property to comply with MonthlyData interface
         propertyData.months.push({
           month,
           wasRented,
           rentAmount: wasRented ? rentAmount : 0,
           expenses,
           totalExpenses,
-          netIncome
+          netIncome,
+          date: new Date(selectedYear, i, 1) // Create a date object for the first day of each month
         });
       }
       

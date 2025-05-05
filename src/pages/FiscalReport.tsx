@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePropertyLoader } from '@/hooks/usePropertyLoader';
 import Layout from '@/components/layout/Layout';
@@ -83,7 +82,7 @@ const FiscalReport = () => {
             wasRented: true, // Assuming always rented for simplicity
             expenses: expensesData,
             netIncome: monthRentAmount - monthlyExpenses,
-            date: new Date(selectedYear, idx, 1)
+            date: new Date(selectedYear, idx, 1) // Ensure date property is included
           };
         })
       };
