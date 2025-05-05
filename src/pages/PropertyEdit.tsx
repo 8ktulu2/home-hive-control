@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { Property, Tenant, ContactDetails } from '@/types/property';
+import { Property, Tenant, ContactDetails, Utility } from '@/types/property';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePropertyForm } from '@/hooks/usePropertyForm';
 import { usePropertyImage } from '@/hooks/usePropertyImage';
@@ -12,6 +12,7 @@ import PropertyEditLoading from '@/components/property-edit/PropertyEditLoading'
 import PropertyEditError from '@/components/property-edit/PropertyEditError';
 import PropertyFormTabs from '@/components/property-edit/form/PropertyFormTabs';
 import PropertyFormActions from '@/components/property-edit/form/PropertyFormActions';
+import { v4 as uuidv4 } from 'uuid';
 
 const PropertyEdit = () => {
   const { id } = useParams();
@@ -96,23 +97,54 @@ const PropertyEdit = () => {
     }
   };
 
-  const updateContactDetails = (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany', field: string, value: string) => {
+  const addOtherUtility = () => {
+    if (property) {
+      const newUtility: Utility = {
+        id: uuidv4(),
+        name: '',
+      };
+      
+      setProperty({
+        ...property,
+        otherUtilities: [...(property.otherUtilities || []), newUtility]
+      });
+    }
+  };
+
+  const updateContactDetails = (
+    type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany' | 'gasProvider' | 'internetProvider', 
+    field: string, 
+    value: string
+  ) => {
     if (property) {
       let detailsField: keyof Property;
+      let providerField: keyof Property | undefined;
       
       // Map the type to the correct property field name
       switch (type) {
         case 'insuranceCompany':
           detailsField = 'insuranceDetails';
+          providerField = 'insuranceCompany';
           break;
         case 'communityManager':
           detailsField = 'communityManagerDetails';
+          providerField = 'communityManager';
           break;
         case 'waterProvider':
           detailsField = 'waterProviderDetails';
+          providerField = 'waterProvider';
           break;
         case 'electricityProvider':
           detailsField = 'electricityProviderDetails';
+          providerField = 'electricityProvider';
+          break;
+        case 'gasProvider':
+          detailsField = 'gasProviderDetails';
+          providerField = 'gasProvider';
+          break;
+        case 'internetProvider':
+          detailsField = 'internetProviderDetails';
+          providerField = 'internetProvider';
           break;
         default:
           detailsField = `${type}Details` as keyof Property;
@@ -120,10 +152,10 @@ const PropertyEdit = () => {
       
       const currentDetails = property[detailsField] as ContactDetails || {};
       
-      if (field === 'name') {
+      if (field === 'name' && providerField) {
         setProperty({
           ...property,
-          [type]: value,
+          [providerField]: value,
           [detailsField]: currentDetails
         });
       } else {
@@ -161,6 +193,7 @@ const PropertyEdit = () => {
             removeTenant={removeTenant}
             updateContactDetails={updateContactDetails}
             updateInsuranceCompany={updateInsuranceCompany}
+            addOtherUtility={addOtherUtility}
           />
 
           <PropertyFormActions isNewProperty={isNewProperty} />

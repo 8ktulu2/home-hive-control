@@ -1,10 +1,16 @@
 
 import React from 'react';
 
-const EmptyContactsState: React.FC = () => {
+interface EmptyContactsStateProps {
+  message?: string;
+}
+
+const EmptyContactsState: React.FC<EmptyContactsStateProps> = ({ 
+  message = "No hay información de contactos disponible" 
+}) => {
   return (
     <div className="text-center py-6 text-gray-500">
-      No hay información de contactos disponible
+      {message}
     </div>
   );
 };

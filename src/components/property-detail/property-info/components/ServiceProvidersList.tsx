@@ -32,10 +32,12 @@ const ServiceProvidersList = ({ property, onContactClick }: ServiceProvidersList
   const hasInternetProvider = property.internetProvider || 
                             (property.internetProviderDetails && 
                             Object.values(property.internetProviderDetails).some(v => Boolean(v)));
+  
+  const hasOtherUtilities = property.otherUtilities && property.otherUtilities.length > 0;
 
   const hasAnyProvider = hasCommunityManager || hasInsuranceCompany || 
                          hasWaterProvider || hasElectricityProvider || 
-                         hasGasProvider || hasInternetProvider;
+                         hasGasProvider || hasInternetProvider || hasOtherUtilities;
 
   if (!hasAnyProvider) return null;
 
@@ -117,6 +119,19 @@ const ServiceProvidersList = ({ property, onContactClick }: ServiceProvidersList
             </div>
           </div>
         )}
+
+        {property.otherUtilities?.map((utility) => (
+          <div 
+            key={utility.id}
+            className="p-3 border rounded-md hover:bg-gray-50 cursor-pointer"
+            onClick={() => onContactClick?.(`otherUtility-${utility.id}`)}
+          >
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">{utility.name || 'Otro Suministro'}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

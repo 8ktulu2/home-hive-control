@@ -12,6 +12,7 @@ interface TabContentProps {
   onAddInventoryClick: () => void;
   onEditInventoryItem: (item: InventoryItem) => void;
   onDeleteInventoryItem: (itemId: string) => void;
+  onAddUtilityClick?: () => void;
 }
 
 const TabContent: React.FC<TabContentProps> = ({
@@ -21,7 +22,8 @@ const TabContent: React.FC<TabContentProps> = ({
   onContactClick,
   onAddInventoryClick,
   onEditInventoryItem,
-  onDeleteInventoryItem
+  onDeleteInventoryItem,
+  onAddUtilityClick
 }) => {
   switch (activeTab) {
     case 'general':
@@ -35,38 +37,55 @@ const TabContent: React.FC<TabContentProps> = ({
           let title = '';
           let details = {};
           
-          switch(type) {
-            case 'communityManager':
-              title = 'Administrador Comunidad';
-              details = property.communityManagerDetails || {};
-              break;
-            case 'insuranceCompany':
-              title = 'Compañía de Seguros';
-              details = property.insuranceDetails || {};
-              break;
-            case 'waterProvider':
-              title = 'Proveedor de Agua';
-              details = property.waterProviderDetails || {};
-              break;
-            case 'electricityProvider':
-              title = 'Proveedor de Electricidad';
-              details = property.electricityProviderDetails || {};
-              break;
-            case 'gasProvider':
-              title = 'Proveedor de Gas';
-              details = property.gasProviderDetails || {};
-              break;
-            case 'internetProvider':
-              title = 'Proveedor de Internet';
-              details = property.internetProviderDetails || {};
-              break;
-            default:
-              title = type;
-              break;
+          if (type.startsWith('otherUtility-')) {
+            const utilityId = type.replace('otherUtility-', '');
+            const utility = property.otherUtilities?.find(u => u.id === utilityId);
+            if (utility) {
+              title = utility.name || 'Otro Suministro';
+              details = {
+                provider: utility.provider,
+                phone: utility.contactPhone,
+                email: utility.contactEmail,
+                contractNumber: utility.contractNumber,
+                accountHolder: utility.accountHolder,
+                notes: utility.notes,
+              };
+            }
+          } else {
+            switch(type) {
+              case 'communityManager':
+                title = 'Administrador Comunidad';
+                details = property.communityManagerDetails || {};
+                break;
+              case 'insuranceCompany':
+                title = 'Compañía de Seguros';
+                details = property.insuranceDetails || {};
+                break;
+              case 'waterProvider':
+                title = 'Proveedor de Agua';
+                details = property.waterProviderDetails || {};
+                break;
+              case 'electricityProvider':
+                title = 'Proveedor de Electricidad';
+                details = property.electricityProviderDetails || {};
+                break;
+              case 'gasProvider':
+                title = 'Proveedor de Gas';
+                details = property.gasProviderDetails || {};
+                break;
+              case 'internetProvider':
+                title = 'Proveedor de Internet';
+                details = property.internetProviderDetails || {};
+                break;
+              default:
+                title = type;
+                break;
+            }
           }
           
           onContactClick(title, details);
         }} 
+        onAddUtilityClick={onAddUtilityClick}
       />;
     case 'inventory':
       return (

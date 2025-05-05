@@ -6,7 +6,6 @@ import BasicInfoTab from '../BasicInfoTab';
 import TenantsTab from '../TenantsTab';
 import ContactsTab from '../ContactsTab';
 import FinancesTab from '../FinancesTab';
-import UtilitiesTab from '../UtilitiesTab';
 import TaxInfoTab from '../TaxInfoTab';
 import { RefObject } from 'react';
 
@@ -22,8 +21,9 @@ interface PropertyFormTabsProps {
   addTenant: () => void;
   updateTenant: (index: number, field: keyof Tenant, value: string) => void;
   removeTenant: (index: number) => void;
-  updateContactDetails: (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany', field: string, value: string) => void;
+  updateContactDetails: (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany' | 'gasProvider' | 'internetProvider', field: string, value: string) => void;
   updateInsuranceCompany: (value: string) => void;
+  addOtherUtility?: () => void;
 }
 
 const PropertyFormTabs = ({
@@ -39,16 +39,16 @@ const PropertyFormTabs = ({
   updateTenant,
   removeTenant,
   updateContactDetails,
-  updateInsuranceCompany
+  updateInsuranceCompany,
+  addOtherUtility
 }: PropertyFormTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="w-full mb-6 overflow-visible">
-        <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto gap-1">
+        <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto gap-1">
           <TabsTrigger value="basic" className="py-2 text-xs md:text-sm">Información Básica</TabsTrigger>
           <TabsTrigger value="tenants" className="py-2 text-xs md:text-sm">Inquilinos</TabsTrigger>
-          <TabsTrigger value="utilities" className="py-2 text-xs md:text-sm">Suministros</TabsTrigger>
-          <TabsTrigger value="contacts" className="py-2 text-xs md:text-sm">Contactos</TabsTrigger>
+          <TabsTrigger value="contacts" className="py-2 text-xs md:text-sm">Contactos y Suministros</TabsTrigger>
           <TabsTrigger value="finances" className="py-2 text-xs md:text-sm">Finanzas</TabsTrigger>
           <TabsTrigger value="taxinfo" className="py-2 text-xs md:text-sm">Datos Fiscales</TabsTrigger>
         </TabsList>
@@ -72,18 +72,13 @@ const PropertyFormTabs = ({
           removeTenant={removeTenant}
         />
       </TabsContent>
-      
-      <TabsContent value="utilities" className="mt-2">
-        <UtilitiesTab
-          property={property}
-          setProperty={setProperty}
-        />
-      </TabsContent>
 
       <TabsContent value="contacts" className="mt-2">
         <ContactsTab
           property={property}
           updateContactDetails={updateContactDetails}
+          setProperty={setProperty}
+          addOtherUtility={addOtherUtility}
         />
       </TabsContent>
 

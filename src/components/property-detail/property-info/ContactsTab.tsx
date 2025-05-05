@@ -1,16 +1,24 @@
 
-import { Property, Tenant } from '@/types/property';
+import { Property, Tenant, Utility } from '@/types/property';
 import TenantsList from './components/TenantsList';
 import ServiceProvidersList from './components/ServiceProvidersList';
 import EmptyContactsState from './components/EmptyContactsState';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 interface ContactsTabProps {
   property: Property;
   onContactClick?: (type: string) => void;
   onTenantClick?: (tenant: Tenant) => void;
+  onAddUtilityClick?: () => void;
 }
 
-const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabProps) => {
+const ContactsTab = ({ 
+  property, 
+  onContactClick, 
+  onTenantClick,
+  onAddUtilityClick
+}: ContactsTabProps) => {
   // Check if there are any tenants
   const hasTenants = property.tenants && property.tenants.length > 0;
   
@@ -19,6 +27,7 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
     property.communityManager || property.insuranceCompany || 
     property.waterProvider || property.electricityProvider ||
     property.gasProvider || property.internetProvider ||
+    (property.otherUtilities && property.otherUtilities.length > 0) ||
     Object.values(property.communityManagerDetails || {}).some(Boolean) ||
     Object.values(property.insuranceDetails || {}).some(Boolean) ||
     Object.values(property.waterProviderDetails || {}).some(Boolean) ||
@@ -32,7 +41,7 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
   }
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Tenant information section */}
       <TenantsList 
         tenants={property.tenants} 
@@ -44,6 +53,20 @@ const ContactsTab = ({ property, onContactClick, onTenantClick }: ContactsTabPro
         property={property}
         onContactClick={onContactClick}
       />
+
+      {/* Add other utility button - only shown in edit mode */}
+      {onAddUtilityClick && (
+        <div className="pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onAddUtilityClick}
+            className="w-full flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" /> Añadir otro suministro
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
