@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
 import { Property } from '@/types/property';
+import { Link } from 'react-router-dom';
 
 interface InsufficientDataMessageProps {
   property: Property;
@@ -23,8 +24,14 @@ const InsufficientDataMessage: React.FC<InsufficientDataMessageProps> = ({ prope
             Para generar un informe fiscal, necesitas añadir información básica sobre el alquiler, 
             gastos e ingresos en la sección "Finanzas" del inmueble.
           </p>
-          <Button variant="outline" className="mt-4" onClick={() => window.location.href = `/property/${property.id}/edit`}>
-            Editar información del inmueble
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            asChild
+          >
+            <Link to={`/property/${property.id}/edit`}>
+              Editar información del inmueble
+            </Link>
           </Button>
         </div>
       </CardContent>

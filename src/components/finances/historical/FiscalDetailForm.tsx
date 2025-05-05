@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -31,16 +30,26 @@ const FiscalDetailForm = ({
   propertyName,
   selectedYear
 }: FiscalDetailFormProps) => {
+  // Ensure initialData has a default value for applicableReduction
+  const safeInitialData = {
+    ...initialData,
+    applicableReduction: initialData?.applicableReduction ?? 50, // Default to 50% if not defined
+  };
+
   const form = useForm<FiscalData>({
-    defaultValues: initialData
+    defaultValues: safeInitialData
   });
 
-  const [reduction, setReduction] = useState<number>(initialData.applicableReduction);
+  const [reduction, setReduction] = useState<number>(safeInitialData.applicableReduction);
   
   // Update form values when initialData changes
   useEffect(() => {
-    form.reset(initialData);
-    setReduction(initialData.applicableReduction);
+    const updatedData = {
+      ...initialData,
+      applicableReduction: initialData?.applicableReduction ?? 50
+    };
+    form.reset(updatedData);
+    setReduction(updatedData.applicableReduction);
   }, [initialData, form]);
 
   // Calculate totals based on form values

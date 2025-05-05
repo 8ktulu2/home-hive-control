@@ -13,6 +13,7 @@ export interface MonthlyData {
   expenses: HistoricalExpense[];
   totalExpenses: number;
   netIncome: number;
+  date: Date; // Added date field to ensure it's present
 }
 
 export interface PropertyHistoricalData {
@@ -63,4 +64,3 @@ export interface FiscalData {
   youngTenant: boolean; // 18-35 años
   recentlyRenovated: boolean; // Rehabilitada en los últimos 2 años
 }
-

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -150,29 +151,36 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
         </CardContent>
       </Card>
 
-      {filteredData.map(property => (
-        <div key={property.propertyId} className="mb-6 last:mb-0">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-medium">{property.propertyName}</h3>
-            <Button
-              size="sm"
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700"
-              onClick={() => handleExportPDF(property.propertyId)}
-              title="Exportar informe fiscal detallado con gráficos y explicaciones"
-            >
-              <FileDown className="h-4 w-4" /> 
-              <span className="hidden sm:inline">Generar Informe Fiscal</span>
-              <span className="sm:hidden">PDF</span>
-            </Button>
+      {filteredData.map(property => {
+        // Ensure that fiscal data exists for this property
+        const propertyFiscalData = fiscalData[property.propertyId];
+        
+        return (
+          <div key={property.propertyId} className="mb-6 last:mb-0">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-medium">{property.propertyName}</h3>
+              <Button
+                size="sm"
+                className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700"
+                onClick={() => handleExportPDF(property.propertyId)}
+                title="Exportar informe fiscal detallado con gráficos y explicaciones"
+              >
+                <FileDown className="h-4 w-4" /> 
+                <span className="hidden sm:inline">Generar Informe Fiscal</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
+            {propertyFiscalData && (
+              <FiscalDetailForm
+                initialData={propertyFiscalData}
+                onSave={(data) => handleSaveFiscalData(property.propertyId, data)}
+                propertyName={property.propertyName}
+                selectedYear={selectedYear}
+              />
+            )}
           </div>
-          <FiscalDetailForm
-            initialData={fiscalData[property.propertyId]}
-            onSave={(data) => handleSaveFiscalData(property.propertyId, data)}
-            propertyName={property.propertyName}
-            selectedYear={selectedYear}
-          />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
