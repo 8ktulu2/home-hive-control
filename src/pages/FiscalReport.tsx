@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePropertyLoader } from '@/hooks/usePropertyLoader';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,44 +14,80 @@ import { mockProperties } from '@/data/mockData';
 
 const FiscalReport = () => {
   // Just use mock properties directly instead of trying to use usePropertyLoader without an ID
-  const properties = mockProperties;
+  const [properties, setProperties] = useState(mockProperties);
   const isLoading = false;
   
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   
-  // Mock data for fiscal details - Updated to match MonthlyData type correctly
-  const generateHistoricalData = (): PropertyHistoricalData[] => {
-    if (!properties) return [];
+  // Load properties from localStorage if available
+  useEffect(() => {
+    const loadProperties = () => {
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        try {
+          const parsedProperties = JSON.parse(savedProperties);
+          setProperties(parsedProperties);
+        } catch (error) {
+          console.error("Error loading properties from localStorage:", error);
+        }
+      }
+    };
     
-    return properties.map(property => ({
-      propertyId: property.id,
-      propertyName: property.name,
-      months: Array(12).fill(0).map((_, idx) => {
-        // Calculate estimated expenses
-        const monthRentAmount = property.rent || 0;
-        const monthTotalExpenses = property.ibi 
-          ? property.ibi / 12 
-          : (monthRentAmount * 0.3);
-        
-        // Convert month from number to string as required by MonthlyData type
-        const monthNames = [
-          'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ];
-        
-        return {
-          month: monthNames[idx], // Use string month name instead of number
-          year: selectedYear,
-          rentAmount: monthRentAmount,
-          totalExpenses: monthTotalExpenses,
-          wasRented: true, // Assuming always rented for simplicity
-          expenses: [],    // Empty expenses array 
-          netIncome: monthRentAmount - monthTotalExpenses,
-          date: new Date(selectedYear, idx, 1)
-        };
-      })
-    }));
+    loadProperties();
+  }, []);
+  
+  // Generate historical data using actual property data
+  const generateHistoricalData = (): PropertyHistoricalData[] => {
+    if (!properties || properties.length === 0) return [];
+    
+    return properties.map(property => {
+      // Calculate property expenses
+      const monthlyExpenses = property.expenses || 0;
+      const monthRentAmount = property.rent || 0;
+      
+      // Get mortgage interest if available
+      const mortgageInterestRate = property.mortgage?.interestRate || 0;
+      const mortgageAmount = property.mortgage?.totalAmount || 0;
+      const estimatedAnnualMortgageInterest = mortgageAmount * (mortgageInterestRate / 100);
+      
+      return {
+        propertyId: property.id,
+        propertyName: property.name,
+        months: Array(12).fill(0).map((_, idx) => {
+          // Convert month from number to string as required by MonthlyData type
+          const monthNames = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+          ];
+          
+          // Use real expense data if available
+          let expensesData: any[] = [];
+          if (property.monthlyExpenses) {
+            // Filter expenses for this month/year
+            expensesData = property.monthlyExpenses
+              .filter(e => e.month === idx && e.year === selectedYear)
+              .map(e => ({
+                id: e.id,
+                name: e.name,
+                amount: e.amount,
+                isPaid: e.isPaid,
+              }));
+          }
+          
+          return {
+            month: monthNames[idx],
+            year: selectedYear,
+            rentAmount: monthRentAmount,
+            totalExpenses: monthlyExpenses,
+            wasRented: true, // Assuming always rented for simplicity
+            expenses: expensesData,
+            netIncome: monthRentAmount - monthlyExpenses,
+            date: new Date(selectedYear, idx, 1)
+          };
+        })
+      };
+    });
   };
 
   const historicalData = generateHistoricalData();

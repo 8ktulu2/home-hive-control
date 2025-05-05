@@ -3,6 +3,7 @@ import { Property, Tenant, InventoryItem } from '@/types/property';
 import GeneralInfoTab from '../GeneralInfoTab';
 import ContactsTab from '../ContactsTab';
 import InventoryTab from '../InventoryTab';
+import FinancesTab from '../FinancesTab';
 
 interface TabContentProps {
   activeTab: string;
@@ -87,6 +88,8 @@ const TabContent: React.FC<TabContentProps> = ({
         }} 
         onAddUtilityClick={onAddUtilityClick}
       />;
+    case 'finances':
+      return <FinancesTab property={property} />;
     case 'inventory':
       return (
         <InventoryTab
