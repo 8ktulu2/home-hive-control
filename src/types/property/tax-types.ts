@@ -1,69 +1,73 @@
 
-
 export interface TaxInfo {
-  // Property specific information
-  propertyType?: 'residential' | 'commercial' | 'industrial' | 'land';
-  propertyValue?: number; // Value for depreciation calculation (3%)
-  furnitureValue?: number; // Value for furniture depreciation calculation (10%)
-  acquisitionCost?: number; // Property acquisition cost
-  landValue?: number; // Land value (not depreciable)
+  // Información específica de la propiedad
+  propertyType?: 'residencial' | 'comercial' | 'industrial' | 'terreno';
+  propertyValue?: number; // Valor para cálculo de amortización (3%)
+  furnitureValue?: number; // Valor del mobiliario para cálculo de amortización (10%)
+  acquisitionCost?: number; // Coste de adquisición del inmueble
+  landValue?: number; // Valor del suelo (no amortizable)
   
-  // Tax deduction eligibility
-  isPrimaryResidence?: boolean; // Is this the primary residence of the tenant?
-  isTensionedArea?: boolean; // Is the property in a tensioned housing market zone?
-  hasYoungTenant?: boolean; // Is tenant between 18-35 years old?
-  rentReduction?: boolean; // Has rent been reduced by ≥5% from previous contract?
-  recentlyRenovated?: boolean; // Was the property renovated in the last 2 years?
+  // Elegibilidad para deducciones fiscales
+  isPrimaryResidence?: boolean; // ¿Es la residencia principal del inquilino?
+  isTensionedArea?: boolean; // ¿Está la propiedad en una zona de mercado tensionado?
+  hasYoungTenant?: boolean; // ¿El inquilino tiene entre 18-35 años?
+  rentReduction?: boolean; // ¿Se ha reducido el alquiler ≥5% respecto al contrato anterior?
+  recentlyRenovated?: boolean; // ¿Se reformó la propiedad en los últimos 2 años?
   
-  // Direct tax deduction values
-  mortgageInterest?: number; // Annual mortgage interest (deductible)
-  totalMortgagePayment?: number; // Total annual mortgage payment (non-deductible)
-  subsidies?: number; // Annual subsidies received
-  otherIncome?: number; // Other income related to the property
+  // Valores directos de deducción fiscal
+  mortgageInterest?: number; // Intereses anuales de hipoteca (deducibles)
+  totalMortgagePayment?: number; // Pago total anual de hipoteca (no deducible)
+  subsidies?: number; // Subvenciones anuales recibidas
+  otherIncome?: number; // Otros ingresos relacionados con la propiedad
   
-  // Regional tax information
-  autonomousCommunity?: string; // Which autonomous community the property is in
-  regionalDeductions?: string[]; // Regional deductions applicable
+  // Información fiscal regional
+  autonomousCommunity?: string; // En qué comunidad autónoma está la propiedad
+  regionalDeductions?: string[]; // Deducciones regionales aplicables
+  
+  // Gastos específicos anuales deducibles
+  legalExpenses?: number; // Gastos jurídicos
+  contractFormalizationExpenses?: number; // Gastos de formalización de contrato
+  conservationExpenses?: number; // Gastos de conservación y reparación
+  homeSuppliesExpenses?: number; // Gastos de suministros si los paga el propietario
 }
 
 export interface TaxReport {
-  // Basic property identification
+  // Identificación básica de la propiedad
   propertyId: string;
   propertyName: string;
   taxYear: number;
   
-  // Income section
-  rentalIncome: number; // Annual rental income
-  subsidies: number; // Government subsidies
-  otherIncome: number; // Any other property-related income
-  totalIncome: number; // Sum of all income
+  // Sección de ingresos
+  rentalIncome: number; // Ingresos anuales por alquiler
+  subsidies: number; // Subvenciones gubernamentales
+  otherIncome: number; // Cualquier otro ingreso relacionado con la propiedad
+  totalIncome: number; // Suma de todos los ingresos
   
-  // Expenses section
-  ibi: number; // Property tax (IBI)
-  communityFees: number; // Community fees
-  mortgageInterest: number; // Only interest is deductible, not principal
-  homeInsurance: number; // Home insurance costs
-  maintenance: number; // Maintenance and repairs
-  administrativeFees: number; // Administrative expenses
-  agencyFees: number; // Real estate agency fees
-  propertyDepreciation: number; // 3% of property value (excluding land)
-  furnitureDepreciation: number; // 10% of furniture value
-  utilities: number; // Non-recoverable utilities
-  municipalTaxes: number; // Municipal taxes
-  legalFees: number; // Legal expenses
-  badDebts: number; // Doubtful debts (unpaid rent)
-  otherExpenses: number; // Other deductible expenses
-  totalExpenses: number; // Sum of all expenses
+  // Sección de gastos
+  ibi: number; // Impuesto sobre Bienes Inmuebles (IBI)
+  communityFees: number; // Cuotas de comunidad
+  mortgageInterest: number; // Solo los intereses son deducibles, no el principal
+  homeInsurance: number; // Costes del seguro del hogar
+  maintenance: number; // Mantenimiento y reparaciones
+  administrativeFees: number; // Gastos administrativos
+  agencyFees: number; // Honorarios de agencia inmobiliaria
+  propertyDepreciation: number; // 3% del valor de la propiedad (excluyendo el suelo)
+  furnitureDepreciation: number; // 10% del valor del mobiliario
+  utilities: number; // Suministros no recuperables
+  municipalTaxes: number; // Impuestos municipales
+  legalFees: number; // Gastos legales
+  badDebts: number; // Deudas dudosas (alquileres impagados)
+  otherExpenses: number; // Otros gastos deducibles
+  totalExpenses: number; // Suma de todos los gastos
   
-  // Results
-  netProfit: number; // Total income - total expenses
-  applicableReduction: number; // Percentage reduction (50%, 60%, 70%, or 90%)
-  reducedNetProfit: number; // Net profit after reduction
+  // Resultados
+  netProfit: number; // Ingresos totales - gastos totales
+  applicableReduction: number; // Porcentaje de reducción (50%, 60%, 70%, o 90%)
+  reducedNetProfit: number; // Beneficio neto después de la reducción
   
-  // Explanation of reduction
-  reductionExplanation: string; // Why this reduction percentage applies
+  // Explicación de la reducción
+  reductionExplanation: string; // Por qué se aplica este porcentaje de reducción
   
-  // Generated on
-  generatedDate: string; // When this report was generated
+  // Generado en
+  generatedDate: string; // Cuándo se generó este informe
 }
-

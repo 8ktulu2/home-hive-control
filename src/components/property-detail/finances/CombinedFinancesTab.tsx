@@ -65,6 +65,32 @@ const CombinedFinancesTab: React.FC<CombinedFinancesTabProps> = ({ property, set
         </TabsList>
         
         <TabsContent value="summary" className="space-y-4">
+          {/* Sección de datos financieros */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Datos Financieros Básicos</CardTitle>
+              <CardDescription>Resumen de ingresos, gastos y beneficios</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="text-sm font-medium">Ingresos por Alquiler</div>
+                  <p className="text-muted-foreground">{property.rent || 0}€/mes</p>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-medium">Fianza</div>
+                  <p className="text-muted-foreground">{property.deposit || 0}€</p>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-medium">Garantía Adicional</div>
+                  <p className="text-muted-foreground">{property.guarantee || 0}€</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           {/* Sección de hipoteca */}
           {property.mortgage && (
             <Card>

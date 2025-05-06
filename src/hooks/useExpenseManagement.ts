@@ -13,7 +13,7 @@ export function useExpenseManagement(
         name: expense.name || '',
         amount: expense.amount || 0,
         isPaid: expense.isPaid || false,
-        category: expense.category || 'utilities',
+        category: expense.category || 'otros',
         propertyId: property.id,
         month: new Date().getMonth(),
         year: new Date().getFullYear(),
@@ -21,7 +21,7 @@ export function useExpenseManagement(
         paymentDate: expense.isPaid ? new Date().toISOString() : undefined
       };
       
-      // Calculate the new total expenses
+      // Calcular los gastos totales nuevos
       const newTotalExpenses = property.expenses + (newExpense.isPaid ? 0 : newExpense.amount);
       const newNetIncome = property.rent - newTotalExpenses;
       
@@ -41,24 +41,24 @@ export function useExpenseManagement(
       const expense = property.monthlyExpenses.find(e => e.id === expenseId);
       if (!expense) return;
       
-      // Calculate expense impact
+      // Calcular impacto del gasto
       let expenseDifference = 0;
       
-      // If we're changing the paid status
+      // Si estamos cambiando el estado de pagado
       if (updates.isPaid !== undefined && expense.isPaid !== updates.isPaid) {
-        // If marking as paid, subtract from total (was counted, now shouldn't be)
+        // Si se marca como pagado, restar del total (estaba contabilizado, ahora no debe estarlo)
         if (updates.isPaid) {
           expenseDifference = -expense.amount;
           updates.paymentDate = new Date().toISOString();
         } 
-        // If marking as unpaid, add to total (wasn't counted, now should be)
+        // Si se marca como no pagado, añadir al total (no estaba contabilizado, ahora debe estarlo)
         else {
           expenseDifference = expense.amount;
           updates.paymentDate = undefined;
         }
       }
       
-      // If we're changing the amount
+      // Si estamos cambiando la cantidad
       if (updates.amount !== undefined && !expense.isPaid) {
         const amountDifference = updates.amount - expense.amount;
         expenseDifference += amountDifference;
@@ -85,17 +85,17 @@ export function useExpenseManagement(
   const calculateTotalExpenses = (propertyToCalculate: Property) => {
     let totalExpenses = 0;
     
-    // Add mortgage payment
+    // Añadir pago de hipoteca
     if (propertyToCalculate.mortgage?.monthlyPayment) {
       totalExpenses += propertyToCalculate.mortgage.monthlyPayment;
     }
     
-    // Add IBI (property tax) divided by 12 for monthly amount
+    // Añadir IBI (impuesto sobre bienes inmuebles) dividido por 12 para cantidad mensual
     if (propertyToCalculate.ibi) {
       totalExpenses += propertyToCalculate.ibi / 12;
     }
     
-    // Add insurances
+    // Añadir seguros
     if (propertyToCalculate.homeInsurance?.cost && !propertyToCalculate.homeInsurance.isPaid) {
       totalExpenses += propertyToCalculate.homeInsurance.cost / 12;
     }
@@ -104,7 +104,7 @@ export function useExpenseManagement(
       totalExpenses += propertyToCalculate.lifeInsurance.cost / 12;
     }
     
-    // Add monthly expenses that are not paid
+    // Añadir gastos mensuales que no están pagados
     if (propertyToCalculate.monthlyExpenses) {
       propertyToCalculate.monthlyExpenses.forEach(expense => {
         if (!expense.isPaid) {

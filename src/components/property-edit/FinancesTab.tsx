@@ -127,6 +127,66 @@ const FinancesTab = ({
               </div>
               
               <div className="space-y-2">
+                <div className="flex items-center">
+                  <Label htmlFor="deposit">Fianza (€)</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="text-xs">La fianza no se cuenta como beneficio, es un depósito que debe devolverse.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="deposit"
+                  type="number"
+                  value={property.deposit || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setProperty({
+                      ...property,
+                      deposit: value
+                    });
+                  }}
+                  placeholder="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <Label htmlFor="guarantee">Garantía Adicional (€)</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="text-xs">La garantía adicional no se cuenta como beneficio, es un depósito que debe devolverse.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="guarantee"
+                  type="number"
+                  value={property.guarantee || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setProperty({
+                      ...property,
+                      guarantee: value
+                    });
+                  }}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
                 <Label>IBI (€/año)</Label>
                 <Input
                   type="number"
@@ -161,9 +221,7 @@ const FinancesTab = ({
                   placeholder="0"
                 />
               </div>
-            </div>
-            
-            <div className="space-y-4">
+              
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Label htmlFor="cadastralReference">Referencia Catastral</Label>
@@ -189,73 +247,103 @@ const FinancesTab = ({
                   maxLength={20}
                 />
               </div>
-              
+            </div>
+          </div>
+          
+          <Separator className="my-4" />
+          
+          <div className="space-y-4">
+            <CardTitle className="text-base">Gastos Deducibles</CardTitle>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center">
-                  <Label htmlFor="acquisitionCost">Coste de Adquisición (€)</Label>
+                  <Label htmlFor="conservationExpenses">Gastos de Conservación y Reparación (€/año)</Label>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-sm">
-                        <p className="text-xs">Valor de compra del inmueble. Se utiliza para calcular la amortización (3% anual, excluido el valor del suelo).</p>
+                        <p className="text-xs">Incluye reparaciones, pintura, sustitución de elementos, etc.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
                 <Input
-                  id="acquisitionCost"
+                  id="conservationExpenses"
                   type="number"
-                  value={property.taxInfo?.acquisitionCost || ''}
-                  onChange={(e) => updateTaxField('acquisitionCost', parseFloat(e.target.value) || 0)}
-                  placeholder="Ejemplo: 150000"
+                  value={property.taxInfo?.conservationExpenses || ''}
+                  onChange={(e) => updateTaxField('conservationExpenses', parseFloat(e.target.value) || 0)}
+                  placeholder="0"
                 />
               </div>
               
               <div className="space-y-2">
                 <div className="flex items-center">
-                  <Label htmlFor="landValue">Valor del Suelo (€)</Label>
+                  <Label htmlFor="contractFormalizationExpenses">Gastos de Formalización del Contrato (€)</Label>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-sm">
-                        <p className="text-xs">Parte del valor del inmueble correspondiente al terreno. No se amortiza y suele constar en la escritura o impuesto IBI.</p>
+                        <p className="text-xs">Incluye honorarios de abogados, inmobiliarias, etc.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
                 <Input
-                  id="landValue"
+                  id="contractFormalizationExpenses"
                   type="number"
-                  value={property.taxInfo?.landValue || ''}
-                  onChange={(e) => updateTaxField('landValue', parseFloat(e.target.value) || 0)}
-                  placeholder="Ejemplo: 50000"
+                  value={property.taxInfo?.contractFormalizationExpenses || ''}
+                  onChange={(e) => updateTaxField('contractFormalizationExpenses', parseFloat(e.target.value) || 0)}
+                  placeholder="0"
                 />
               </div>
               
               <div className="space-y-2">
                 <div className="flex items-center">
-                  <Label htmlFor="furnitureValue">Valor del Mobiliario (€)</Label>
+                  <Label htmlFor="legalExpenses">Gastos de Defensa Jurídica (€)</Label>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-sm">
-                        <p className="text-xs">Valor total de muebles y enseres. Se amortiza al 10% anual.</p>
+                        <p className="text-xs">Incluye costes de desahucio y otros gastos jurídicos.</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
                 <Input
-                  id="furnitureValue"
+                  id="legalExpenses"
                   type="number"
-                  value={property.taxInfo?.furnitureValue || ''}
-                  onChange={(e) => updateTaxField('furnitureValue', parseFloat(e.target.value) || 0)}
-                  placeholder="Ejemplo: 5000"
+                  value={property.taxInfo?.legalExpenses || ''}
+                  onChange={(e) => updateTaxField('legalExpenses', parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <Label htmlFor="homeSuppliesExpenses">Suministros del Hogar (€/año)</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="text-xs">Solo si los paga el arrendador: agua, luz, gas, internet.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="homeSuppliesExpenses"
+                  type="number"
+                  value={property.taxInfo?.homeSuppliesExpenses || ''}
+                  onChange={(e) => updateTaxField('homeSuppliesExpenses', parseFloat(e.target.value) || 0)}
+                  placeholder="0"
                 />
               </div>
             </div>
@@ -300,21 +388,39 @@ const FinancesTab = ({
               </div>
               
               {property.taxInfo?.isTensionedArea && (
-                <div className="flex items-start space-x-2">
-                  <Switch
-                    id="hasYoungTenant"
-                    checked={property.taxInfo?.hasYoungTenant || false}
-                    onCheckedChange={(checked) => updateTaxField('hasYoungTenant', checked)}
-                  />
-                  <div className="grid gap-1">
-                    <Label htmlFor="hasYoungTenant">
-                      Inquilino joven (18-35 años)
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Permite incrementar la reducción al 70% en zonas tensionadas
-                    </p>
+                <>
+                  <div className="flex items-start space-x-2">
+                    <Switch
+                      id="hasYoungTenant"
+                      checked={property.taxInfo?.hasYoungTenant || false}
+                      onCheckedChange={(checked) => updateTaxField('hasYoungTenant', checked)}
+                    />
+                    <div className="grid gap-1">
+                      <Label htmlFor="hasYoungTenant">
+                        Inquilino joven (18-35 años)
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Permite incrementar la reducción al 70% en zonas tensionadas
+                      </p>
+                    </div>
                   </div>
-                </div>
+                  
+                  <div className="flex items-start space-x-2">
+                    <Switch
+                      id="rentReduction"
+                      checked={property.taxInfo?.rentReduction || false}
+                      onCheckedChange={(checked) => updateTaxField('rentReduction', checked)}
+                    />
+                    <div className="grid gap-1">
+                      <Label htmlFor="rentReduction">
+                        Reducción de renta ≥5% respecto a contrato anterior
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Puede incrementar la reducción hasta el 90% en zonas tensionadas
+                      </p>
+                    </div>
+                  </div>
+                </>
               )}
               
               <div className="flex items-start space-x-2">
@@ -332,22 +438,87 @@ const FinancesTab = ({
                   </p>
                 </div>
               </div>
-              
-              <div className="flex items-start space-x-2">
-                <Switch
-                  id="rentReduction"
-                  checked={property.taxInfo?.rentReduction || false}
-                  onCheckedChange={(checked) => updateTaxField('rentReduction', checked)}
-                />
-                <div className="grid gap-1">
-                  <Label htmlFor="rentReduction">
-                    Reducción de renta ≥5% respecto a contrato anterior
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Puede incrementar la reducción hasta el 90% en zonas tensionadas
-                  </p>
-                </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Datos para Amortizaciones</CardTitle>
+          <CardDescription>
+            Información necesaria para calcular las amortizaciones deducibles
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Label htmlFor="acquisitionCost">Coste de Adquisición (€)</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm">
+                      <p className="text-xs">Valor de compra del inmueble. Se utiliza para calcular la amortización (3% anual, excluido el valor del suelo).</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
+              <Input
+                id="acquisitionCost"
+                type="number"
+                value={property.taxInfo?.acquisitionCost || ''}
+                onChange={(e) => updateTaxField('acquisitionCost', parseFloat(e.target.value) || 0)}
+                placeholder="Ejemplo: 150000"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Label htmlFor="landValue">Valor del Suelo (€)</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm">
+                      <p className="text-xs">Parte del valor del inmueble correspondiente al terreno. No se amortiza y suele constar en la escritura o impuesto IBI.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <Input
+                id="landValue"
+                type="number"
+                value={property.taxInfo?.landValue || ''}
+                onChange={(e) => updateTaxField('landValue', parseFloat(e.target.value) || 0)}
+                placeholder="Ejemplo: 50000"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Label htmlFor="furnitureValue">Valor del Mobiliario (€)</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm">
+                      <p className="text-xs">Valor total de muebles y enseres. Se amortiza al 10% anual.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <Input
+                id="furnitureValue"
+                type="number"
+                value={property.taxInfo?.furnitureValue || ''}
+                onChange={(e) => updateTaxField('furnitureValue', parseFloat(e.target.value) || 0)}
+                placeholder="Ejemplo: 5000"
+              />
             </div>
           </div>
         </CardContent>

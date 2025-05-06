@@ -1,5 +1,4 @@
 
-
 export interface Mortgage {
   lender?: string;
   monthlyPayment: number;
@@ -27,7 +26,7 @@ export interface MonthlyExpense {
   paymentDate?: string;
   isPaid: boolean;
   recurring?: boolean;
-  category?: 'mortgage' | 'insurance' | 'utilities' | 'maintenance' | 'repairs' | 'taxes' | 'administrative' | 'other';
+  category?: 'hipoteca' | 'seguro' | 'suministros' | 'mantenimiento' | 'reparaciones' | 'impuestos' | 'administrativos' | 'juridicos' | 'conservacion' | 'formalizacion' | 'amortizacion' | 'otros';
   notes?: string;
   propertyId?: string;
   month?: number;
@@ -73,4 +72,3 @@ export interface Insurance {
   contactEmail?: string;
   notes?: string;
 }
-

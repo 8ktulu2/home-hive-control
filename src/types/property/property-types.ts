@@ -52,6 +52,8 @@ export interface Property {
   taxes?: Tax;
   maintenance?: Maintenance;
   taxInfo?: TaxInfo;
+  deposit?: number; // Fianza
+  guarantee?: number; // Garantía adicional
 }
 
 export interface Contract {

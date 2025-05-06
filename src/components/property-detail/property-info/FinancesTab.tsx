@@ -1,13 +1,12 @@
 
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import KPIBar from '../finances/KPIBar';
 import { ExpenseList } from '../finances/ExpenseList';
 import { AddExpenseDialog } from '../finances/AddExpenseDialog';
-import { useExpenseManagement } from '@/hooks/useExpenseManagement';
 
 interface FinancesTabProps {
   property: Property;
@@ -16,18 +15,18 @@ interface FinancesTabProps {
 const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
   const [showAllExpenses, setShowAllExpenses] = useState(false);
   
-  // We need to mock these handlers since we don't have the setProperty function here
+  // Necesitamos simular estos manejadores ya que no tenemos la función setProperty aquí
   const handleExpenseAdd = (expense: any) => {
-    console.log('Adding expense:', expense);
-    // This would typically be handled by useExpenseManagement with setProperty
+    console.log('Añadiendo gasto:', expense);
+    // Esto normalmente sería manejado por useExpenseManagement con setProperty
   };
   
   const handleExpenseUpdate = (expenseId: string, updates: any) => {
-    console.log('Updating expense:', expenseId, updates);
-    // This would typically be handled by useExpenseManagement with setProperty
+    console.log('Actualizando gasto:', expenseId, updates);
+    // Esto normalmente sería manejado por useExpenseManagement con setProperty
   };
 
-  // Get values from property
+  // Obtener valores de la propiedad
   const rent = property.rent || 0;
   const expenses = property.expenses || 0;
   const netIncome = property.netIncome || (rent - expenses);
@@ -40,6 +39,32 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
         netIncome={netIncome}
         onExpensesClick={() => setShowAllExpenses(!showAllExpenses)}
       />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Ingresos del Alquiler</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <div className="text-sm font-medium">Renta Mensual</div>
+              <p className="text-muted-foreground">{property.rent}€/mes</p>
+            </div>
+            {property.deposit && (
+              <div>
+                <div className="text-sm font-medium">Fianza</div>
+                <p className="text-muted-foreground">{property.deposit}€</p>
+              </div>
+            )}
+            {property.guarantee && (
+              <div>
+                <div className="text-sm font-medium">Garantía Adicional</div>
+                <p className="text-muted-foreground">{property.guarantee}€</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
       
       <Card>
         <CardContent className="p-4">
@@ -56,7 +81,7 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
         </CardContent>
       </Card>
       
-      {/* Show mortgage information if available */}
+      {/* Mostrar información de hipoteca si está disponible */}
       {property.mortgage && (
         <Card>
           <CardContent className="p-4">
@@ -87,7 +112,7 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
         </Card>
       )}
       
-      {/* Show insurance information if available */}
+      {/* Mostrar información de seguros si está disponible */}
       {(property.homeInsurance || property.lifeInsurance) && (
         <Card>
           <CardContent className="p-4">

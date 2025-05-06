@@ -2,37 +2,42 @@
 import { Property } from '@/types/property';
 
 export function useTaxCalculations(property: Property) {
-  // Calculate values based on property data
+  // Calcular valores basados en los datos de la propiedad
   const calculateGrossIncome = () => {
     const monthlyRent = property.rent || 0;
-    const monthsRented = 12; // Default to full year, could be made variable
+    const monthsRented = 12; // Por defecto año completo, podría hacerse variable
     return monthlyRent * monthsRented;
   };
 
   const calculateDeductibleExpenses = () => {
     let expenses = 0;
     
-    // Mortgage interest (use direct value from taxInfo if available)
+    // Intereses de hipoteca (usar valor directo de taxInfo si está disponible)
     if (property.taxInfo?.mortgageInterest) {
       expenses += property.taxInfo.mortgageInterest;
     } else if (property.mortgage?.monthlyPayment) {
-      // Fallback to estimated interest if not specified
-      expenses += property.mortgage.monthlyPayment * 0.8 * 12; // 80% of payment as interest, for 12 months
+      // Estimación de intereses si no está especificado
+      expenses += property.mortgage.monthlyPayment * 0.8 * 12; // 80% del pago como intereses, durante 12 meses
     }
     
-    // IBI (annual property tax)
+    // IBI (impuesto sobre bienes inmuebles)
     if (property.ibi) {
       expenses += property.ibi;
     }
     
-    // Community fees
+    // Cuotas de comunidad
     if (property.communityFee) {
       expenses += property.communityFee * 12; // Asumiendo que communityFee es mensual
     }
     
-    // Home insurance
+    // Seguro del hogar
     if (property.homeInsurance?.cost) {
       expenses += property.homeInsurance.cost;
+    }
+    
+    // Seguro de vida
+    if (property.lifeInsurance?.cost) {
+      expenses += property.lifeInsurance.cost;
     }
     
     // Depreciaciones
@@ -47,7 +52,27 @@ export function useTaxCalculations(property: Property) {
       expenses += property.taxInfo.furnitureValue * 0.1; // 10% de amortización anual
     }
     
-    // Monthly expenses
+    // Gastos de conservación y reparación
+    if (property.taxInfo?.conservationExpenses) {
+      expenses += property.taxInfo.conservationExpenses;
+    }
+    
+    // Gastos de formalización de contrato
+    if (property.taxInfo?.contractFormalizationExpenses) {
+      expenses += property.taxInfo.contractFormalizationExpenses;
+    }
+    
+    // Gastos jurídicos
+    if (property.taxInfo?.legalExpenses) {
+      expenses += property.taxInfo.legalExpenses;
+    }
+    
+    // Suministros del hogar
+    if (property.taxInfo?.homeSuppliesExpenses) {
+      expenses += property.taxInfo.homeSuppliesExpenses;
+    }
+    
+    // Otros gastos mensuales
     if (property.monthlyExpenses) {
       property.monthlyExpenses.forEach(expense => {
         expenses += expense.amount; // Sumamos todos los gastos registrados
@@ -57,23 +82,23 @@ export function useTaxCalculations(property: Property) {
     return expenses;
   };
 
-  // Determine reduction percentage based on property data
+  // Determinar el porcentaje de reducción basado en los datos de la propiedad
   const calculateReductionPercentage = () => {
-    // Base reduction for primary residence
+    // Reducción base para vivienda habitual
     if (property.taxInfo?.isPrimaryResidence) {
-      // Young tenant in tensioned area: 70%
+      // Inquilino joven en área tensionada: 70%
       if (property.taxInfo?.isTensionedArea && property.taxInfo?.hasYoungTenant) {
         return 70;
       }
-      // Rent reduction in tensioned area: 90%
+      // Reducción de alquiler en área tensionada: 90%
       else if (property.taxInfo?.isTensionedArea && property.taxInfo?.rentReduction) {
         return 90;
       }
-      // Recent renovation: 60%
+      // Renovación reciente: 60%
       else if (property.taxInfo?.recentlyRenovated) {
         return 60;
       }
-      // Default reduction for primary residence
+      // Reducción por defecto para vivienda habitual
       return 50;
     }
     return 0;
