@@ -27,7 +27,7 @@ export function useTaxCalculations(property: Property) {
     
     // Community fees
     if (property.communityFee) {
-      expenses += property.communityFee;
+      expenses += property.communityFee * 12; // Asumiendo que communityFee es mensual
     }
     
     // Home insurance
@@ -35,10 +35,22 @@ export function useTaxCalculations(property: Property) {
       expenses += property.homeInsurance.cost;
     }
     
+    // Depreciaciones
+    // Inmueble (3% sobre el valor de construcción)
+    if (property.taxInfo?.acquisitionCost && property.taxInfo?.landValue) {
+      const constructionValue = property.taxInfo.acquisitionCost - property.taxInfo.landValue;
+      expenses += constructionValue * 0.03; // 3% de amortización anual
+    }
+    
+    // Mobiliario (10% sobre el valor del mobiliario)
+    if (property.taxInfo?.furnitureValue) {
+      expenses += property.taxInfo.furnitureValue * 0.1; // 10% de amortización anual
+    }
+    
     // Monthly expenses
     if (property.monthlyExpenses) {
       property.monthlyExpenses.forEach(expense => {
-        expenses += expense.amount * 12; // Assuming monthly expenses for 12 months
+        expenses += expense.amount; // Sumamos todos los gastos registrados
       });
     }
     
@@ -71,7 +83,7 @@ export function useTaxCalculations(property: Property) {
   const expenses = calculateDeductibleExpenses();
   const netIncome = grossIncome - expenses;
   const reductionPercentage = calculateReductionPercentage();
-  const reduction = (netIncome * reductionPercentage) / 100;
+  const reduction = netIncome > 0 ? (netIncome * reductionPercentage) / 100 : 0;
   const taxableIncome = netIncome - reduction;
 
   return {

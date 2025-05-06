@@ -30,7 +30,7 @@ const PropertyEdit = () => {
       if (property.ibi) total += property.ibi / 12; // Monthly equivalent of annual IBI
       if (property.homeInsurance?.cost) total += property.homeInsurance.cost / 12; // Monthly equivalent
       if (property.lifeInsurance?.cost) total += property.lifeInsurance.cost / 12; // Monthly equivalent
-      if (property.communityFee) total += property.communityFee / 12; // Monthly equivalent of annual community fee
+      if (property.communityFee) total += property.communityFee; // Monthly community fee
       
       // Additional monthly expenses
       if (property.monthlyExpenses) {

@@ -2,10 +2,9 @@
 import React, { useState } from 'react';
 import { Property, Tenant, InventoryItem } from '@/types/property';
 import PropertyInfo from './PropertyInfo';
-import FinancialSection from './finances/FinancialSection';
-import TaxReportTab from './property-info/TaxReportTab';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, Euro } from 'lucide-react';
+import CombinedFinancesTab from './finances/CombinedFinancesTab';
 
 interface MainContentProps {
   property: Property;
@@ -32,24 +31,23 @@ const MainContent = ({ property, setProperty }: MainContentProps) => {
             Información del Inmueble
           </TabsTrigger>
           <TabsTrigger 
-            value="tax" 
+            value="finances" 
             className="flex items-center gap-2"
-            data-state={activeTab === 'tax' ? 'active' : ''}
+            data-state={activeTab === 'finances' ? 'active' : ''}
           >
             <Euro className="h-4 w-4" />
-            Informe Fiscal
+            Finanzas e Informe Fiscal
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-6 mt-2">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <PropertyInfo property={property} />
-            <FinancialSection property={property} setProperty={setProperty} />
           </div>
         </TabsContent>
 
-        <TabsContent value="tax" className="mt-2">
-          <TaxReportTab property={property} />
+        <TabsContent value="finances" className="mt-2">
+          <CombinedFinancesTab property={property} setProperty={setProperty} />
         </TabsContent>
       </Tabs>
     </div>
