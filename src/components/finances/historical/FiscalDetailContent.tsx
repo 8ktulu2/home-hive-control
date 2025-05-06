@@ -1,13 +1,12 @@
-
 import React, { useState } from 'react';
 import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import FiscalDetailForm from './FiscalDetailForm';
 import { FileText, FileDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportFiscalDataToPDF } from '@/utils/pdfExport';
 import { toast } from 'sonner';
+import FiscalDetailForm from './fiscal/FiscalDetailForm';
 
 interface FiscalDetailContentProps {
   filteredData: PropertyHistoricalData[];
