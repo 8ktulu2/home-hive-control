@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { Property } from '@/types/property';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, ArrowDown, ArrowUp } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { getCategoryBadge } from './ExpenseCategories';
 
 interface ExpenseListProps {
   property: Property;
@@ -58,7 +57,7 @@ export const ExpenseList = ({
       name: 'Hipoteca', 
       value: mortgagePayment, 
       isPaid: false, 
-      category: 'mortgage',
+      category: 'hipoteca',
       date: currentDate,
     },
     { 
@@ -66,7 +65,7 @@ export const ExpenseList = ({
       name: 'IBI (anual)', 
       value: ibi / 12, 
       isPaid: false, 
-      category: 'taxes',
+      category: 'impuestos',
       date: currentDate,
     },
     { 
@@ -74,7 +73,7 @@ export const ExpenseList = ({
       name: 'Comunidad', 
       value: property.communityFee || 0, 
       isPaid: false, 
-      category: 'community',
+      category: 'comunidad',
       date: currentDate,
     },
   ];
@@ -86,7 +85,7 @@ export const ExpenseList = ({
       name: 'Seguro de Hogar',
       value: property.homeInsurance.cost / 12,
       isPaid: property.homeInsurance.isPaid || false,
-      category: 'insurance',
+      category: 'seguro',
       date: currentDate,
       paymentDate: property.homeInsurance.isPaid ? currentDate : undefined
     });
@@ -99,7 +98,7 @@ export const ExpenseList = ({
       name: 'Seguro de Vida',
       value: property.lifeInsurance.cost / 12,
       isPaid: property.lifeInsurance.isPaid || false,
-      category: 'insurance',
+      category: 'seguro',
       date: currentDate,
       paymentDate: property.lifeInsurance.isPaid ? currentDate : undefined
     });
@@ -119,26 +118,11 @@ export const ExpenseList = ({
       name: expense.name,
       value: expense.amount,
       isPaid: expense.isPaid,
-      category: expense.category,
-      date: expense.date,
+      category: expense.category || 'otros',
+      date: expense.date || currentDate,
       paymentDate: expense.paymentDate
     }))
   ];
-
-  // Function to get badge color class based on category
-  const getBadgeColorClass = (category: string) => {
-    switch(category) {
-      case 'mortgage': return "bg-blue-500 hover:bg-blue-600";
-      case 'insurance': return "bg-green-500 hover:bg-green-600";
-      case 'utilities': return "bg-amber-500 hover:bg-amber-600";
-      case 'maintenance': return "bg-purple-500 hover:bg-purple-600";
-      case 'repairs': return "bg-red-500 hover:bg-red-600";
-      case 'taxes': return "bg-gray-500 hover:bg-gray-600";
-      case 'administrative': return "bg-indigo-500 hover:bg-indigo-600";
-      case 'community': return "bg-teal-500 hover:bg-teal-600";
-      default: return "bg-slate-500 hover:bg-slate-600";
-    }
-  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -187,9 +171,7 @@ export const ExpenseList = ({
                       {expense.name}
                     </p>
                     <div className="flex items-center space-x-2 mt-1">
-                      <Badge variant="secondary" className={getBadgeColorClass(expense.category)}>
-                        {expense.category}
-                      </Badge>
+                      {getCategoryBadge(expense.category)}
                       <span className="text-xs text-muted-foreground">
                         {expense.isPaid 
                           ? `Pagado el ${expense.paymentDate ? formatDate(expense.paymentDate) : 'n/a'}` 

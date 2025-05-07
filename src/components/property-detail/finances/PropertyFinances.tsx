@@ -82,7 +82,7 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
         <div className="animate-fade-in">
           <ExpenseList 
             property={property} 
-            onExpenseUpdate={onExpenseUpdate} 
+            onExpenseUpdate={onExpenseUpdate}
             onlyDetails
           />
           <div className="flex justify-end mt-2">
