@@ -85,7 +85,27 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
             name="homeInsurance"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Seguros</FormLabel>
+                <FormLabel>Seguro de hogar</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="lifeInsurance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Seguro de vida</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -97,7 +117,7 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
                   />
                 </FormControl>
                 <FormDescription>
-                  Seguro del hogar, impago de alquiler, etc.
+                  Si está asociado a la hipoteca
                 </FormDescription>
               </FormItem>
             )}
@@ -108,7 +128,7 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
             name="maintenance"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mantenimiento y reparaciones</FormLabel>
+                <FormLabel>Conservación y reparaciones</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -148,10 +168,10 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
           
           <FormField
             control={form.control}
-            name="administrativeFees"
+            name="contractFormalization"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Gastos administrativos</FormLabel>
+                <FormLabel>Formalización de contrato</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -163,7 +183,30 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
                   />
                 </FormControl>
                 <FormDescription>
-                  Notaría, gestoría, certificados
+                  Honorarios de abogados, inmobiliarias
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="legalExpenses"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Defensa jurídica</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Costes de desahucio, etc.
                 </FormDescription>
               </FormItem>
             )}
@@ -265,10 +308,10 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
           
           <FormField
             control={form.control}
-            name="legalFees"
+            name="administrativeExpenses"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Gastos legales</FormLabel>
+                <FormLabel>Gastos administrativos</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -280,7 +323,7 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
                   />
                 </FormControl>
                 <FormDescription>
-                  Abogados, juicios por impagos
+                  Notaría, gestoría, certificados
                 </FormDescription>
               </FormItem>
             )}
@@ -302,6 +345,9 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
                     }}
                   />
                 </FormControl>
+                <FormDescription>
+                  Impagos de alquiler deducibles
+                </FormDescription>
               </FormItem>
             )}
           />

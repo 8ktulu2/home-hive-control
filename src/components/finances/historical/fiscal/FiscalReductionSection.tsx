@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FiscalSectionProps } from './types';
@@ -19,6 +19,16 @@ export const FiscalReductionSection: React.FC<ReductionProps> = ({
   reduction,
   handleReductionChange 
 }) => {
+  // Cuando cambia el estado de zona tensionada, restablecer las opciones relacionadas
+  useEffect(() => {
+    const isTensionedArea = form.watch('inTensionedArea');
+    if (!isTensionedArea) {
+      // Si no es zona tensionada, reseteamos estas opciones
+      form.setValue('rentLoweredFromPrevious', false);
+      form.setValue('youngTenant', false);
+    }
+  }, [form.watch('inTensionedArea')]);
+
   return (
     <Card>
       <CardHeader>
@@ -35,8 +45,8 @@ export const FiscalReductionSection: React.FC<ReductionProps> = ({
                   const isChecked = Boolean(checked);
                   handleReductionChange(
                     isChecked,
-                    form.watch('rentLoweredFromPrevious'),
-                    form.watch('youngTenant'),
+                    isChecked ? form.watch('rentLoweredFromPrevious') : false,
+                    isChecked ? form.watch('youngTenant') : false,
                     form.watch('recentlyRenovated')
                   );
                 }}
@@ -46,43 +56,55 @@ export const FiscalReductionSection: React.FC<ReductionProps> = ({
               </label>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="rentLowered"
-                checked={form.watch('rentLoweredFromPrevious')}
-                onCheckedChange={(checked) => {
-                  const isChecked = Boolean(checked);
-                  handleReductionChange(
-                    form.watch('inTensionedArea'),
-                    isChecked,
-                    form.watch('youngTenant'),
-                    form.watch('recentlyRenovated')
-                  );
-                }}
-              />
-              <label htmlFor="rentLowered" className="text-sm font-medium">
-                Rebaja de renta 5% respecto al contrato anterior
-              </label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="youngTenant"
-                checked={form.watch('youngTenant')}
-                onCheckedChange={(checked) => {
-                  const isChecked = Boolean(checked);
-                  handleReductionChange(
-                    form.watch('inTensionedArea'),
-                    form.watch('rentLoweredFromPrevious'),
-                    isChecked,
-                    form.watch('recentlyRenovated')
-                  );
-                }}
-              />
-              <label htmlFor="youngTenant" className="text-sm font-medium">
-                Inquilino joven (18-35 años)
-              </label>
-            </div>
+            {form.watch('inTensionedArea') && (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="rentLowered"
+                    checked={form.watch('rentLoweredFromPrevious')}
+                    onCheckedChange={(checked) => {
+                      const isChecked = Boolean(checked);
+                      // Si marcamos esta opción, desmarcamos la de inquilino joven
+                      if (isChecked) {
+                        form.setValue('youngTenant', false);
+                      }
+                      handleReductionChange(
+                        form.watch('inTensionedArea'),
+                        isChecked,
+                        isChecked ? false : form.watch('youngTenant'),
+                        form.watch('recentlyRenovated')
+                      );
+                    }}
+                  />
+                  <label htmlFor="rentLowered" className="text-sm font-medium">
+                    Rebaja de renta 5% respecto al contrato anterior
+                  </label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="youngTenant"
+                    checked={form.watch('youngTenant')}
+                    onCheckedChange={(checked) => {
+                      const isChecked = Boolean(checked);
+                      // Si marcamos esta opción, desmarcamos la de rebaja de renta
+                      if (isChecked) {
+                        form.setValue('rentLoweredFromPrevious', false);
+                      }
+                      handleReductionChange(
+                        form.watch('inTensionedArea'),
+                        isChecked ? false : form.watch('rentLoweredFromPrevious'),
+                        isChecked,
+                        form.watch('recentlyRenovated')
+                      );
+                    }}
+                  />
+                  <label htmlFor="youngTenant" className="text-sm font-medium">
+                    Inquilino joven (18-35 años)
+                  </label>
+                </div>
+              </>
+            )}
             
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -113,6 +135,7 @@ export const FiscalReductionSection: React.FC<ReductionProps> = ({
                 {reduction === 70 && "70% - Zona tensionada con inquilino joven"}
                 {reduction === 60 && "60% - Vivienda recientemente rehabilitada"}
                 {reduction === 50 && "50% - Reducción general para vivienda habitual"}
+                {reduction === 0 && "0% - No aplicable (no es vivienda habitual)"}
               </p>
             </div>
           </div>

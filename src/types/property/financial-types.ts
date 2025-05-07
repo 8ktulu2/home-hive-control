@@ -8,6 +8,7 @@ export interface Mortgage {
   interestRate?: number;
   remainingAmount?: number;
   paymentHistory?: MortgagePayment[];
+  annualInterest?: number; // Intereses anuales para la declaración de la renta
 }
 
 export interface MortgagePayment {
@@ -26,7 +27,7 @@ export interface MonthlyExpense {
   paymentDate?: string;
   isPaid: boolean;
   recurring?: boolean;
-  category?: 'hipoteca' | 'seguro' | 'suministros' | 'mantenimiento' | 'reparaciones' | 'impuestos' | 'administrativos' | 'juridicos' | 'conservacion' | 'formalizacion' | 'amortizacion' | 'otros';
+  category?: 'hipoteca' | 'seguro' | 'suministros' | 'mantenimiento' | 'reparaciones' | 'impuestos' | 'administrativos' | 'juridicos' | 'conservacion' | 'formalizacion' | 'amortizacion' | 'comunidad' | 'otros';
   notes?: string;
   propertyId?: string;
   month?: number;
@@ -71,4 +72,5 @@ export interface Insurance {
   contactPhone?: string;
   contactEmail?: string;
   notes?: string;
+  type?: 'hogar' | 'vida' | 'otro'; // Tipo de seguro
 }

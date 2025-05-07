@@ -25,10 +25,19 @@ export interface TaxInfo {
   regionalDeductions?: string[]; // Deducciones regionales aplicables
   
   // Gastos específicos anuales deducibles
-  legalExpenses?: number; // Gastos jurídicos
-  contractFormalizationExpenses?: number; // Gastos de formalización de contrato
+  ibiAnnual?: number; // Importe anual del IBI
+  communityFeesAnnual?: number; // Gastos anuales de comunidad
   conservationExpenses?: number; // Gastos de conservación y reparación
+  contractFormalizationExpenses?: number; // Gastos de formalización de contrato
+  legalExpenses?: number; // Gastos jurídicos
   homeSuppliesExpenses?: number; // Gastos de suministros si los paga el propietario
+  buildingDepreciation?: number; // Amortización anual del inmueble (3%)
+  furnitureDepreciation?: number; // Amortización anual del mobiliario (10%)
+  homeInsuranceAnnual?: number; // Seguro del hogar anual
+  lifeInsuranceAnnual?: number; // Seguro de vida anual
+  administrativeExpenses?: number; // Gastos administrativos
+  badDebtsExpenses?: number; // Saldos de dudoso cobro
+  otherDeductibleExpenses?: number; // Otros gastos deducibles
 }
 
 export interface TaxReport {
