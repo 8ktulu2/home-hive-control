@@ -1,18 +1,17 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Calendar } from 'lucide-react';
-import { getCategoryBadge } from '../ExpenseCategories';
+import { Check, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ExpenseItemProps {
   id: string;
   name: string;
   value: number;
   isPaid: boolean;
-  category: string;
-  date?: string;
-  paymentDate?: string;
-  onTogglePaid: (id: string, isPaid: boolean) => void;
+  simplified?: boolean;
+  onTogglePaid?: (id: string, isPaid: boolean) => void;
+  isStatic?: boolean;
 }
 
 export const ExpenseItem = ({ 
@@ -20,64 +19,54 @@ export const ExpenseItem = ({
   name, 
   value, 
   isPaid, 
-  category,
-  date,
-  paymentDate,
-  onTogglePaid 
+  simplified = false,
+  onTogglePaid,
+  isStatic = false
 }: ExpenseItemProps) => {
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '---';
-    try {
-      return new Intl.DateTimeFormat('es-ES', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
-      }).format(new Date(dateString));
-    } catch (e) {
-      return '---';
+  const handleTogglePaid = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onTogglePaid) {
+      onTogglePaid(id, isPaid);
     }
   };
 
   return (
-    <div className="flex items-center justify-between p-2 hover:bg-destructive/10 rounded-md">
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`h-6 w-6 p-0 rounded-full ${isPaid ? 'text-success' : 'text-muted-foreground'}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePaid(id, isPaid);
-          }}
-          title={isPaid ? 'Marcar como no pagado' : 'Marcar como pagado'}
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-        <div className="flex flex-col">
-          <span className={`text-sm ${isPaid ? 'line-through text-muted-foreground' : 'font-medium'}`}>
+    <div 
+      className={cn(
+        "flex items-center justify-between p-3 rounded-lg",
+        isPaid ? "bg-muted/50" : "bg-muted/80"
+      )}
+    >
+      <div className="flex items-center space-x-3">
+        <div>
+          <p className={cn(
+            "font-medium", 
+            isPaid ? "text-muted-foreground" : ""
+          )}>
             {name}
-          </span>
-          <div className="mt-0.5">
-            {getCategoryBadge(category)}
-          </div>
+          </p>
         </div>
       </div>
-      <div className="flex flex-col items-end">
-        <span className={`text-sm font-medium ${isPaid ? 'text-muted-foreground line-through' : 'text-destructive'}`}>
-          {value.toFixed(0)}€/mes
+      <div className="flex items-center space-x-3">
+        <span className={cn(
+          "text-lg font-semibold",
+          isPaid ? "text-muted-foreground" : ""
+        )}>
+          {value.toFixed(2)}€
         </span>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="flex items-center">
-            <Calendar className="h-3 w-3 mr-1" />
-            <span title="Fecha de creación">{formatDate(date)}</span>
-          </div>
-          {isPaid && (
-            <div className="flex items-center">
-              <Check className="h-3 w-3 mr-1 text-success" />
-              <span title="Fecha de pago">{formatDate(paymentDate)}</span>
-            </div>
-          )}
-        </div>
+        {!isStatic && !simplified && onTogglePaid && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleTogglePaid}
+            className={cn(
+              "h-8 w-8",
+              !isPaid ? "text-green-500 hover:text-green-700 hover:bg-green-100" : "text-red-500 hover:text-red-700 hover:bg-red-100"
+            )}
+          >
+            {!isPaid ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
+          </Button>
+        )}
       </div>
     </div>
   );
