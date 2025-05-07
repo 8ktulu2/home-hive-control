@@ -44,7 +44,7 @@ const PropertyDataSection: React.FC<PropertyDataSectionProps> = ({ property }) =
             <span className="text-sm font-medium">Tipo de inmueble</span>
             <TaxInfoTooltip content="El tipo de inmueble determina qué reducciones fiscales son aplicables." />
           </div>
-          <p className="text-sm text-muted-foreground">{property.taxInfo?.propertyType === 'residential' ? 'Vivienda' : property.taxInfo?.propertyType || 'No especificado'}</p>
+          <p className="text-sm text-muted-foreground">{property.taxInfo?.propertyType === 'residencial' ? 'Vivienda' : property.taxInfo?.propertyType || 'No especificado'}</p>
         </div>
         
         {property.taxInfo?.isTensionedArea !== undefined && (

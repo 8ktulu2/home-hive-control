@@ -8,7 +8,7 @@ export const useExpenseDialog = () => {
     name: '',
     amount: 0,
     isPaid: false,
-    category: 'utilities',
+    category: 'suministros',
   });
 
   const resetExpenseForm = () => {
@@ -16,7 +16,7 @@ export const useExpenseDialog = () => {
       name: '',
       amount: 0,
       isPaid: false,
-      category: 'utilities',
+      category: 'suministros',
     });
   };
 
