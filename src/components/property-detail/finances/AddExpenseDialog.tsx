@@ -25,10 +25,15 @@ export const AddExpenseDialog = ({ onExpenseAdd }: AddExpenseDialogProps) => {
 
   const handleAddExpense = () => {
     if (onExpenseAdd && newExpense.name && newExpense.amount) {
-      onExpenseAdd({
+      // Asegurar que el gasto se contabiliza como no pagado inicialmente
+      const expenseToAdd = {
         ...newExpense,
-        paymentDate: newExpense.isPaid ? new Date().toISOString() : undefined
-      });
+        isPaid: false,  // Forzar isPaid a false para que se contabilice como gasto pendiente
+        paymentDate: undefined,
+        date: new Date().toISOString()  // Fecha de inscripción
+      };
+      
+      onExpenseAdd(expenseToAdd);
       setIsExpenseDialogOpen(false);
       resetExpenseForm();
     }
@@ -83,7 +88,7 @@ export const AddExpenseDialog = ({ onExpenseAdd }: AddExpenseDialogProps) => {
             </Label>
             <Select 
               value={newExpense.category}
-              onValueChange={(value: any) => 
+              onValueChange={(value) => 
                 setNewExpense({ ...newExpense, category: value })
               }
             >
@@ -101,41 +106,18 @@ export const AddExpenseDialog = ({ onExpenseAdd }: AddExpenseDialogProps) => {
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
-            <div className="text-right">
-              <Label htmlFor="expense-paid" className="text-right">
-                Pagado
+            <div className="text-right flex items-center justify-end">
+              <Calendar className="h-4 w-4 mr-2" />
+              <Label htmlFor="creation-date">
+                Fecha de inscripción
               </Label>
             </div>
-            <div className="col-span-3 flex items-center space-x-2">
-              <Checkbox 
-                id="expense-paid" 
-                checked={newExpense.isPaid}
-                onCheckedChange={(checked) => setNewExpense({ ...newExpense, isPaid: Boolean(checked) })}
-              />
-              <label
-                htmlFor="expense-paid"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Marcar como pagado
-              </label>
+            <div className="col-span-3">
+              <p className="text-sm text-muted-foreground">
+                Se registrará la fecha actual
+              </p>
             </div>
           </div>
-          
-          {newExpense.isPaid && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="text-right flex items-center justify-end">
-                <Calendar className="h-4 w-4 mr-2" />
-                <Label htmlFor="payment-date">
-                  Fecha de pago
-                </Label>
-              </div>
-              <div className="col-span-3">
-                <p className="text-sm text-muted-foreground">
-                  Se registrará la fecha actual como fecha de pago
-                </p>
-              </div>
-            </div>
-          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsExpenseDialogOpen(false)}>

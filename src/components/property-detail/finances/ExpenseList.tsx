@@ -5,12 +5,12 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Check, X, ArrowDown, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getCategoryBadge } from './ExpenseCategories';
 
 interface ExpenseListProps {
   property: Property;
   onExpenseUpdate?: (expenseId: string, updates: Partial<any>) => void;
   onlyDetails?: boolean;
+  simplified?: boolean;
 }
 
 // Define an explicit interface for fixed expenses that includes paymentDate
@@ -27,7 +27,8 @@ interface FixedExpense {
 export const ExpenseList = ({ 
   property, 
   onExpenseUpdate, 
-  onlyDetails = false 
+  onlyDetails = false,
+  simplified = false
 }: ExpenseListProps) => {
   const [showExpenseDetails, setShowExpenseDetails] = useState(onlyDetails);
   const [showAllExpenses, setShowAllExpenses] = useState(false);
@@ -124,15 +125,6 @@ export const ExpenseList = ({
     }))
   ];
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
-    });
-  };
-
   const sortedExpenses = [...allExpenses].sort((a, b) => {
     // Primero por estado de pago (no pagados primero)
     if (a.isPaid !== b.isPaid) {
@@ -170,15 +162,16 @@ export const ExpenseList = ({
                     )}>
                       {expense.name}
                     </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      {getCategoryBadge(expense.category)}
-                      <span className="text-xs text-muted-foreground">
-                        {expense.isPaid 
-                          ? `Pagado el ${expense.paymentDate ? formatDate(expense.paymentDate) : 'n/a'}` 
-                          : `Pendiente - Fecha: ${formatDate(expense.date)}`
-                        }
-                      </span>
-                    </div>
+                    {!simplified && (
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {expense.isPaid 
+                            ? `Pagado el ${formatDate(expense.paymentDate || currentDate)}` 
+                            : `Pendiente`
+                          }
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -188,7 +181,7 @@ export const ExpenseList = ({
                   )}>
                     {expense.value.toFixed(2)}€
                   </span>
-                  {!['mortgage', 'ibi', 'community', 'home-insurance', 'life-insurance'].includes(expense.id) && (
+                  {!['mortgage', 'ibi', 'community', 'home-insurance', 'life-insurance'].includes(expense.id) && !simplified && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -224,4 +217,14 @@ export const ExpenseList = ({
       )}
     </div>
   );
+};
+
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
+  });
 };

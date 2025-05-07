@@ -13,26 +13,42 @@ export function useExpenseManagement(
         name: expense.name || '',
         amount: expense.amount || 0,
         isPaid: expense.isPaid || false,
-        category: expense.category || 'otros',
+        category: expense.category || 'compra',
         propertyId: property.id,
         month: new Date().getMonth(),
         year: new Date().getFullYear(),
-        date: new Date().toISOString(),
-        paymentDate: expense.isPaid ? new Date().toISOString() : undefined
+        date: expense.date || new Date().toISOString(),
+        paymentDate: expense.paymentDate
       };
       
-      // Calcular los gastos totales nuevos
-      const newTotalExpenses = property.expenses + (newExpense.isPaid ? 0 : newExpense.amount);
+      // Solo contar como gasto si no está pagado
+      const newTotalExpenses = property.expenses + newExpense.amount;
       const newNetIncome = property.rent - newTotalExpenses;
       
-      setProperty({
+      const updatedProperty = {
         ...property,
         monthlyExpenses: [...(property.monthlyExpenses || []), newExpense],
         expenses: newTotalExpenses,
         netIncome: newNetIncome
-      });
+      };
       
-      toast.success('Gasto añadido correctamente', { duration: 2000 });
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage
+      try {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          toast.success('Gasto añadido correctamente', { duration: 2000 });
+        }
+      } catch (error) {
+        toast.error('Error al guardar el gasto', { duration: 2000 });
+        console.error('Error saving expense:', error);
+      }
     }
   };
   
@@ -71,14 +87,30 @@ export function useExpenseManagement(
       const newTotalExpenses = property.expenses + expenseDifference;
       const newNetIncome = property.rent - newTotalExpenses;
       
-      setProperty({
+      const updatedProperty = {
         ...property,
         monthlyExpenses: updatedExpenses,
         expenses: newTotalExpenses,
         netIncome: newNetIncome
-      });
+      };
       
-      toast.success('Gasto actualizado correctamente', { duration: 2000 });
+      setProperty(updatedProperty);
+      
+      // Guardar en localStorage
+      try {
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+          toast.success('Gasto actualizado correctamente', { duration: 2000 });
+        }
+      } catch (error) {
+        toast.error('Error al actualizar el gasto', { duration: 2000 });
+        console.error('Error updating expense:', error);
+      }
     }
   };
 
@@ -93,6 +125,11 @@ export function useExpenseManagement(
     // Añadir IBI (impuesto sobre bienes inmuebles) dividido por 12 para cantidad mensual
     if (propertyToCalculate.ibi) {
       totalExpenses += propertyToCalculate.ibi / 12;
+    }
+    
+    // Añadir cuota de comunidad
+    if (propertyToCalculate.communityFee) {
+      totalExpenses += propertyToCalculate.communityFee;
     }
     
     // Añadir seguros

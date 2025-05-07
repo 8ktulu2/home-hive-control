@@ -5,7 +5,7 @@ import { ExpenseList } from './ExpenseList';
 import { AddExpenseDialog } from './AddExpenseDialog';
 import KPIBar from './KPIBar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface PropertyFinancesProps {
@@ -44,6 +44,34 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
         onExpensesClick={() => setShowExpenses((v) => !v)}
       />
 
+      {/* Expanded Expenses Section */}
+      {showExpenses && (
+        <Card className="animate-fade-in">
+          <CardHeader className="flex flex-row items-center justify-between py-3">
+            <CardTitle className="text-sm">Desglose de Gastos</CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowExpenses(false)}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronUp className="h-4 w-4" />
+              <span className="sr-only">Cerrar</span>
+            </Button>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <ExpenseList 
+              property={property} 
+              onExpenseUpdate={onExpenseUpdate}
+              simplified={true}
+            />
+            <div className="flex justify-end mt-4">
+              <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Unpaid Expenses Section */}
       {unpaidExpenses.length > 0 && (
         <Card className="border-destructive/50 bg-destructive/5">
@@ -75,20 +103,6 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Complete Expense List */}
-      {showExpenses && (
-        <div className="animate-fade-in">
-          <ExpenseList 
-            property={property} 
-            onExpenseUpdate={onExpenseUpdate}
-            onlyDetails
-          />
-          <div className="flex justify-end mt-2">
-            <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
-          </div>
-        </div>
       )}
     </div>
   );

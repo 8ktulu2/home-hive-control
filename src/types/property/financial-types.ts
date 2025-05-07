@@ -27,7 +27,7 @@ export interface MonthlyExpense {
   paymentDate?: string;
   isPaid: boolean;
   recurring?: boolean;
-  category?: 'hipoteca' | 'seguro' | 'suministros' | 'mantenimiento' | 'reparaciones' | 'impuestos' | 'administrativos' | 'juridicos' | 'conservacion' | 'formalizacion' | 'amortizacion' | 'comunidad' | 'otros';
+  category?: 'hipoteca' | 'seguro' | 'suministros' | 'mantenimiento' | 'reparaciones' | 'impuestos' | 'administrativos' | 'juridicos' | 'conservacion' | 'formalizacion' | 'amortizacion' | 'comunidad' | 'compra' | 'otros';
   notes?: string;
   propertyId?: string;
   month?: number;
