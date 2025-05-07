@@ -12,6 +12,7 @@ interface ExpenseItemProps {
   simplified?: boolean;
   onTogglePaid?: (id: string, isPaid: boolean) => void;
   isStatic?: boolean;
+  paymentDate?: string;
 }
 
 export const ExpenseItem = ({ 
@@ -21,7 +22,8 @@ export const ExpenseItem = ({
   isPaid, 
   simplified = false,
   onTogglePaid,
-  isStatic = false
+  isStatic = false,
+  paymentDate
 }: ExpenseItemProps) => {
   const handleTogglePaid = (e: React.MouseEvent) => {
     e.stopPropagation();

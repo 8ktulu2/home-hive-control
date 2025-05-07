@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
 import { Property, MonthlyExpense } from '@/types/property';
-import { ExpenseList } from './ExpenseList';
+import { ExpenseList } from './expense-components/ExpenseList';
 import { AddExpenseDialog } from './AddExpenseDialog';
 import KPIBar from './KPIBar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface PropertyFinancesProps {
   property: Property;
-  onExpenseAdd?: (expense: Partial<any>) => void;
-  onExpenseUpdate?: (expenseId: string, updates: Partial<any>) => void;
+  onExpenseAdd?: (expense: Partial<MonthlyExpense>) => void;
+  onExpenseUpdate?: (expenseId: string, updates: Partial<MonthlyExpense>) => void;
 }
 
 const PropertyFinances: React.FC<PropertyFinancesProps> = ({ 
@@ -42,6 +42,7 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
         expenses={expenses}
         netIncome={netIncome}
         onExpensesClick={() => setShowExpenses((v) => !v)}
+        showExpenses={showExpenses}
       />
 
       {/* Expanded Expenses Section */}
