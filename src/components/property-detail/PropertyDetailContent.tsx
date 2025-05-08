@@ -30,11 +30,14 @@ const PropertyDetailContent = ({
   setProperty
 }: PropertyDetailContentProps) => {
   return (
-    <div className="space-y-6">
-      <MonthlyPaymentStatus 
-        property={property}
-        onPaymentUpdate={onPaymentUpdate}
-      />
+    <div className="space-y-4">
+      <div className="pb-1">
+        <MonthlyPaymentStatus 
+          property={property}
+          onPaymentUpdate={onPaymentUpdate}
+          compact={true}
+        />
+      </div>
 
       <MainContent property={property} setProperty={setProperty} />
 

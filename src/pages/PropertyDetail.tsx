@@ -23,7 +23,9 @@ const PropertyDetail = () => {
     handleTaskDelete,
     handleTaskUpdate,
     handleDocumentDelete,
-    handleDocumentAdd
+    handleDocumentAdd,
+    handleExpenseAdd,
+    handleExpenseUpdate
   } = usePropertyManagement(null);
 
   const { 
@@ -84,21 +86,28 @@ const PropertyDetail = () => {
     loadProperty();
   }, [id, navigate, setProperty]);
   
+  // Manejador para eventos de navegación y para el gesto de volver del móvil
   useEffect(() => {
-    const handleRouteChange = () => {
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties && id) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperty = properties.find((p: Property) => p.id === id);
-        if (updatedProperty) {
-          setProperty(updatedProperty);
-        }
+    const handleBackButton = (e: PopStateEvent) => {
+      // Si estamos en una página de detalle y se presiona atrás, navegamos a la página principal
+      if (window.location.pathname.includes('/property/')) {
+        e.preventDefault();
+        navigate('/');
       }
     };
 
-    window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
-  }, [id, setProperty]);
+    window.addEventListener('popstate', handleBackButton);
+    
+    // Preventivamente capturamos el evento de hardware back button en Android
+    document.addEventListener('backbutton', () => {
+      navigate('/');
+    });
+
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+      document.removeEventListener('backbutton', () => {});
+    };
+  }, [navigate]);
 
   if (!property) {
     return <PropertyDetailLoader />;
@@ -106,7 +115,7 @@ const PropertyDetail = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-2">
         <PropertyDetailHeader 
           property={property}
           onRentPaidChange={handleRentPaidChange}

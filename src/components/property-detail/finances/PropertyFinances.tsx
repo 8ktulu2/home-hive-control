@@ -50,15 +50,18 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
         <Card className="animate-fade-in">
           <CardHeader className="flex flex-row items-center justify-between py-3">
             <CardTitle className="text-sm">Desglose de Gastos</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setShowExpenses(false)}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronUp className="h-4 w-4" />
-              <span className="sr-only">Cerrar</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowExpenses(false)}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronUp className="h-4 w-4" />
+                <span className="sr-only">Cerrar</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
             <ExpenseList 
@@ -66,9 +69,6 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
               onExpenseUpdate={onExpenseUpdate}
               simplified={true}
             />
-            <div className="flex justify-end mt-4">
-              <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
-            </div>
           </CardContent>
         </Card>
       )}

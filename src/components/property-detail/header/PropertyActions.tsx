@@ -59,31 +59,36 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
     }
   };
 
+  const handleGoBack = () => {
+    navigate('/');
+  };
+
   return (
-    <div className="flex items-center justify-between">
-      <Link to="/">
-        <Button variant="ghost" size="sm" className="flex gap-1 items-center text-muted-foreground">
-          <ArrowLeft className="h-4 w-4" />
-          <span>Volver</span>
+    <div className="flex items-center gap-2">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="text-muted-foreground"
+        onClick={handleGoBack}
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="sr-only">Volver</span>
+      </Button>
+      <Link to={`/property/${propertyId}/edit`}>
+        <Button variant="outline" size="sm" className="flex items-center">
+          <Edit className="h-4 w-4" />
+          <span className="sr-only">Editar</span>
         </Button>
       </Link>
-      <div className="flex gap-2">
-        <Link to={`/property/${propertyId}/edit`}>
-          <Button variant="outline" size="sm" className="flex gap-1 items-center">
-            <Edit className="h-4 w-4" />
-            <span className="hidden sm:inline">Editar</span>
-          </Button>
-        </Link>
-        <Button 
-          variant="destructive" 
-          size="sm" 
-          className="flex gap-1 items-center"
-          onClick={() => setShowDeleteDialog(true)}
-        >
-          <Trash className="h-4 w-4" />
-          <span className="hidden sm:inline">Eliminar</span>
-        </Button>
-      </div>
+      <Button 
+        variant="destructive" 
+        size="sm" 
+        className="flex items-center"
+        onClick={() => setShowDeleteDialog(true)}
+      >
+        <Trash className="h-4 w-4" />
+        <span className="sr-only">Eliminar</span>
+      </Button>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
