@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import KPIBar from '../finances/KPIBar';
-import { ExpenseList } from '../finances/ExpenseList';
+import { ExpenseList } from '../finances/expense-components/ExpenseList';
 import { AddExpenseDialog } from '../finances/AddExpenseDialog';
 
 interface FinancesTabProps {
@@ -38,6 +38,7 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
         expenses={expenses}
         netIncome={netIncome}
         onExpensesClick={() => setShowAllExpenses(!showAllExpenses)}
+        showExpenses={showAllExpenses}
       />
       
       <Card>
