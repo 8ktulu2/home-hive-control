@@ -30,7 +30,7 @@ const PropertyDetailContent = ({
   setProperty
 }: PropertyDetailContentProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="pb-1">
         <MonthlyPaymentStatus 
           property={property}

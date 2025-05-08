@@ -103,9 +103,42 @@ const PropertyDetail = () => {
       navigate('/');
     });
 
+    // Más específicamente para gestos en móviles, también podemos usar:
+    const handleTouchStart = (e: TouchEvent) => {
+      const touchStartX = e.touches[0].clientX;
+      
+      const handleTouchMove = (e: TouchEvent) => {
+        const touchCurrentX = e.touches[0].clientX;
+        const diff = touchCurrentX - touchStartX;
+        
+        // Si el deslizamiento es suficientemente grande hacia la derecha (gesto común para "volver")
+        if (diff > 100) {
+          navigate('/');
+          document.removeEventListener('touchmove', handleTouchMove);
+          document.removeEventListener('touchend', handleTouchEnd);
+        }
+      };
+      
+      const handleTouchEnd = () => {
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+      
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
+    };
+    
+    // Solo añadir este listener en dispositivos móviles
+    if ('ontouchstart' in window) {
+      document.addEventListener('touchstart', handleTouchStart);
+    }
+
     return () => {
       window.removeEventListener('popstate', handleBackButton);
       document.removeEventListener('backbutton', () => {});
+      if ('ontouchstart' in window) {
+        document.removeEventListener('touchstart', handleTouchStart);
+      }
     };
   }, [navigate]);
 
@@ -115,7 +148,7 @@ const PropertyDetail = () => {
 
   return (
     <Layout>
-      <div className="space-y-2">
+      <div className="space-y-2 mt-1">
         <PropertyDetailHeader 
           property={property}
           onRentPaidChange={handleRentPaidChange}

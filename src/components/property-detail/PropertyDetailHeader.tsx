@@ -22,8 +22,8 @@ const PropertyDetailHeader = ({ property }: PropertyDetailHeaderProps) => {
           <h1 className="text-2xl font-bold">{property.name}</h1>
           <p className="text-muted-foreground">{property.address}</p>
         </div>
+        <PropertyActions propertyId={property.id} />
       </div>
-      <PropertyActions propertyId={property.id} />
     </div>
   );
 };

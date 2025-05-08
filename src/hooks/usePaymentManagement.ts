@@ -65,7 +65,13 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
         // Update existing payment
         const updatedHistory = property.paymentHistory?.map(payment => 
           payment.month === month && payment.year === year
-            ? { ...payment, isPaid, notes: notes || payment.notes }
+            ? { 
+                ...payment, 
+                isPaid, 
+                notes: notes || payment.notes,
+                // Update payment date only if marking as paid
+                ...(isPaid ? { date: new Date().toISOString() } : {})
+              }
             : payment
         );
         
@@ -81,7 +87,8 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
           month,
           year,
           isPaid,
-          notes
+          notes,
+          date: isPaid ? new Date().toISOString() : undefined
         });
       }
       
@@ -107,7 +114,12 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
         // Update existing payment record
         const updatedHistory = property.paymentHistory?.map(payment => 
           payment.id === currentPayment.id 
-            ? { ...payment, isPaid: status } 
+            ? { 
+                ...payment, 
+                isPaid: status,
+                // Update date if marking as paid
+                ...(status ? { date: new Date().toISOString() } : {})
+              } 
             : payment
         );
         
@@ -121,7 +133,8 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
         addPaymentRecord({ 
           isPaid: status,
           month: new Date().getMonth(),
-          year: new Date().getFullYear()
+          year: new Date().getFullYear(),
+          date: status ? new Date().toISOString() : undefined
         });
       }
       
