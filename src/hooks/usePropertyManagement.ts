@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Property, Document } from '@/types/property';
 import { useTaskManagement } from './useTaskManagement';
@@ -51,6 +52,46 @@ export function usePropertyManagement(initialProperty: Property | null) {
     }
   };
 
+  // New function to handle expense deletion
+  const handleExpenseDelete = (expenseId: string) => {
+    if (!property || !property.monthlyExpenses) return;
+
+    // Find the expense to be deleted
+    const expenseToDelete = property.monthlyExpenses.find(e => e.id === expenseId);
+    if (!expenseToDelete) return;
+
+    // Calculate new expenses total
+    const newExpenses = property.expenses - expenseToDelete.amount;
+    const newNetIncome = property.rent - newExpenses;
+    
+    // Filter out the deleted expense
+    const updatedExpenses = property.monthlyExpenses.filter(e => e.id !== expenseId);
+    
+    const updatedProperty = {
+      ...property,
+      monthlyExpenses: updatedExpenses,
+      expenses: newExpenses,
+      netIncome: newNetIncome
+    };
+    
+    setProperty(updatedProperty);
+    
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperties = properties.map((p: Property) => 
+          p.id === property.id ? updatedProperty : p
+        );
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        toast.success('Gasto eliminado correctamente');
+      }
+    } catch (error) {
+      console.error("Error saving properties after expense deletion:", error);
+      toast.error("Error al eliminar el gasto");
+    }
+  };
+
   return {
     property,
     setProperty,
@@ -67,6 +108,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
     updatePropertyImage,
     handleExpenseAdd,
     handleExpenseUpdate,
+    handleExpenseDelete,
     calculateTotalExpenses
   };
 }

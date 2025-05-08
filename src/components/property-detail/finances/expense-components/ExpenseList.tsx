@@ -9,6 +9,7 @@ import { ExpenseToggleButton } from './ExpenseToggleButton';
 interface ExpenseListProps {
   property: Property;
   onExpenseUpdate?: (expenseId: string, updates: Partial<any>) => void;
+  onExpenseDelete?: (expenseId: string) => void;
   onlyDetails?: boolean;
   simplified?: boolean;
 }
@@ -26,7 +27,8 @@ interface FixedExpense {
 
 export const ExpenseList = ({ 
   property, 
-  onExpenseUpdate, 
+  onExpenseUpdate,
+  onExpenseDelete,
   onlyDetails = false,
   simplified = false
 }: ExpenseListProps) => {
@@ -47,6 +49,13 @@ export const ExpenseList = ({
         onExpenseUpdate(expenseId, { isPaid: !isPaid });
         toast.success(`Estado de pago actualizado: ${isPaid ? 'No pagado' : 'Pagado'}`, { duration: 2000 });
       }
+    }
+  };
+
+  const handleDeleteExpense = (expenseId: string) => {
+    if (onExpenseDelete) {
+      onExpenseDelete(expenseId);
+      toast.success('Gasto eliminado correctamente', { duration: 2000 });
     }
   };
 
@@ -156,6 +165,7 @@ export const ExpenseList = ({
                 isPaid={expense.isPaid}
                 simplified={simplified}
                 onTogglePaid={handleToggleExpensePaid}
+                onDeleteExpense={onExpenseDelete}
                 isStatic={['mortgage', 'ibi', 'community', 'home-insurance', 'life-insurance'].includes(expense.id)}
               />
             ))}

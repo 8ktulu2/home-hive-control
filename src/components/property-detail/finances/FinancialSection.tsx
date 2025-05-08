@@ -7,9 +7,10 @@ import { useExpenseManagement } from '@/hooks/useExpenseManagement';
 interface FinancialSectionProps {
   property: Property;
   setProperty: (property: Property) => void;
+  handleExpenseDelete?: (expenseId: string) => void;
 }
 
-const FinancialSection = ({ property, setProperty }: FinancialSectionProps) => {
+const FinancialSection = ({ property, setProperty, handleExpenseDelete }: FinancialSectionProps) => {
   const { handleExpenseAdd, handleExpenseUpdate } = useExpenseManagement(property, setProperty);
 
   return (
@@ -17,7 +18,8 @@ const FinancialSection = ({ property, setProperty }: FinancialSectionProps) => {
       <PropertyFinances 
         property={property} 
         onExpenseAdd={handleExpenseAdd} 
-        onExpenseUpdate={handleExpenseUpdate} 
+        onExpenseUpdate={handleExpenseUpdate}
+        onExpenseDelete={handleExpenseDelete}
       />
     </div>
   );

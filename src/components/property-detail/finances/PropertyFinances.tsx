@@ -12,12 +12,14 @@ interface PropertyFinancesProps {
   property: Property;
   onExpenseAdd?: (expense: Partial<MonthlyExpense>) => void;
   onExpenseUpdate?: (expenseId: string, updates: Partial<MonthlyExpense>) => void;
+  onExpenseDelete?: (expenseId: string) => void;
 }
 
 const PropertyFinances: React.FC<PropertyFinancesProps> = ({ 
   property, 
   onExpenseAdd, 
-  onExpenseUpdate 
+  onExpenseUpdate,
+  onExpenseDelete
 }) => {
   const [showExpenses, setShowExpenses] = useState(false);
 
@@ -67,6 +69,7 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
             <ExpenseList 
               property={property} 
               onExpenseUpdate={onExpenseUpdate}
+              onExpenseDelete={onExpenseDelete}
               simplified={true}
             />
           </CardContent>

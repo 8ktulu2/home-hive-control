@@ -25,7 +25,8 @@ const PropertyDetail = () => {
     handleDocumentDelete,
     handleDocumentAdd,
     handleExpenseAdd,
-    handleExpenseUpdate
+    handleExpenseUpdate,
+    handleExpenseDelete
   } = usePropertyManagement(null);
 
   const { 
@@ -164,6 +165,7 @@ const PropertyDetail = () => {
           handleTaskUpdate={handleTaskUpdate}
           handleDocumentDelete={handleDocumentDelete}
           handleDocumentAdd={handleDocumentAdd}
+          handleExpenseDelete={handleExpenseDelete}
           setProperty={setProperty}
         />
       </div>

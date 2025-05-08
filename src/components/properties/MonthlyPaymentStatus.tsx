@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
+import PaymentConfirmationDialog from '@/components/property-detail/dialogs/PaymentConfirmationDialog';
 
 interface MonthlyPaymentStatusProps {
   property: Property;
-  onPaymentUpdate?: (month: number, year: number, isPaid: boolean) => void;
+  onPaymentUpdate?: (month: number, year: number, isPaid: boolean, notes?: string) => void;
   compact?: boolean;
 }
 
@@ -13,6 +14,8 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
+  
+  const [selectedPayment, setSelectedPayment] = useState<{ month: number; year: number; isPaid: boolean } | null>(null);
   
   const months = [
     'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
@@ -29,11 +32,28 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
     return false;
   };
   
-  const handlePaymentToggle = (month: number, year: number) => {
-    if (onPaymentUpdate) {
-      const isPaid = getPaymentStatus(month, year);
-      onPaymentUpdate(month, year, !isPaid);
+  const handlePaymentClick = (month: number, year: number) => {
+    const isPaid = getPaymentStatus(month, year);
+    setSelectedPayment({ month, year, isPaid });
+  };
+  
+  const handleConfirmPayment = (notes: string, paymentDate: Date) => {
+    if (selectedPayment && onPaymentUpdate) {
+      onPaymentUpdate(
+        selectedPayment.month, 
+        selectedPayment.year, 
+        !selectedPayment.isPaid,
+        notes
+      );
     }
+    setSelectedPayment(null);
+  };
+
+  // Determine if selected month is in the future
+  const isFutureMonth = (month: number, year: number) => {
+    if (year > currentYear) return true;
+    if (year === currentYear && month > currentMonth) return true;
+    return false;
   };
 
   // Generar los últimos 12 meses desde el mes actual hacia atrás
@@ -72,7 +92,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
             return (
               <button
                 key={`${year}-${month}`}
-                onClick={() => handlePaymentToggle(month, year)}
+                onClick={() => handlePaymentClick(month, year)}
                 className={cn(
                   "flex-1 min-w-[40px] h-9 flex flex-col items-center justify-center rounded text-xs font-medium transition-colors",
                   isPaid
@@ -94,7 +114,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
               return (
                 <button
                   key={`${year}-${month}`}
-                  onClick={() => handlePaymentToggle(month, year)}
+                  onClick={() => handlePaymentClick(month, year)}
                   className={cn(
                     "flex-1 min-w-[40px] h-9 flex flex-col items-center justify-center rounded text-xs font-medium transition-colors",
                     isPaid
@@ -109,6 +129,19 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
           </div>
         )}
       </div>
+
+      {/* Payment Confirmation Dialog */}
+      {selectedPayment && (
+        <PaymentConfirmationDialog
+          open={!!selectedPayment}
+          onOpenChange={(open) => !open && setSelectedPayment(null)}
+          onConfirm={handleConfirmPayment}
+          month={selectedPayment.month}
+          year={selectedPayment.year}
+          isPaid={selectedPayment.isPaid}
+          isFutureMonth={isFutureMonth(selectedPayment.month, selectedPayment.year)}
+        />
+      )}
     </div>
   );
 };

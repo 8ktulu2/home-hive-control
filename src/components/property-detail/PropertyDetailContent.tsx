@@ -14,6 +14,7 @@ interface PropertyDetailContentProps {
   handleTaskUpdate: (taskId: string, updates: any) => void;
   handleDocumentDelete: (documentId: string) => void;
   handleDocumentAdd: (document: any) => void;
+  handleExpenseDelete?: (expenseId: string) => void;
   setProperty: (property: Property | null) => void;
 }
 
@@ -27,6 +28,7 @@ const PropertyDetailContent = ({
   handleTaskUpdate,
   handleDocumentDelete,
   handleDocumentAdd,
+  handleExpenseDelete,
   setProperty
 }: PropertyDetailContentProps) => {
   return (
@@ -39,7 +41,11 @@ const PropertyDetailContent = ({
         />
       </div>
 
-      <MainContent property={property} setProperty={setProperty} />
+      <MainContent 
+        property={property} 
+        setProperty={setProperty}
+        handleExpenseDelete={handleExpenseDelete}
+      />
 
       <SecondaryContent
         property={property}

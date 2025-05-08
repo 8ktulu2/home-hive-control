@@ -1,0 +1,127 @@
+
+import React, { useState, useEffect } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+
+interface PaymentConfirmationDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (notes: string, paymentDate: Date) => void;
+  month: number;
+  year: number;
+  isPaid: boolean;
+  isFutureMonth: boolean;
+}
+
+const PaymentConfirmationDialog: React.FC<PaymentConfirmationDialogProps> = ({
+  open,
+  onOpenChange,
+  onConfirm,
+  month,
+  year,
+  isPaid,
+  isFutureMonth,
+}) => {
+  const [notes, setNotes] = useState<string>('');
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [notesRequired, setNotesRequired] = useState<boolean>(isFutureMonth);
+
+  // Reset states when dialog opens
+  useEffect(() => {
+    if (open) {
+      setNotes('');
+      setDate(new Date());
+    }
+  }, [open]);
+
+  const handleConfirm = () => {
+    if (notesRequired && !notes.trim()) {
+      return; // Don't allow confirmation without notes for future months
+    }
+    onConfirm(notes, date || new Date());
+  };
+
+  const months = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  const monthName = months[month];
+  const action = isPaid ? 'no pagado' : 'pagado';
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar cambio de estado</AlertDialogTitle>
+          <AlertDialogDescription>
+            ¿Está seguro de que desea marcar {monthName} {year} como {action}?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        
+        {!isPaid && (
+          <div className="space-y-4 mb-4">
+            <div className="space-y-2">
+              <Label htmlFor="payment-date">Fecha de pago</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP", { locale: es }) : "Seleccionar fecha"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="notes">Notas {isFutureMonth && <span className="text-red-500 ml-1">*</span>}</Label>
+                {isFutureMonth && <span className="text-xs text-red-500">Obligatorio</span>}
+              </div>
+              <Textarea 
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Añade notas sobre este pago..."
+                className={cn(
+                  isFutureMonth && !notes.trim() && "border-red-500 focus-visible:ring-red-500"
+                )}
+              />
+            </div>
+          </div>
+        )}
+
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm} disabled={isFutureMonth && !notes.trim()}>
+            Confirmar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+export default PaymentConfirmationDialog;
