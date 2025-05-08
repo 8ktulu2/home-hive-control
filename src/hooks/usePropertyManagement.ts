@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Property, Document } from '@/types/property';
 import { useTaskManagement } from './useTaskManagement';
@@ -8,6 +7,7 @@ import { usePropertyImages } from './usePropertyImages';
 import { usePropertyCreation } from './usePropertyCreation';
 import { useExpenseManagement } from './useExpenseManagement';
 import { toast } from 'sonner';
+import { calculateTotalExpenses } from '@/utils/expenseCalculations';
 
 export function usePropertyManagement(initialProperty: Property | null) {
   const [property, setProperty] = useState<Property | null>(initialProperty);
@@ -17,7 +17,7 @@ export function usePropertyManagement(initialProperty: Property | null) {
   const { handleAddInventoryItem, handleDeleteInventoryItem, handleEditInventoryItem } = useInventoryManagement(property, setProperty);
   const { updatePropertyImage } = usePropertyImages(property, setProperty);
   const { createNewProperty } = usePropertyCreation();
-  const { handleExpenseAdd, handleExpenseUpdate, calculateTotalExpenses } = useExpenseManagement(property, setProperty);
+  const { handleExpenseAdd, handleExpenseUpdate } = useExpenseManagement(property, setProperty);
 
   // New function to add documents
   const handleDocumentAdd = (document: Document) => {
