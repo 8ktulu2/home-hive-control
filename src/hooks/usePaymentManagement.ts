@@ -40,11 +40,26 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
       ? [...property.paymentHistory, newPayment] 
       : [newPayment];
     
-    setProperty({
+    const updatedProperty = {
       ...property,
       paymentHistory: updatedHistory,
-      rentPaid: true
-    });
+      rentPaid: paymentData.month === new Date().getMonth() && paymentData.year === new Date().getFullYear() ? true : property.rentPaid
+    };
+    
+    setProperty(updatedProperty);
+    
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperties = properties.map((p: Property) => 
+          p.id === property.id ? updatedProperty : p
+        );
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      }
+    } catch (error) {
+      console.error('Error saving payment record:', error);
+    }
     
     return newPayment;
   };
@@ -61,6 +76,16 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
         p => p.month === month && p.year === year
       );
       
+      // Check if this is a future month
+      const isFutureMonth = isMonthInFuture(month, year);
+      
+      // Validate notes for future months
+      if (isFutureMonth && isPaid && (!notes || !notes.trim())) {
+        toast.error('Las notas son obligatorias para pagos de meses futuros');
+        setIsUpdatingPayment(false);
+        return;
+      }
+      
       if (existingPayment) {
         // Update existing payment
         const updatedHistory = property.paymentHistory?.map(payment => 
@@ -75,12 +100,24 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
             : payment
         );
         
-        setProperty({
+        const updatedProperty = {
           ...property,
           paymentHistory: updatedHistory,
           // Update rentPaid if this is the current month
           rentPaid: month === new Date().getMonth() && year === new Date().getFullYear() ? isPaid : property.rentPaid
-        });
+        };
+        
+        setProperty(updatedProperty);
+        
+        // Save to localStorage
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
       } else {
         // Create new payment record
         addPaymentRecord({
@@ -99,6 +136,17 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
     } finally {
       setIsUpdatingPayment(false);
     }
+  };
+  
+  // Check if a month is in the future
+  const isMonthInFuture = (month: number, year: number): boolean => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    if (year > currentYear) return true;
+    if (year === currentYear && month > currentMonth) return true;
+    return false;
   };
   
   // Update rent paid status for current month
@@ -123,11 +171,23 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
             : payment
         );
         
-        setProperty({
+        const updatedProperty = {
           ...property,
           paymentHistory: updatedHistory,
           rentPaid: status
-        });
+        };
+        
+        setProperty(updatedProperty);
+        
+        // Save to localStorage
+        const savedProperties = localStorage.getItem('properties');
+        if (savedProperties) {
+          const properties = JSON.parse(savedProperties);
+          const updatedProperties = properties.map((p: Property) => 
+            p.id === property.id ? updatedProperty : p
+          );
+          localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        }
       } else {
         // Create new payment record for current month
         addPaymentRecord({ 
@@ -156,6 +216,7 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
     addPaymentRecord,
     updateRentPaidStatus,
     handlePaymentUpdate,
-    handleRentPaidChange
+    handleRentPaidChange,
+    isMonthInFuture
   };
 }

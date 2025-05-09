@@ -31,7 +31,8 @@ const PropertyDetail = () => {
 
   const { 
     handlePaymentUpdate, 
-    handleRentPaidChange 
+    handleRentPaidChange,
+    isMonthInFuture
   } = usePaymentManagement(property, setProperty);
 
   useEffect(() => {
@@ -167,6 +168,7 @@ const PropertyDetail = () => {
           handleDocumentAdd={handleDocumentAdd}
           handleExpenseDelete={handleExpenseDelete}
           setProperty={setProperty}
+          isMonthInFuture={isMonthInFuture}
         />
       </div>
     </Layout>

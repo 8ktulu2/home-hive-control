@@ -8,9 +8,15 @@ interface MonthlyPaymentStatusProps {
   property: Property;
   onPaymentUpdate?: (month: number, year: number, isPaid: boolean, notes?: string) => void;
   compact?: boolean;
+  isMonthInFuture?: (month: number, year: number) => boolean;
 }
 
-const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, onPaymentUpdate, compact = false }) => {
+const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ 
+  property, 
+  onPaymentUpdate, 
+  compact = false,
+  isMonthInFuture 
+}) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -51,6 +57,11 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
 
   // Determine if selected month is in the future
   const isFutureMonth = (month: number, year: number) => {
+    // Use provided function if available, otherwise use our own implementation
+    if (isMonthInFuture) {
+      return isMonthInFuture(month, year);
+    }
+    
     if (year > currentYear) return true;
     if (year === currentYear && month > currentMonth) return true;
     return false;

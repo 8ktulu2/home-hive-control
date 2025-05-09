@@ -16,6 +16,7 @@ interface PropertyDetailContentProps {
   handleDocumentAdd: (document: any) => void;
   handleExpenseDelete?: (expenseId: string) => void;
   setProperty: (property: Property | null) => void;
+  isMonthInFuture?: (month: number, year: number) => boolean;
 }
 
 const PropertyDetailContent = ({
@@ -29,7 +30,8 @@ const PropertyDetailContent = ({
   handleDocumentDelete,
   handleDocumentAdd,
   handleExpenseDelete,
-  setProperty
+  setProperty,
+  isMonthInFuture
 }: PropertyDetailContentProps) => {
   return (
     <div className="space-y-2">
@@ -38,6 +40,7 @@ const PropertyDetailContent = ({
           property={property}
           onPaymentUpdate={onPaymentUpdate}
           compact={true}
+          isMonthInFuture={isMonthInFuture}
         />
       </div>
 
