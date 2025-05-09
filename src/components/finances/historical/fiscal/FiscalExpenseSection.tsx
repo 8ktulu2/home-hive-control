@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,7 @@ import { FiscalSectionProps } from './types';
 import { FiscalAmortizationGuide } from './FiscalAmortizationGuide';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { FiscalData } from '../types';
 
 interface ExpenseItemProps extends FiscalSectionProps {
   label: string;
@@ -17,15 +19,15 @@ interface ExpenseItemProps extends FiscalSectionProps {
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ form, label, field, description, className }) => {
   return (
     <div className={cn("grid grid-cols-3 gap-4 items-center", className)}>
-      <Label htmlFor={field} className="text-right">
+      <Label htmlFor={String(field)} className="text-right">
         {label}
       </Label>
       <Input
         type="number"
-        id={field}
+        id={String(field)}
         placeholder="0.00"
         className="col-span-2"
-        {...form.register(field, { valueAsNumber: true })}
+        {...form.register(field as keyof FiscalData, { valueAsNumber: true })}
       />
       {description && (
         <p className="col-span-3 text-sm text-muted-foreground mt-1">{description}</p>

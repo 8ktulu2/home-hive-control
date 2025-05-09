@@ -9,6 +9,12 @@ interface SummaryProps extends FiscalSectionProps {
 }
 
 export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }) => {
+  // Calculate reduced net profit
+  const netIncome = form.watch('netIncome') || 0;
+  const reducedNetProfit = netIncome > 0 
+    ? netIncome * (1 - reduction / 100) 
+    : netIncome;
+
   return (
     <Card>
       <CardHeader>
@@ -31,7 +37,7 @@ export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }
           <div>
             <p className="text-sm text-muted-foreground">Rendimiento neto</p>
             <p className="text-lg font-semibold">
-              {(form.watch('netIncome') || 0).toFixed(2)}€
+              {netIncome.toFixed(2)}€
             </p>
           </div>
         </div>
@@ -43,14 +49,14 @@ export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }
             <div>
               <p className="text-sm text-muted-foreground">Rendimiento neto reducido (a declarar)</p>
               <p className="text-xl font-semibold">
-                {(form.watch('reducedNetProfit') || 0).toFixed(2)}€
+                {reducedNetProfit.toFixed(2)}€
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Reducción aplicada ({reduction}%)</p>
               <p className="text-lg font-semibold">
-                {(form.watch('netIncome') || 0) > 0 ? 
-                  ((form.watch('netIncome') || 0) * (reduction / 100)).toFixed(2) : 
+                {netIncome > 0 ? 
+                  (netIncome * (reduction / 100)).toFixed(2) : 
                   "0.00"}€
               </p>
             </div>
