@@ -12,6 +12,7 @@ interface FinancialSectionProps {
 
 const FinancialSection = ({ property, setProperty, handleExpenseDelete }: FinancialSectionProps) => {
   const { handleExpenseAdd, handleExpenseUpdate } = useExpenseManagement(property, setProperty);
+  // Always start with expenses collapsed by default
   const [showExpenses, setShowExpenses] = useState(false);
 
   return (

@@ -11,6 +11,11 @@ import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
 import FiscalDetailContent from './FiscalDetailContent';
 import { useHistoricalData } from './hooks/useHistoricalData';
+import OccupancyTimeline from './OccupancyTimeline';
+import TransactionsTable from './TransactionsTable';
+import FinancialReports from './FinancialReports';
+import PropertyPerformanceContent from './PropertyPerformanceContent';
+import HistoricalTransactionModal from './HistoricalTransactionModal';
 
 interface HistoricalDataProps {
   properties: Property[];
@@ -22,14 +27,31 @@ interface HistoricalDataProps {
 const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }: HistoricalDataProps) => {
   const [selectedProperty, setSelectedProperty] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("summary");
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
-  const { historicalData, calculateAnnualTotals } = useHistoricalData(properties, selectedYear);
+  const { 
+    historicalData, 
+    calculateAnnualTotals,
+    allTransactions,
+    performanceMetrics
+  } = useHistoricalData(properties, selectedYear);
   
   const filteredData = selectedProperty === "all" 
     ? historicalData 
     : historicalData.filter(data => data.propertyId === selectedProperty);
   
   const annualTotals = calculateAnnualTotals(filteredData);
+
+  const handleTransactionClick = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setIsTransactionModalOpen(true);
+  };
+
+  const handleCloseTransactionModal = () => {
+    setIsTransactionModalOpen(false);
+    setSelectedTransaction(null);
+  };
 
   return (
     <Card className="bg-[#1A1F2C] text-white rounded-lg overflow-hidden">
@@ -44,7 +66,13 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
       
       <HistoricalTabs activeTab={activeTab} setActiveTab={setActiveTab}>
         <TabsContent value="summary">
-          <AnnualSummaryCards {...annualTotals} />
+          <div className="space-y-6">
+            <OccupancyTimeline 
+              data={filteredData} 
+              year={selectedYear}
+            />
+            <AnnualSummaryCards {...annualTotals} />
+          </div>
         </TabsContent>
         
         <TabsContent value="monthly">
@@ -55,10 +83,42 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
           <ExpensesContent filteredData={filteredData} />
         </TabsContent>
 
+        <TabsContent value="transactions">
+          <TransactionsTable 
+            transactions={allTransactions} 
+            filteredPropertyId={selectedProperty !== "all" ? selectedProperty : undefined}
+            onTransactionClick={handleTransactionClick}
+          />
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <PropertyPerformanceContent 
+            metrics={performanceMetrics}
+            filteredPropertyId={selectedProperty !== "all" ? selectedProperty : undefined}
+            year={selectedYear}
+          />
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <FinancialReports 
+            properties={properties} 
+            selectedYear={selectedYear} 
+            selectedPropertyId={selectedProperty} 
+            historicalData={filteredData}
+            annualTotals={annualTotals}
+          />
+        </TabsContent>
+
         <TabsContent value="fiscal">
           <FiscalDetailContent filteredData={filteredData} selectedYear={selectedYear} />
         </TabsContent>
       </HistoricalTabs>
+
+      <HistoricalTransactionModal 
+        isOpen={isTransactionModalOpen}
+        onClose={handleCloseTransactionModal}
+        transaction={selectedTransaction}
+      />
     </Card>
   );
 };
