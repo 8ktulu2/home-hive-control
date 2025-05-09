@@ -59,12 +59,12 @@ export const FiscalDetailForm: React.FC<FiscalFormProps> = ({
         (values.maintenance || 0) +
         (values.agencyFees || 0) +
         (values.administrativeFees || 0) +
-        (values.propertyDepreciation || 0) +
+        (values.contractFormalization || 0) +
+        (values.legalFees || 0) +
         (values.buildingDepreciation || 0) +
         (values.furnitureDepreciation || 0) +
         (values.utilities || 0) +
         (values.municipalTaxes || 0) +
-        (values.legalFees || 0) +
         (values.badDebts || 0) +
         (values.otherExpenses || 0);
       

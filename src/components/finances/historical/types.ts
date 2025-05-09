@@ -108,4 +108,7 @@ export interface FiscalData {
   rentLoweredFromPrevious?: boolean;
   youngTenant?: boolean;
   recentlyRenovated?: boolean;
+  
+  // Used internally for form reference
+  netProfit?: number;
 }

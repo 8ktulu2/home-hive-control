@@ -18,15 +18,21 @@ export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Total ingresos</p>
-            <p className="text-lg font-semibold">{form.watch('totalIncome')?.toFixed(2) || "0.00"}€</p>
+            <p className="text-lg font-semibold">
+              {(form.watch('totalIncome') || 0).toFixed(2)}€
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Total gastos</p>
-            <p className="text-lg font-semibold">{form.watch('totalExpenses')?.toFixed(2) || "0.00"}€</p>
+            <p className="text-lg font-semibold">
+              {(form.watch('totalExpenses') || 0).toFixed(2)}€
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Rendimiento neto</p>
-            <p className="text-lg font-semibold">{form.watch('netProfit')?.toFixed(2) || "0.00"}€</p>
+            <p className="text-lg font-semibold">
+              {(form.watch('netIncome') || 0).toFixed(2)}€
+            </p>
           </div>
         </div>
         
@@ -36,11 +42,17 @@ export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground">Rendimiento neto reducido (a declarar)</p>
-              <p className="text-xl font-semibold">{form.watch('reducedNetProfit')?.toFixed(2) || "0.00"}€</p>
+              <p className="text-xl font-semibold">
+                {(form.watch('reducedNetProfit') || 0).toFixed(2)}€
+              </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Reducción aplicada ({reduction}%)</p>
-              <p className="text-lg font-semibold">{form.watch('netProfit') > 0 ? (form.watch('netProfit') * (reduction / 100)).toFixed(2) : "0.00"}€</p>
+              <p className="text-lg font-semibold">
+                {form.watch('netIncome') > 0 ? 
+                  ((form.watch('netIncome') || 0) * (reduction / 100)).toFixed(2) : 
+                  "0.00"}€
+              </p>
             </div>
           </div>
         </div>

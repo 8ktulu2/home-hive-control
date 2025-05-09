@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export const FiscalAmortizationGuide: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -10,7 +10,7 @@ export const FiscalAmortizationGuide: React.FC = () => {
   return (
     <>
       <Button variant="ghost" size="sm" onClick={() => setOpen(true)} className="p-0 h-auto text-muted-foreground hover:bg-transparent">
-        <InfoCircle className="h-4 w-4 mr-1" /> Guía de amortización
+        <Info className="h-4 w-4 mr-1" /> Guía de amortización
       </Button>
       
       <Dialog open={open} onOpenChange={setOpen}>
@@ -39,7 +39,7 @@ export const FiscalAmortizationGuide: React.FC = () => {
             <div className="p-4 bg-muted rounded-lg">
               <h3 className="font-medium mb-2">Amortización del Mobiliario (10%)</h3>
               <p>
-                Se calcula como el 10% del valor de adquisición del mobiliario y enseres 
+                Se calula como el 10% del valor de adquisición del mobiliario y enseres 
                 (electrodomésticos, muebles, equipamiento, etc).
               </p>
               <div className="mt-2 p-2 bg-background rounded">

@@ -191,7 +191,7 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
           
           <FormField
             control={form.control}
-            name="legalExpenses"
+            name="legalFees"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Defensa jurídica</FormLabel>
@@ -308,7 +308,7 @@ export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => 
           
           <FormField
             control={form.control}
-            name="administrativeExpenses"
+            name="administrativeFees"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Gastos administrativos</FormLabel>
