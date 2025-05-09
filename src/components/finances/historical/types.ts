@@ -1,4 +1,5 @@
 
+
 export interface OccupancyMonth {
   month: string;
   wasRented: boolean;

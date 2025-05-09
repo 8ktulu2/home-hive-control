@@ -49,7 +49,7 @@ export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Reducción aplicada ({reduction}%)</p>
               <p className="text-lg font-semibold">
-                {form.watch('netIncome') > 0 ? 
+                {(form.watch('netIncome') || 0) > 0 ? 
                   ((form.watch('netIncome') || 0) * (reduction / 100)).toFixed(2) : 
                   "0.00"}€
               </p>
