@@ -32,21 +32,26 @@ const PaymentConfirmationDialog: React.FC<PaymentConfirmationDialogProps> = ({
 }) => {
   const [notes, setNotes] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [notesRequired, setNotesRequired] = useState<boolean>(isFutureMonth);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Reset states when dialog opens
   useEffect(() => {
     if (open) {
       setNotes('');
       setDate(new Date());
+      setValidationError(null);
     }
   }, [open]);
 
   const handleConfirm = () => {
-    if (notesRequired && !notes.trim()) {
-      return; // Don't allow confirmation without notes for future months
+    // Validate notes for future months
+    if (isFutureMonth && !notes.trim()) {
+      setValidationError("Las notas son obligatorias para pagos de meses futuros");
+      return;
     }
+    
     onConfirm(notes, date || new Date());
+    setValidationError(null);
   };
 
   const months = [
@@ -97,25 +102,37 @@ const PaymentConfirmationDialog: React.FC<PaymentConfirmationDialogProps> = ({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="notes">Notas {isFutureMonth && <span className="text-red-500 ml-1">*</span>}</Label>
+                <Label htmlFor="notes">
+                  Notas {isFutureMonth && <span className="text-red-500 ml-1">*</span>}
+                </Label>
                 {isFutureMonth && <span className="text-xs text-red-500">Obligatorio</span>}
               </div>
               <Textarea 
                 id="notes"
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Añade notas sobre este pago..."
+                onChange={(e) => {
+                  setNotes(e.target.value);
+                  if (isFutureMonth && e.target.value.trim()) {
+                    setValidationError(null);
+                  }
+                }}
+                placeholder={isFutureMonth 
+                  ? "Debe añadir notas para pagos de meses futuros..." 
+                  : "Añade notas sobre este pago..."}
                 className={cn(
-                  isFutureMonth && !notes.trim() && "border-red-500 focus-visible:ring-red-500"
+                  validationError && "border-red-500 focus-visible:ring-red-500"
                 )}
               />
+              {validationError && (
+                <p className="text-sm text-red-500">{validationError}</p>
+              )}
             </div>
           </div>
         )}
 
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} disabled={isFutureMonth && !notes.trim()}>
+          <AlertDialogAction onClick={handleConfirm}>
             Confirmar
           </AlertDialogAction>
         </AlertDialogFooter>

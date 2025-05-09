@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import PropertyFinances from './PropertyFinances';
 import { useExpenseManagement } from '@/hooks/useExpenseManagement';
@@ -12,6 +12,7 @@ interface FinancialSectionProps {
 
 const FinancialSection = ({ property, setProperty, handleExpenseDelete }: FinancialSectionProps) => {
   const { handleExpenseAdd, handleExpenseUpdate } = useExpenseManagement(property, setProperty);
+  const [showExpenses, setShowExpenses] = useState(false);
 
   return (
     <div className="col-span-2">
@@ -20,6 +21,8 @@ const FinancialSection = ({ property, setProperty, handleExpenseDelete }: Financ
         onExpenseAdd={handleExpenseAdd} 
         onExpenseUpdate={handleExpenseUpdate}
         onExpenseDelete={handleExpenseDelete}
+        showExpenses={showExpenses}
+        setShowExpenses={setShowExpenses}
       />
     </div>
   );

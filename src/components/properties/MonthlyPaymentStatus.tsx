@@ -56,19 +56,14 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
     return false;
   };
 
-  // Generar los últimos 12 meses desde el mes actual hacia atrás
+  // Generar todos los meses del año en curso
   const generateMonths = () => {
     const result = [];
-    let month = currentMonth;
-    let year = currentYear;
+    const year = currentYear;
     
-    for (let i = 0; i < 12; i++) {
+    // Add all months of the current year (January to December)
+    for (let month = 0; month < 12; month++) {
       result.push({ month, year });
-      month--;
-      if (month < 0) {
-        month = 11;
-        year--;
-      }
     }
     
     return result;
@@ -83,7 +78,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
   return (
     <div className="rounded-lg border mb-4">
       <div className="p-3 bg-muted/50 flex items-center justify-between border-b">
-        <h3 className="text-sm font-medium">Estado de Pagos</h3>
+        <h3 className="text-sm font-medium">Estado de Pagos {currentYear}</h3>
       </div>
       <div className="p-3">
         <div className="flex flex-wrap gap-1">

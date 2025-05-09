@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Property, MonthlyExpense } from '@/types/property';
 import { ExpenseList } from './expense-components/ExpenseList';
 import { AddExpenseDialog } from './AddExpenseDialog';
@@ -13,16 +13,18 @@ interface PropertyFinancesProps {
   onExpenseAdd?: (expense: Partial<MonthlyExpense>) => void;
   onExpenseUpdate?: (expenseId: string, updates: Partial<MonthlyExpense>) => void;
   onExpenseDelete?: (expenseId: string) => void;
+  showExpenses?: boolean;
+  setShowExpenses?: (show: boolean) => void;
 }
 
 const PropertyFinances: React.FC<PropertyFinancesProps> = ({ 
   property, 
   onExpenseAdd, 
   onExpenseUpdate,
-  onExpenseDelete
+  onExpenseDelete,
+  showExpenses = false,
+  setShowExpenses
 }) => {
-  const [showExpenses, setShowExpenses] = useState(false);
-
   // Get unpaid expenses
   const unpaidExpenses = property.monthlyExpenses?.filter(expense => !expense.isPaid) || [];
 
@@ -43,7 +45,7 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
         rent={rent}
         expenses={expenses}
         netIncome={netIncome}
-        onExpensesClick={() => setShowExpenses((v) => !v)}
+        onExpensesClick={() => setShowExpenses && setShowExpenses(!showExpenses)}
         showExpenses={showExpenses}
       />
 
@@ -57,7 +59,7 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => setShowExpenses(false)}
+                onClick={() => setShowExpenses && setShowExpenses(false)}
                 className="h-8 w-8 p-0"
               >
                 <ChevronUp className="h-4 w-4" />
@@ -93,15 +95,32 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
                     <p className="font-medium">{expense.name}</p>
                     <p className="text-sm text-muted-foreground">{expense.amount.toFixed(0)}€</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => handleMarkAsPaid(expense.id)}
-                  >
-                    <Check className="h-4 w-4" />
-                    <span className="sr-only">Marcar como pagado</span>
-                  </Button>
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 mr-1"
+                      onClick={() => handleMarkAsPaid(expense.id)}
+                    >
+                      <Check className="h-4 w-4" />
+                      <span className="sr-only">Marcar como pagado</span>
+                    </Button>
+                    {onExpenseDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                        onClick={() => onExpenseDelete(expense.id)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 6h18"></path>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        <span className="sr-only">Eliminar gasto</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
