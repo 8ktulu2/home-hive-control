@@ -6,4 +6,6 @@ export interface InventoryItem {
   condition: 'new' | 'good' | 'fair' | 'poor';
   acquisitionDate?: string;
   notes?: string;
+  isNewPurchase?: boolean;
+  purchaseAmount?: number;
 }

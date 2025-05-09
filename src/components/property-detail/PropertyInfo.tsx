@@ -7,12 +7,15 @@ import { useState } from 'react';
 import TenantDialog from './dialogs/TenantDialog';
 import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
+import PropertyInfoDialogs from './property-info/components/PropertyInfoDialogs';
+import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 
 interface PropertyInfoProps {
   property: Property;
+  setProperty: (property: Property | null) => void;
 }
 
-const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
+const PropertyInfo = ({ property: initialProperty, setProperty }: PropertyInfoProps) => {
   const [activeTab, setActiveTab] = useState('general');
   
   const {
@@ -29,6 +32,12 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
     handleEditInventoryItemClick
   } = usePropertyInfoDialogs();
 
+  const {
+    handleAddInventoryItem,
+    handleDeleteInventoryItem,
+    handleEditInventoryItem
+  } = useInventoryManagement(initialProperty, setProperty);
+
   const handleAddInventoryClick = () => {
     handleInventoryDialogOpen();
   };
@@ -38,7 +47,19 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
   };
 
   const handleDeleteInventoryItem = (itemId: string) => {
-    // Handle deleting inventory item in the future
+    handleDeleteInventoryItem(itemId);
+  };
+
+  const handleInventorySave = (item: Omit<InventoryItem, 'id'>) => {
+    if (editingInventoryItem) {
+      handleEditInventoryItem({
+        ...item,
+        id: editingInventoryItem.id
+      });
+    } else {
+      handleAddInventoryItem(item);
+    }
+    handleInventoryDialogClose();
   };
 
   const handleCloseContactDialog = () => {
@@ -70,19 +91,16 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
         />
 
         {/* Dialogs */}
-        <TenantDialog 
-          tenant={selectedTenant} 
-          onClose={handleCloseTenantDialog} 
+        <PropertyInfoDialogs
+          selectedContact={selectedContact}
+          selectedTenant={selectedTenant}
+          isInventoryDialogOpen={isInventoryDialogOpen}
+          editingInventoryItem={editingInventoryItem}
+          onContactClose={handleCloseContactDialog}
+          onTenantClose={handleCloseTenantDialog}
+          onInventoryClose={handleInventoryDialogClose}
+          onInventorySave={handleInventorySave}
         />
-
-        {selectedContact && (
-          <ContactDetailsDialog
-            isOpen={!!selectedContact}
-            onClose={handleCloseContactDialog}
-            title={selectedContact.title}
-            details={selectedContact.details}
-          />
-        )}
       </CardContent>
     </Card>
   );
