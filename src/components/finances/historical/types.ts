@@ -61,3 +61,15 @@ export interface AnnualTotals {
   occupancyRate: number;
   expensesByCategory?: Record<string, number>;
 }
+
+export interface FiscalData {
+  year: number;
+  propertyId: string;
+  totalIncome: number;
+  totalExpenses: number;
+  netIncome: number;
+  deductibleExpenses: Record<string, number>;
+  amortization: number;
+  applicableReduction: number;
+  taxableIncome: number;
+}
