@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FiscalData } from '@/components/finances/historical/types';
@@ -542,7 +541,7 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
         ['Rebaja de renta respecto contrato anterior', data.rentLoweredFromPrevious ? 'Sí' : 'No'],
         ['Vivienda rehabilitada recientemente', data.recentlyRenovated ? 'Sí' : 'No'],
         ['Porcentaje de reducción aplicable', `${data.applicableReduction || 0}%`],
-        ['Base para la reducción', (data.netProfit || 0).toLocaleString('es-ES') + ' €'],
+        ['Base para la reducción', (data.netIncome || 0).toLocaleString('es-ES') + ' €'],
         ['Importe de la reducción', (data.reducedNetProfit || 0).toLocaleString('es-ES') + ' €']
       ],
       theme: 'striped',
@@ -557,7 +556,7 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
     currentY = addSectionTitle(doc, 'RESUMEN PARA DECLARACIÓN', currentY);
     
     // Calculate base imponible
-    const baseImponible = (data.netProfit || 0) - (data.reducedNetProfit || 0);
+    const baseImponible = (data.netIncome || 0) - (data.reducedNetProfit || 0);
     
     // Create summary table
     autoTable(doc, {
@@ -566,7 +565,7 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
       body: [
         ['Ingresos Íntegros', (data.totalIncome || 0).toLocaleString('es-ES')],
         ['Total Gastos Deducibles', (data.totalExpenses || 0).toLocaleString('es-ES')],
-        ['Rendimiento Neto', (data.netProfit || 0).toLocaleString('es-ES')],
+        ['Rendimiento Neto', (data.netIncome || 0).toLocaleString('es-ES')],
         ['Reducción Aplicada', (data.reducedNetProfit || 0).toLocaleString('es-ES')],
         ['BASE IMPONIBLE', baseImponible.toLocaleString('es-ES')]
       ],
@@ -579,8 +578,6 @@ export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, se
         0: { fontStyle: 'bold' }
       }
     });
-    
-    currentY = (doc as any).lastAutoTable.finalY + 15;
     
     // Add a new page for educational content
     doc.addPage();

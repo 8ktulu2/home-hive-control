@@ -1,8 +1,9 @@
 
+import { UseFormReturn } from "react-hook-form";
 import { FiscalData } from '../types';
 
 export interface FiscalSectionProps {
-  form: any;
+  form: UseFormReturn<FiscalData>;
 }
 
 export interface FiscalFormProps {

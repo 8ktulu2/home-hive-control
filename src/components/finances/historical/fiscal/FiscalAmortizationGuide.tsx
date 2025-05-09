@@ -1,33 +1,65 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { InfoCircle } from 'lucide-react';
 
 export const FiscalAmortizationGuide: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  
   return (
-    <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
-      <h4 className="font-medium mb-3">Guía de amortizaciones</h4>
-      <div className="space-y-3 text-sm">
-        <div>
-          <p className="font-medium">Amortización del inmueble (3%)</p>
-          <p className="text-muted-foreground">Se amortiza solamente el valor de la construcción (nunca el suelo). Se aplica el 3% sobre el mayor de:</p>
-          <ul className="list-disc pl-5 mt-1 space-y-1 text-muted-foreground">
-            <li>Valor catastral de la construcción (excluido el suelo)</li>
-            <li>Valor de adquisición de la construcción (excluido el suelo)</li>
-          </ul>
-          <p className="text-muted-foreground mt-1">El valor del suelo puede obtenerse del recibo del IBI, donde figura desglosado, o de la escritura de compra.</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Amortización del mobiliario (10%)</p>
-          <p className="text-muted-foreground">Se aplica el 10% sobre el valor de adquisición de:</p>
-          <ul className="list-disc pl-5 mt-1 space-y-1 text-muted-foreground">
-            <li>Muebles y enseres (sofás, mesas, sillas, armarios, etc.)</li>
-            <li>Electrodomésticos (lavadora, nevera, horno, microondas, etc.)</li>
-            <li>Instalaciones no fijas (aires acondicionados portátiles, etc.)</li>
-            <li>Otros elementos (cortinas, alfombras, lámparas, etc.)</li>
-          </ul>
-          <p className="text-muted-foreground mt-1">Es importante conservar las facturas de compra como justificante. Los elementos de valor inferior a 300€ pueden amortizarse íntegramente en el año de adquisición.</p>
-        </div>
-      </div>
-    </div>
+    <>
+      <Button variant="ghost" size="sm" onClick={() => setOpen(true)} className="p-0 h-auto text-muted-foreground hover:bg-transparent">
+        <InfoCircle className="h-4 w-4 mr-1" /> Guía de amortización
+      </Button>
+      
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Guía de Amortización para Inmuebles y Mobiliario</DialogTitle>
+            <DialogDescription>
+              Información importante para calcular correctamente la amortización fiscal de su propiedad de alquiler
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 text-sm">
+            <div className="p-4 bg-muted rounded-lg">
+              <h3 className="font-medium mb-2">Amortización del Inmueble (3%)</h3>
+              <p>
+                Se calcula como el 3% del valor de adquisición de la construcción (excluido el valor del suelo). 
+                Importante: solo se amortiza el valor de la construcción, nunca el valor del suelo.
+              </p>
+              <div className="mt-2 p-2 bg-background rounded">
+                <p><strong>Ejemplo:</strong> Inmueble adquirido por 200.000€ donde el valor del suelo es 40.000€ (20%).</p>
+                <p>Valor amortizable: 200.000€ - 40.000€ = 160.000€</p>
+                <p>Amortización anual: 160.000€ × 3% = 4.800€</p>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-muted rounded-lg">
+              <h3 className="font-medium mb-2">Amortización del Mobiliario (10%)</h3>
+              <p>
+                Se calcula como el 10% del valor de adquisición del mobiliario y enseres 
+                (electrodomésticos, muebles, equipamiento, etc).
+              </p>
+              <div className="mt-2 p-2 bg-background rounded">
+                <p><strong>Ejemplo:</strong> Mobiliario valorado en 15.000€.</p>
+                <p>Amortización anual: 15.000€ × 10% = 1.500€</p>
+              </div>
+            </div>
+            
+            <div className="p-4 border border-blue-200 bg-blue-50 text-blue-700 rounded-lg">
+              <h3 className="font-medium mb-2">Notas importantes:</h3>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Conserve las facturas de todos los elementos amortizables como prueba ante una posible inspección fiscal.</li>
+                <li>Si el inmueble o los muebles estuvieran parcialmente amortizados antes del alquiler, solo puede amortizar la parte pendiente.</li>
+                <li>Los elementos de poco valor (menos de 300€) pueden amortizarse íntegramente en el año de adquisición.</li>
+                <li>El valor catastral desglosado se puede obtener en el recibo del IBI o solicitándolo al Catastro.</li>
+              </ul>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

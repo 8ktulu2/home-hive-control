@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,38 +30,51 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
       const reducedNetProfit = netProfit > 0 ? netProfit * 0.5 : netProfit;
       
       initialData[property.propertyId] = {
+        // Basic info
+        year: selectedYear,
+        propertyId: property.propertyId,
+        totalIncome: totalRent,
+        totalExpenses: Math.round(totalRent * 0.6),
+        netIncome: Math.round(totalRent * 0.4),
+        
         // Ingresos
         rentalIncome: totalRent,
         subsidies: 0,
         otherIncome: 0,
         
         // Gastos deducibles
-        ibi: Math.round(totalRent * 0.05), // Estimated IBI
-        communityFees: Math.round(totalRent * 0.1), // Estimated community fees
-        mortgageInterest: Math.round(totalRent * 0.2), // Estimated mortgage interest
-        homeInsurance: Math.round(totalRent * 0.03), // Estimated insurance
-        maintenance: Math.round(totalRent * 0.05), // Estimated maintenance
+        ibi: Math.round(totalRent * 0.05),
+        communityFees: Math.round(totalRent * 0.1),
+        mortgageInterest: Math.round(totalRent * 0.2),
+        homeInsurance: Math.round(totalRent * 0.03),
+        maintenance: Math.round(totalRent * 0.05),
         agencyFees: 0,
         administrativeFees: 0,
         propertyDepreciation: 0,
-        buildingDepreciation: Math.round(totalRent * 0.15), // Estimated building depreciation (3%)
-        furnitureDepreciation: Math.round(totalRent * 0.05), // Estimated furniture depreciation (10%)
+        buildingDepreciation: Math.round(totalRent * 0.15),
+        furnitureDepreciation: Math.round(totalRent * 0.05),
         utilities: 0,
-        municipalTaxes: Math.round(totalRent * 0.02), // Estimated municipal taxes
+        municipalTaxes: Math.round(totalRent * 0.02),
         legalFees: 0,
         badDebts: 0,
         otherExpenses: 0,
         
-        // Totales calculados
-        totalIncome: totalRent,
-        totalExpenses: Math.round(totalRent * 0.6), // Estimated total expenses
-        netProfit: Math.round(totalRent * 0.4), // Estimated net profit
+        // Original fields
+        deductibleExpenses: {
+          ibi: Math.round(totalRent * 0.05),
+          community: Math.round(totalRent * 0.1),
+          mortgage: Math.round(totalRent * 0.2),
+          insurance: Math.round(totalRent * 0.03),
+          maintenance: Math.round(totalRent * 0.05),
+        },
+        amortization: Math.round(totalRent * 0.15) + Math.round(totalRent * 0.05),
         
         // Reducciones
-        applicableReduction: 50, // Default 50%
-        reducedNetProfit: Math.round(totalRent * 0.4 * 0.5), // Estimated reduced net profit
+        applicableReduction: 50,
+        reducedNetProfit: Math.round(totalRent * 0.4 * 0.5),
+        taxableIncome: Math.round(totalRent * 0.4 * 0.5),
         
-        // Información adicional
+        // Additional reduction info
         inTensionedArea: false,
         rentLoweredFromPrevious: false,
         youngTenant: false,

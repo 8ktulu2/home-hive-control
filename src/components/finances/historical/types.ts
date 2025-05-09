@@ -63,13 +63,49 @@ export interface AnnualTotals {
 }
 
 export interface FiscalData {
+  // Basic info
   year: number;
   propertyId: string;
   totalIncome: number;
   totalExpenses: number;
   netIncome: number;
+  
+  // Income fields
+  rentalIncome?: number;
+  subsidies?: number;
+  otherIncome?: number;
+  
+  // Expense fields
+  ibi?: number;
+  communityFees?: number;
+  mortgageInterest?: number;
+  homeInsurance?: number;
+  lifeInsurance?: number;
+  maintenance?: number;
+  agencyFees?: number;
+  administrativeFees?: number;
+  contractFormalization?: number;
+  propertyDepreciation?: number;
+  buildingDepreciation?: number;
+  furnitureDepreciation?: number;
+  utilities?: number;
+  municipalTaxes?: number;
+  legalFees?: number;
+  badDebts?: number;
+  otherExpenses?: number;
+  
+  // Original fields
   deductibleExpenses: Record<string, number>;
   amortization: number;
+  
+  // Reduction fields
   applicableReduction: number;
+  reducedNetProfit?: number;
   taxableIncome: number;
+  
+  // Additional reduction info
+  inTensionedArea?: boolean;
+  rentLoweredFromPrevious?: boolean;
+  youngTenant?: boolean;
+  recentlyRenovated?: boolean;
 }

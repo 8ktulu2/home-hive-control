@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 import { FiscalData } from '@/components/finances/historical/types';
 import { Property, TaxInfo } from '@/types/property';
@@ -21,7 +20,7 @@ export const exportFiscalDataToExcel = (data: FiscalData, propertyName: string, 
       ['Ingresos por alquiler', data.rentalIncome || 0],
       ['Subvenciones', data.subsidies || 0],
       ['Otros ingresos', data.otherIncome || 0],
-      ['TOTAL INGRESOS', data.totalIncome || data.rentalIncome + data.subsidies + data.otherIncome || 0]
+      ['TOTAL INGRESOS', data.totalIncome || 0]
     ];
     
     const ingresosSheet = XLSX.utils.aoa_to_sheet(ingresosData);
@@ -57,10 +56,10 @@ export const exportFiscalDataToExcel = (data: FiscalData, propertyName: string, 
       ['Concepto', 'Importe (€)'],
       ['Ingresos Íntegros', data.totalIncome || 0],
       ['Total Gastos Deducibles', data.totalExpenses || 0],
-      ['Rendimiento Neto', data.netProfit || 0],
+      ['Rendimiento Neto', data.netIncome || 0],
       ['Porcentaje de Reducción', `${data.applicableReduction || 0}%`],
       ['Reducción Aplicada', data.reducedNetProfit || 0],
-      ['Base Imponible', (data.netProfit || 0) - (data.reducedNetProfit || 0)]
+      ['Base Imponible', (data.netIncome || 0) - (data.reducedNetProfit || 0)]
     ];
     
     const resumenSheet = XLSX.utils.aoa_to_sheet(resumenData);
@@ -75,7 +74,7 @@ export const exportFiscalDataToExcel = (data: FiscalData, propertyName: string, 
       ['Rebaja de renta respecto contrato anterior', data.rentLoweredFromPrevious ? 'Sí' : 'No'],
       ['Vivienda rehabilitada recientemente', data.recentlyRenovated ? 'Sí' : 'No'],
       ['Porcentaje de reducción aplicable', `${data.applicableReduction || 0}%`],
-      ['Base para la reducción', data.netProfit || 0]
+      ['Base para la reducción', data.netIncome || 0]
     ];
     
     const reduccionesSheet = XLSX.utils.aoa_to_sheet(reduccionesData);

@@ -9,6 +9,7 @@ import { FiscalExpenseSection } from './FiscalExpenseSection';
 import { FiscalReductionSection } from './FiscalReductionSection';
 import { FiscalSummarySection } from './FiscalSummarySection';
 import { FiscalFormProps } from './types';
+import { FiscalData } from '../types';
 
 export const FiscalDetailForm: React.FC<FiscalFormProps> = ({
   initialData,
@@ -22,7 +23,7 @@ export const FiscalDetailForm: React.FC<FiscalFormProps> = ({
     applicableReduction: initialData?.applicableReduction ?? 50, // Default to 50% if not defined
   };
 
-  const form = useForm({
+  const form = useForm<FiscalData>({
     defaultValues: safeInitialData
   });
 
@@ -78,14 +79,14 @@ export const FiscalDetailForm: React.FC<FiscalFormProps> = ({
       // Update form values
       form.setValue('totalIncome', totalIncome);
       form.setValue('totalExpenses', totalExpenses);
-      form.setValue('netProfit', netProfit);
+      form.setValue('netIncome', netProfit);
       form.setValue('reducedNetProfit', reducedNetProfit);
     };
 
     calculateTotals();
   }, [form, reduction]);
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: FiscalData) => {
     onSave(data);
     toast.success("Datos fiscales actualizados correctamente");
   };
