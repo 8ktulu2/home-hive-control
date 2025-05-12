@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import PropertyInfoTabs from './property-info/PropertyInfoTabs';
 import { useState } from 'react';
-import TenantDialog from './dialogs/TenantDialog';
 import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
-import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
-import PropertyInfoDialogs from './property-info/components/PropertyInfoDialogs';
+import PropertyInfoDialogs from './property-info/PropertyInfoDialogs';
 import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 
 interface PropertyInfoProps {
@@ -42,11 +40,11 @@ const PropertyInfo = ({ property: initialProperty, setProperty }: PropertyInfoPr
     handleInventoryDialogOpen();
   };
 
-  const handleEditInventoryItem = (item: InventoryItem) => {
+  const handleItemEdit = (item: InventoryItem) => {
     handleEditInventoryItemClick(item);
   };
 
-  const handleDeleteInventoryItem = (itemId: string) => {
+  const handleItemDelete = (itemId: string) => {
     handleDeleteInventoryItem(itemId);
   };
 
@@ -86,8 +84,8 @@ const PropertyInfo = ({ property: initialProperty, setProperty }: PropertyInfoPr
           onTenantClick={handleTenantClick}
           onContactClick={handleContactClick}
           onAddInventoryClick={handleAddInventoryClick}
-          onEditInventoryItem={handleEditInventoryItem}
-          onDeleteInventoryItem={handleDeleteInventoryItem}
+          onEditInventoryItem={handleItemEdit}
+          onDeleteInventoryItem={handleItemDelete}
         />
 
         {/* Dialogs */}

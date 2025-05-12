@@ -1,8 +1,8 @@
 
 import { Property, Tenant, InventoryItem, ContactDetails } from '@/types/property';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
-import TenantDialog from '../../dialogs/TenantDialog';
-import InventoryDialog from '../../dialogs/InventoryDialog';
+import TenantDialog from '@/components/property-detail/dialogs/TenantDialog';
+import InventoryDialog from '@/components/property-detail/dialogs/InventoryDialog';
 
 interface PropertyInfoDialogsProps {
   selectedContact: { title: string; details: ContactDetails } | null;
