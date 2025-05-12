@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { PropertyHistoricalData } from './types';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -43,18 +42,17 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
                       className={`relative border ${bgColor} rounded-md p-1 h-16 flex flex-col justify-between`}
                       title={`${month}: ${isOccupied ? 'Alquilado' : 'Vacante'}`}
                     >
-                      <div className="text-xs text-[#E5DEFF] opacity-60 w-full text-center">{month.substring(0, 3)}</div>
+                      <div className="text-xs text-[#E5DEFF] opacity-60 w-full text-center">
+                        {month.substring(0, 3)}
+                      </div>
                       
                       {monthData && (
-                        <div className="mt-auto">
+                        <div className="flex flex-col items-center justify-center mt-auto">
                           {isOccupied && (
-                            <div className="text-white text-xs text-center font-medium">
+                            <div className="text-white text-xs font-medium writing-mode-vertical">
                               {formatCurrency(monthData.rentAmount)}
                             </div>
                           )}
-                          <div className={`text-xs text-center ${isOccupied ? 'text-green-300' : 'text-red-300'}`}>
-                            {isOccupied ? 'Alquilado' : 'Vacío'}
-                          </div>
                         </div>
                       )}
                     </div>
