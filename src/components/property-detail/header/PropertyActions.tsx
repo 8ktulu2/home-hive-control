@@ -66,7 +66,7 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
   };
 
   return (
-    <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
+    <div className="flex items-center gap-2">
       <Button 
         variant="ghost" 
         size="sm" 
@@ -74,22 +74,22 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
         onClick={handleGoBack}
       >
         <ArrowLeft className="h-4 w-4" />
-        <span className={isMobile ? 'ml-2' : 'sr-only'}>Volver</span>
+        <span className="sr-only">Volver</span>
       </Button>
       <Link to={`/property/${propertyId}/edit`}>
-        <Button variant="outline" size="sm" className="flex items-center w-full">
+        <Button variant="outline" size="sm" className="flex items-center">
           <Edit className="h-4 w-4" />
-          <span className={isMobile ? 'ml-2' : 'sr-only'}>Editar</span>
+          <span className="sr-only">Editar</span>
         </Button>
       </Link>
       <Button 
         variant="destructive" 
         size="sm" 
-        className="flex items-center w-full"
+        className="flex items-center"
         onClick={() => setShowDeleteDialog(true)}
       >
         <Trash className="h-4 w-4" />
-        <span className={isMobile ? 'ml-2' : 'sr-only'}>Eliminar</span>
+        <span className="sr-only">Eliminar</span>
       </Button>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
