@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
 import PaymentConfirmationDialog from '@/components/property-detail/dialogs/PaymentConfirmationDialog';
+import { toast } from 'sonner';
 
 interface MonthlyPaymentStatusProps {
   property: Property;
@@ -45,6 +46,14 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
   
   const handleConfirmPayment = (notes: string, paymentDate: Date) => {
     if (selectedPayment && onPaymentUpdate) {
+      // Check if this is a future month and notes are required
+      if (isFutureMonth(selectedPayment.month, selectedPayment.year) && 
+          !selectedPayment.isPaid && 
+          !notes.trim()) {
+        toast.error("Las notas son obligatorias para pagos de meses futuros");
+        return;
+      }
+      
       onPaymentUpdate(
         selectedPayment.month, 
         selectedPayment.year, 

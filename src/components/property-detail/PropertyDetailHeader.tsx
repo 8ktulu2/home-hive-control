@@ -1,6 +1,7 @@
 
 import { Property } from '@/types/property';
 import PropertyActions from './header/PropertyActions';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PropertyDetailHeaderProps {
   property: Property;
@@ -8,10 +9,12 @@ interface PropertyDetailHeaderProps {
 }
 
 const PropertyDetailHeader = ({ property }: PropertyDetailHeaderProps) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="flex justify-between items-start space-y-0 pb-2">
+    <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} items-start space-y-2 pb-2`}>
       <div className="flex flex-row gap-4 items-center">
-        <div className="relative w-20 h-20 overflow-hidden rounded-lg shrink-0">
+        <div className="relative w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-lg shrink-0">
           <img 
             src={property.image || '/placeholder.svg'} 
             alt={property.name} 
@@ -19,11 +22,11 @@ const PropertyDetailHeader = ({ property }: PropertyDetailHeaderProps) => {
           />
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{property.name}</h1>
-          <p className="text-muted-foreground">{property.address}</p>
+          <h1 className="text-xl sm:text-2xl font-bold">{property.name}</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">{property.address}</p>
         </div>
-        <PropertyActions propertyId={property.id} />
       </div>
+      <PropertyActions propertyId={property.id} />
     </div>
   );
 };

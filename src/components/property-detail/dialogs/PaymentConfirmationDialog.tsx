@@ -6,10 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface PaymentConfirmationDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ const PaymentConfirmationDialog: React.FC<PaymentConfirmationDialogProps> = ({
   const [notes, setNotes] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   // Reset states when dialog opens
   useEffect(() => {
@@ -40,13 +42,16 @@ const PaymentConfirmationDialog: React.FC<PaymentConfirmationDialogProps> = ({
       setNotes('');
       setDate(new Date());
       setValidationError(null);
+      setAttemptedSubmit(false);
     }
   }, [open]);
 
   const handleConfirm = () => {
     // Validate notes for future months
-    if (isFutureMonth && !notes.trim()) {
+    if (isFutureMonth && !isPaid && !notes.trim()) {
+      setAttemptedSubmit(true);
       setValidationError("Las notas son obligatorias para pagos de meses futuros");
+      toast.error("Las notas son obligatorias para pagos de meses futuros");
       return;
     }
     
@@ -120,11 +125,14 @@ const PaymentConfirmationDialog: React.FC<PaymentConfirmationDialogProps> = ({
                   ? "Debe añadir notas para pagos de meses futuros..." 
                   : "Añade notas sobre este pago..."}
                 className={cn(
-                  validationError && "border-red-500 focus-visible:ring-red-500"
+                  (validationError && attemptedSubmit) ? "border-red-500 focus-visible:ring-red-500" : ""
                 )}
               />
-              {validationError && (
-                <p className="text-sm text-red-500">{validationError}</p>
+              {validationError && attemptedSubmit && (
+                <div className="flex items-center text-sm text-red-500 mt-1">
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  <p>{validationError}</p>
+                </div>
               )}
             </div>
           </div>

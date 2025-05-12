@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,7 @@ interface PropertyActionsProps {
 const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleDelete = () => {
     try {
@@ -64,7 +66,7 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
       <Button 
         variant="ghost" 
         size="sm" 
@@ -72,22 +74,22 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
         onClick={handleGoBack}
       >
         <ArrowLeft className="h-4 w-4" />
-        <span className="sr-only">Volver</span>
+        <span className={isMobile ? 'ml-2' : 'sr-only'}>Volver</span>
       </Button>
       <Link to={`/property/${propertyId}/edit`}>
-        <Button variant="outline" size="sm" className="flex items-center">
+        <Button variant="outline" size="sm" className="flex items-center w-full">
           <Edit className="h-4 w-4" />
-          <span className="sr-only">Editar</span>
+          <span className={isMobile ? 'ml-2' : 'sr-only'}>Editar</span>
         </Button>
       </Link>
       <Button 
         variant="destructive" 
         size="sm" 
-        className="flex items-center"
+        className="flex items-center w-full"
         onClick={() => setShowDeleteDialog(true)}
       >
         <Trash className="h-4 w-4" />
-        <span className="sr-only">Eliminar</span>
+        <span className={isMobile ? 'ml-2' : 'sr-only'}>Eliminar</span>
       </Button>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

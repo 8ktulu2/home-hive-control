@@ -1,22 +1,23 @@
 
-import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TabContent from './tabs/TabContent';
+import React, { useState } from 'react';
 import { Property, Tenant, InventoryItem } from '@/types/property';
-import { FileText, Users, Box, Euro } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
+import TabContent from './tabs/TabContent';
 
 interface PropertyInfoTabsProps {
   property: Property;
   activeTab: string;
-  setActiveTab: (value: string) => void;
+  setActiveTab: (tab: string) => void;
   onTenantClick: (tenant: Tenant) => void;
   onContactClick: (title: string, details: any) => void;
   onAddInventoryClick: () => void;
   onEditInventoryItem: (item: InventoryItem) => void;
   onDeleteInventoryItem: (itemId: string) => void;
+  onAddUtilityClick?: () => void;
 }
 
-const PropertyInfoTabs: React.FC<PropertyInfoTabsProps> = ({
+const PropertyInfoTabs = ({
   property,
   activeTab,
   setActiveTab,
@@ -24,48 +25,45 @@ const PropertyInfoTabs: React.FC<PropertyInfoTabsProps> = ({
   onContactClick,
   onAddInventoryClick,
   onEditInventoryItem,
-  onDeleteInventoryItem
-}) => {
+  onDeleteInventoryItem,
+  onAddUtilityClick
+}: PropertyInfoTabsProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <div className="border-b mb-4">
-        <TabsList className="bg-transparent h-auto p-0 w-full rounded-none flex flex-nowrap overflow-auto">
-          <TabsTrigger 
-            value="general" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm"
-          >
-            <FileText className="h-3 w-3 sm:h-4 sm:w-4" /> Información
-          </TabsTrigger>
-          <TabsTrigger 
-            value="contacts" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm" 
-          >
-            <Users className="h-3 w-3 sm:h-4 sm:w-4" /> Contactos
-          </TabsTrigger>
-          <TabsTrigger 
-            value="finances" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm" 
-          >
-            <Euro className="h-3 w-3 sm:h-4 sm:w-4" /> Finanzas
-          </TabsTrigger>
-          <TabsTrigger 
-            value="inventory" 
-            className="data-[state=active]:border-b-primary data-[state=active]:border-b-2 border-b-transparent rounded-none flex items-center gap-1 pb-2 px-2 whitespace-nowrap text-xs sm:text-sm" 
-          >
-            <Box className="h-3 w-3 sm:h-4 sm:w-4" /> Inventario
-          </TabsTrigger>
+      {isMobile ? (
+        <div className="space-y-2">
+          <TabsList className="w-full grid grid-cols-2 h-auto">
+            <TabsTrigger value="general">Información</TabsTrigger>
+            <TabsTrigger value="contacts">Contactos</TabsTrigger>
+          </TabsList>
+          <TabsList className="w-full grid grid-cols-2 h-auto">
+            <TabsTrigger value="finances">Finanzas</TabsTrigger>
+            <TabsTrigger value="inventory">Inventario</TabsTrigger>
+          </TabsList>
+        </div>
+      ) : (
+        <TabsList className="w-full">
+          <TabsTrigger value="general">Información</TabsTrigger>
+          <TabsTrigger value="contacts">Contactos</TabsTrigger>
+          <TabsTrigger value="finances">Finanzas</TabsTrigger>
+          <TabsTrigger value="inventory">Inventario</TabsTrigger>
         </TabsList>
-      </div>
+      )}
       
-      <TabContent 
-        activeTab={activeTab}
-        property={property}
-        onTenantClick={onTenantClick}
-        onContactClick={onContactClick}
-        onAddInventoryClick={onAddInventoryClick}
-        onEditInventoryItem={onEditInventoryItem}
-        onDeleteInventoryItem={onDeleteInventoryItem}
-      />
+      <TabsContent value={activeTab} className="mt-4">
+        <TabContent 
+          activeTab={activeTab}
+          property={property}
+          onTenantClick={onTenantClick}
+          onContactClick={onContactClick}
+          onAddInventoryClick={onAddInventoryClick}
+          onEditInventoryItem={onEditInventoryItem}
+          onDeleteInventoryItem={onDeleteInventoryItem}
+          onAddUtilityClick={onAddUtilityClick}
+        />
+      </TabsContent>
     </Tabs>
   );
 };
