@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Card } from '@/components/ui/card';
