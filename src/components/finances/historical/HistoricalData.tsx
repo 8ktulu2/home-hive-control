@@ -8,7 +8,7 @@ import HistoricalTabs from './HistoricalTabs';
 import AnnualSummaryCards from './AnnualSummaryCards';
 import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
-import FiscalDetailContent from './FiscalDetailContent';
+import FiscalDetailContent from './fiscal/FiscalDetailContent';
 import { useHistoricalData } from '@/hooks/useHistoricalData';
 import OccupancyTimeline from './OccupancyTimeline';
 import TransactionsTable from './TransactionsTable';
