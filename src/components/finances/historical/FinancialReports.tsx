@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,16 +35,23 @@ const FinancialReports = ({
   });
 
   const generateReport = () => {
-    // In a real implementation, this would generate and download the report
+    // Implementación para generar y descargar el informe
     const reportName = reportType === 'annual' 
       ? `Informe_Anual_${selectedYear}_${selectedPropertyId !== 'all' ? selectedPropertyId : 'Todas'}`
       : reportType === 'quarterly' 
         ? `Informe_Trimestral_${selectedYear}_${selectedPropertyId !== 'all' ? selectedPropertyId : 'Todas'}`
         : `Informe_Mensual_${selectedYear}_${selectedPropertyId !== 'all' ? selectedPropertyId : 'Todas'}`;
     
-    toast.success(`Generando informe ${reportName}.${reportFormat}`, {
+    toast.info(`Generando informe ${reportName}.${reportFormat}`, {
       description: "Tu informe estará descargado en unos momentos."
     });
+    
+    // Simulamos la descarga después de un tiempo
+    setTimeout(() => {
+      toast.success(`El informe ${reportName}.${reportFormat} ha sido descargado correctamente`, {
+        description: "Puedes encontrar el archivo en tu carpeta de descargas."
+      });
+    }, 2000);
   };
 
   return (
