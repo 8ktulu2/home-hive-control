@@ -14,6 +14,8 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
+  
+  const monthAbbreviations = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
   return (
     <Card className="bg-[#292F3F] border-none">
@@ -27,8 +29,9 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
         <div className="space-y-6">
           {data.map(property => (
             <div key={property.propertyId} className="mb-6">
-              <h3 className="text-white font-medium mb-2">{property.propertyName}</h3>
-              <div className="grid grid-cols-12 gap-1">
+              <h3 className="text-white font-medium mb-3">{property.propertyName}</h3>
+              
+              <div className="space-y-2">
                 {months.map((month, index) => {
                   const monthData = property.months.find(m => m.month === month);
                   const isOccupied = monthData?.wasRented;
@@ -39,18 +42,18 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
                   return (
                     <div 
                       key={index} 
-                      className={`relative border ${bgColor} rounded-md p-1 h-16 flex flex-col justify-between`}
+                      className={`relative border ${bgColor} rounded-md p-2 flex items-center h-12`}
                       title={`${month}: ${isOccupied ? 'Alquilado' : 'Vacante'}`}
                     >
-                      <div className="text-xs text-[#E5DEFF] opacity-60 w-full text-center">
-                        {month.substring(0, 3)}
+                      <div className="text-[#E5DEFF] font-medium w-10">
+                        {monthAbbreviations[index]}
                       </div>
                       
                       {monthData && (
-                        <div className="flex flex-col items-center justify-center mt-auto">
+                        <div className="flex-1 flex justify-end">
                           {isOccupied && (
-                            <div className="text-white text-xs font-medium writing-mode-vertical">
-                              {formatCurrency(monthData.rentAmount)}
+                            <div className="text-white text-sm font-medium">
+                              {formatCurrency(monthData.netIncome)}
                             </div>
                           )}
                         </div>
