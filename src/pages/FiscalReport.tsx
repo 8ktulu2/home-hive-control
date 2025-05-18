@@ -9,9 +9,11 @@ import { FileDown, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 import PropertySelector from '@/components/finances/historical/PropertySelector';
-import FiscalDetailContent from '@/components/finances/historical/FiscalDetailContent';
+import FiscalDetailContent from '@/components/finances/historical/fiscal/components/FiscalDetailContent';
 import FiscalInfoModal from '@/components/finances/historical/fiscal/components/FiscalInfoModal';
 import { mockProperties } from '@/data/mockData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 const FiscalReport = () => {
   // Just use mock properties directly instead of trying to use usePropertyLoader without an ID
@@ -21,6 +23,10 @@ const FiscalReport = () => {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   const [showFiscalInfoModal, setShowFiscalInfoModal] = useState(false);
+  
+  // Generate available years (current year and 4 years back)
+  const currentYear = new Date().getFullYear();
+  const availableYears = Array.from({length: 5}, (_, i) => currentYear - i);
   
   // Load properties from localStorage if available
   useEffect(() => {
@@ -168,11 +174,34 @@ const FiscalReport = () => {
             <CardTitle className="text-lg">Seleccionar Propiedad y Año</CardTitle>
           </CardHeader>
           <CardContent>
-            <PropertySelector 
-              properties={properties}
-              selectedProperty={selectedPropertyId || "all"}
-              onPropertyChange={setSelectedPropertyId}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="property-selector" className="mb-2 block">Propiedad</Label>
+                <PropertySelector 
+                  properties={properties}
+                  selectedProperty={selectedPropertyId || "all"}
+                  onPropertyChange={setSelectedPropertyId}
+                />
+              </div>
+              <div>
+                <Label htmlFor="year-selector" className="mb-2 block">Año fiscal</Label>
+                <Select 
+                  value={selectedYear.toString()} 
+                  onValueChange={(value) => setSelectedYear(parseInt(value))}
+                >
+                  <SelectTrigger id="year-selector">
+                    <SelectValue placeholder="Seleccionar año" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableYears.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

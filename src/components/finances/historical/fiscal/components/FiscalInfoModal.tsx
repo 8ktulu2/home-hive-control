@@ -43,6 +43,15 @@ const FiscalInfoModal: React.FC<FiscalInfoModalProps> = ({ open, onOpenChange })
                 
                 <div className="space-y-3">
                   <div className="border rounded-md p-3">
+                    <h4 className="font-medium mb-1">Casillas principales</h4>
+                    <ul className="text-sm space-y-1 pl-5 list-disc">
+                      <li>Los ingresos y gastos deben declararse en el apartado de "Rendimientos del capital inmobiliario" (casillas 0062-0075).</li>
+                      <li>La reducción por alquiler de vivienda habitual se aplica en la casilla 0150.</li>
+                      <li>El exceso de gastos sobre ingresos puede compensarse en los 4 años siguientes.</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="border rounded-md p-3">
                     <h4 className="font-medium mb-1">Identificación del inmueble</h4>
                     <ul className="text-sm space-y-1 pl-5 list-disc">
                       <li>Referencia catastral (aparece en el recibo del IBI)</li>

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { PropertyHistoricalData } from '../../types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import FiscalDetailCard from './FiscalDetailCard';
 import PropertyFiscalSection from './PropertyFiscalSection';
 import EmptyFiscalState from './EmptyFiscalState';
@@ -41,7 +40,7 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
             const propertyFiscalData = fiscalData[property.propertyId];
             if (propertyFiscalData) {
               const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
-              exportFiscalDataToPDF(propertyFiscalData, property.propertyName, selectedYear, filename);
+              exportPropertyTaxDataToPDF(propertyFiscalData, property.propertyName, selectedYear, filename);
             }
             
             // Notificación final cuando se completa todo

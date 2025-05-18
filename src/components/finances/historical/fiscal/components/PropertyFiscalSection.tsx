@@ -5,7 +5,7 @@ import { FileDown, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PropertyHistoricalData, FiscalData } from '../../types';
 import FiscalDetailForm from '../FiscalDetailForm';
-import { exportFiscalDataToPDF } from '@/utils/pdfExport';
+import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 
 interface PropertyFiscalSectionProps {
   property: PropertyHistoricalData;
@@ -34,7 +34,7 @@ const PropertyFiscalSection = ({
     setTimeout(() => {
       try {
         const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
-        exportFiscalDataToPDF(fiscalData, property.propertyName, selectedYear, filename);
+        exportPropertyTaxDataToPDF(fiscalData, property.propertyName, selectedYear, filename);
         
         toast.success("Informe fiscal PDF generado correctamente", { duration: 3000 });
       } catch (error) {
