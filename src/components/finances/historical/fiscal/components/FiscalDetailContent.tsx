@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PropertyHistoricalData } from '../../types';
 import { Button } from '@/components/ui/button';
