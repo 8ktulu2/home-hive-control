@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Index from './pages';
+import Index from './pages/Index';  // Fixed import path
 import Finances from './pages/Finances';
 import PropertyDetail from './pages/PropertyDetail';
 import PropertyEdit from './pages/PropertyEdit';
@@ -22,7 +23,7 @@ function App() {
           <Route path="/property/new" element={<PropertyEdit />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/tasks" element={<Tasks />} />
-          <Route path="/historical" element={<Index />} />
+          <Route path="/historical" element={<Historical />} /> {/* Fixed to use Historical component */}
           <Route path="/fiscal-report" element={<FiscalReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
