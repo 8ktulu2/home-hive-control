@@ -40,7 +40,8 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
             const propertyFiscalData = fiscalData[property.propertyId];
             if (propertyFiscalData) {
               const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
-              exportPropertyTaxDataToPDF(propertyFiscalData, property.propertyName, selectedYear, filename);
+              // Fixing the function call to match the expected parameters
+              exportPropertyTaxDataToPDF(propertyFiscalData, filename);
             }
             
             // Notificación final cuando se completa todo

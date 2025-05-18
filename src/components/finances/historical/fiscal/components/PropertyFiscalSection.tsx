@@ -34,7 +34,8 @@ const PropertyFiscalSection = ({
     setTimeout(() => {
       try {
         const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
-        exportPropertyTaxDataToPDF(fiscalData, property.propertyName, selectedYear, filename);
+        // Fixing the function call to match the expected parameters
+        exportPropertyTaxDataToPDF(fiscalData, filename);
         
         toast.success("Informe fiscal PDF generado correctamente", { duration: 3000 });
       } catch (error) {
