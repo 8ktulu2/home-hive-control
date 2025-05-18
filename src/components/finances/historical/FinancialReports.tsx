@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileSpreadsheet, FileText, Download, HelpCircle } from 'lucide-react';
+import { FileSpreadsheet, FileText, Download, HelpCircle, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Property } from '@/types/property';
 import { PropertyHistoricalData } from './types';
+import { Link } from 'react-router-dom';
 
 interface FinancialReportsProps {
   properties: Property[];
@@ -77,17 +78,30 @@ const FinancialReports = ({
               Crea informes personalizados para análisis y declaraciones
             </CardDescription>
           </div>
-          {openFiscalInfoModal && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-[#8E9196] hover:text-white hover:bg-[#3A3F4E]"
-              onClick={openFiscalInfoModal}
-              title="Información detallada sobre datos fiscales"
+          <div className="flex gap-2">
+            {openFiscalInfoModal && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-[#8E9196] hover:text-white hover:bg-[#3A3F4E]"
+                onClick={openFiscalInfoModal}
+                title="Información detallada sobre datos fiscales"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-[#3A3F4E] text-white border-[#8E9196]/40 hover:bg-[#4A4F5E]"
+              asChild
             >
-              <HelpCircle className="h-5 w-5" />
+              <Link to="/fiscal-report">
+                <FileDown className="h-4 w-4 mr-2" />
+                Informes Fiscales Avanzados
+              </Link>
             </Button>
-          )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
