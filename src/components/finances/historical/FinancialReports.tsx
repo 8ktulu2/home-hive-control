@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileSpreadsheet, FileText, Download } from 'lucide-react';
+import { FileSpreadsheet, FileText, Download, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Property } from '@/types/property';
 import { PropertyHistoricalData } from './types';
@@ -15,6 +16,7 @@ interface FinancialReportsProps {
   selectedPropertyId: string;
   historicalData: PropertyHistoricalData[];
   annualTotals: any;
+  openFiscalInfoModal?: () => void;
 }
 
 const FinancialReports = ({
@@ -22,7 +24,8 @@ const FinancialReports = ({
   selectedYear,
   selectedPropertyId,
   historicalData,
-  annualTotals
+  annualTotals,
+  openFiscalInfoModal
 }: FinancialReportsProps) => {
   const [reportType, setReportType] = useState('annual');
   const [reportFormat, setReportFormat] = useState('pdf');
@@ -33,6 +36,7 @@ const FinancialReports = ({
     metrics: true,
     transactions: true
   });
+  const [generateAll, setGenerateAll] = useState(false);
 
   const generateReport = () => {
     // Implementación para generar y descargar el informe
@@ -43,24 +47,48 @@ const FinancialReports = ({
         : `Informe_Mensual_${selectedYear}_${selectedPropertyId !== 'all' ? selectedPropertyId : 'Todas'}`;
     
     toast.info(`Generando informe ${reportName}.${reportFormat}`, {
-      description: "Tu informe estará descargado en unos momentos."
+      description: generateAll 
+        ? "Generando informes para todas las propiedades. Esto puede tardar unos momentos." 
+        : "Tu informe estará descargado en unos momentos."
     });
     
     // Simulamos la descarga después de un tiempo
     setTimeout(() => {
-      toast.success(`El informe ${reportName}.${reportFormat} ha sido descargado correctamente`, {
-        description: "Puedes encontrar el archivo en tu carpeta de descargas."
-      });
-    }, 2000);
+      toast.success(
+        generateAll 
+          ? `Los informes para todas las propiedades han sido descargados correctamente` 
+          : `El informe ${reportName}.${reportFormat} ha sido descargado correctamente`, 
+        {
+          description: generateAll 
+            ? "Puedes encontrar los archivos en tu carpeta de descargas." 
+            : "Puedes encontrar el archivo en tu carpeta de descargas."
+        }
+      );
+    }, generateAll ? 3000 : 2000);
   };
 
   return (
     <Card className="bg-[#292F3F] border-none">
       <CardHeader>
-        <CardTitle className="text-white">Generación de Informes</CardTitle>
-        <CardDescription className="text-[#8E9196]">
-          Crea informes personalizados para análisis y declaraciones
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-white">Generación de Informes</CardTitle>
+            <CardDescription className="text-[#8E9196]">
+              Crea informes personalizados para análisis y declaraciones
+            </CardDescription>
+          </div>
+          {openFiscalInfoModal && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-[#8E9196] hover:text-white hover:bg-[#3A3F4E]"
+              onClick={openFiscalInfoModal}
+              title="Información detallada sobre datos fiscales"
+            >
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -92,6 +120,22 @@ const FinancialReports = ({
                 </SelectContent>
               </Select>
             </div>
+            
+            {selectedPropertyId === 'all' && (
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox 
+                  id="generate-all" 
+                  checked={generateAll}
+                  onCheckedChange={(checked) => setGenerateAll(!!checked)}
+                />
+                <Label 
+                  htmlFor="generate-all" 
+                  className="text-[#E5DEFF] cursor-pointer"
+                >
+                  Generar informes para todas las propiedades
+                </Label>
+              </div>
+            )}
           </div>
           
           <div className="space-y-4">
@@ -162,7 +206,7 @@ const FinancialReports = ({
             ) : (
               <FileSpreadsheet className="h-4 w-4 mr-2" />
             )}
-            Generar y Descargar Informe
+            {generateAll ? 'Generar y Descargar Todos los Informes' : 'Generar y Descargar Informe'}
           </Button>
         </div>
 

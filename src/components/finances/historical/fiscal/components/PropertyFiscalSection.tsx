@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileDown } from 'lucide-react';
+import { FileDown, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PropertyHistoricalData, FiscalData } from '../../types';
 import FiscalDetailForm from '../FiscalDetailForm';
@@ -12,13 +12,15 @@ interface PropertyFiscalSectionProps {
   selectedYear: number;
   fiscalData: FiscalData;
   onSaveFiscalData: (propertyId: string, data: FiscalData) => void;
+  showHelp?: () => void;
 }
 
 const PropertyFiscalSection = ({ 
   property, 
   selectedYear, 
   fiscalData, 
-  onSaveFiscalData 
+  onSaveFiscalData,
+  showHelp
 }: PropertyFiscalSectionProps) => {
   
   const handleExportPDF = () => {
@@ -46,16 +48,30 @@ const PropertyFiscalSection = ({
     <div className="mb-6 last:mb-0">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-medium">{property.propertyName}</h3>
-        <Button
-          size="sm"
-          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700"
-          onClick={handleExportPDF}
-          title="Exportar informe fiscal detallado con gráficos y explicaciones"
-        >
-          <FileDown className="h-4 w-4" /> 
-          <span className="hidden sm:inline">Generar Informe Fiscal</span>
-          <span className="sm:hidden">PDF</span>
-        </Button>
+        <div className="flex gap-2">
+          {showHelp && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 border-blue-600 hover:bg-blue-600/10"
+              onClick={showHelp}
+              title="Información detallada sobre los datos fiscales"
+            >
+              <HelpCircle className="h-4 w-4 text-blue-600" /> 
+              <span className="hidden sm:inline">Información</span>
+            </Button>
+          )}
+          <Button
+            size="sm"
+            className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700"
+            onClick={handleExportPDF}
+            title="Exportar informe fiscal detallado con gráficos y explicaciones"
+          >
+            <FileDown className="h-4 w-4" /> 
+            <span className="hidden sm:inline">Generar Informe Fiscal</span>
+            <span className="sm:hidden">PDF</span>
+          </Button>
+        </div>
       </div>
       <FiscalDetailForm
         initialData={fiscalData}

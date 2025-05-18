@@ -1,14 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { usePropertyLoader } from '@/hooks/usePropertyLoader';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PropertyHistoricalData } from '@/components/finances/historical/types';
 import { Button } from '@/components/ui/button';
-import { FileDown } from 'lucide-react';
+import { FileDown, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 import PropertySelector from '@/components/finances/historical/PropertySelector';
 import FiscalDetailContent from '@/components/finances/historical/FiscalDetailContent';
+import FiscalInfoModal from '@/components/finances/historical/fiscal/components/FiscalInfoModal';
 import { mockProperties } from '@/data/mockData';
 
 const FiscalReport = () => {
@@ -18,6 +20,7 @@ const FiscalReport = () => {
   
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
+  const [showFiscalInfoModal, setShowFiscalInfoModal] = useState(false);
   
   // Load properties from localStorage if available
   useEffect(() => {
@@ -94,53 +97,70 @@ const FiscalReport = () => {
   const filteredData = selectedPropertyId 
     ? historicalData.filter(p => p.propertyId === selectedPropertyId)
     : historicalData;
+    
+  const handleGenerateAllReports = () => {
+    if (historicalData.length === 0) {
+      toast.error("No hay datos fiscales para exportar");
+      return;
+    }
+    
+    toast.info("Generando informes fiscales para todas las propiedades...", { 
+      duration: 3000,
+      description: "Este proceso puede tardar unos momentos dependiendo del número de propiedades."
+    });
+    
+    setTimeout(() => {
+      try {
+        // En una implementación real, aquí se generarían múltiples PDFs
+        historicalData.forEach((property, index) => {
+          // Simulamos un pequeño retraso entre cada informe para evitar bloqueos
+          setTimeout(() => {
+            const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
+            const propertyObj = properties?.find(p => p.id === property.propertyId);
+            
+            if (propertyObj) {
+              exportPropertyTaxDataToPDF(propertyObj, filename);
+            }
+            
+            // Notificación individual para cada propiedad generada
+            if (index === historicalData.length - 1) {
+              toast.success(`Generados todos los informes fiscales (${historicalData.length} propiedades)`, { 
+                duration: 5000,
+                description: "Puedes encontrar los archivos en tu carpeta de descargas."
+              });
+            }
+          }, index * 800); // Escalona las generaciones
+        });
+      } catch (error) {
+        console.error("Error exporting to PDF:", error);
+        toast.error("Error al exportar los informes PDF", { duration: 3000 });
+      }
+    }, 2000);
+  };
 
   return (
     <Layout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold tracking-tight">Informe Fiscal</h1>
-          <Button 
-            onClick={() => {
-              if (filteredData.length === 0) {
-                toast.error("No hay datos fiscales para exportar");
-                return;
-              }
-              
-              toast.info("Generando informe fiscal detallado...", { duration: 3000 });
-              
-              setTimeout(() => {
-                try {
-                  const property = properties?.find(p => p.id === selectedPropertyId);
-                  if (!property && selectedPropertyId) {
-                    toast.error("No se encontró la propiedad seleccionada.");
-                    return;
-                  }
-                  
-                  const filename = property 
-                    ? `Informe_Fiscal_${property.name.replace(/\s+/g, "_")}_${selectedYear}.pdf`
-                    : `Informe_Fiscal_Completo_${selectedYear}.pdf`;
-                    
-                  if (property) {
-                    exportPropertyTaxDataToPDF(property, filename);
-                  } else {
-                    // Export all properties
-                    toast.error("Por favor seleccione una propiedad específica para exportar");
-                    return;
-                  }
-                  
-                  toast.success("Informe fiscal PDF generado correctamente", { duration: 3000 });
-                } catch (error) {
-                  console.error("Error exporting to PDF:", error);
-                  toast.error("Error al exportar el informe PDF", { duration: 3000 });
-                }
-              }, 1500);
-            }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 ml-auto"
-            title="Exportar a PDF con explicaciones detalladas"
-          >
-            <FileDown className="h-4 w-4" /> Generar Informe PDF
-          </Button>
+          <div className="flex flex-wrap gap-2 ml-auto">
+            <Button 
+              variant="outline"
+              onClick={() => setShowFiscalInfoModal(true)}
+              className="flex items-center gap-2 border-blue-600 text-blue-700"
+              title="Ver información detallada sobre datos fiscales"
+            >
+              <HelpCircle className="h-4 w-4" /> Guía Fiscal
+            </Button>
+            
+            <Button 
+              onClick={handleGenerateAllReports}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+              title="Generar informes fiscales para todas las propiedades"
+            >
+              <FileDown className="h-4 w-4" /> Generar Todos los Informes
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -171,6 +191,11 @@ const FiscalReport = () => {
           </Card>
         )}
       </div>
+      
+      <FiscalInfoModal 
+        open={showFiscalInfoModal} 
+        onOpenChange={setShowFiscalInfoModal} 
+      />
     </Layout>
   );
 };

@@ -2,14 +2,17 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, Download } from 'lucide-react';
+import { FileSpreadsheet, Download, HelpCircle, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface InfoCardsProps {
   openHelpModal: () => void;
 }
 
 const InfoCards = ({ openHelpModal }: InfoCardsProps) => {
+  const navigate = useNavigate();
+  
   const handleDownloadReport = (reportType: string) => {
     toast.info(`Descargando ${reportType}...`, { duration: 3000 });
     
@@ -57,14 +60,24 @@ const InfoCards = ({ openHelpModal }: InfoCardsProps) => {
                   <FileSpreadsheet className="h-4 w-4 mr-2 text-sky-700" />
                   <span className="text-sm font-medium">Informe Fiscal</span>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 px-2"
-                  onClick={() => handleDownloadReport('Fiscal')}
-                >
-                  <Download className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 px-2"
+                    onClick={() => navigate('/fiscal-report')}
+                  >
+                    <FileText className="h-3.5 w-3.5 text-violet-600" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 px-2"
+                    onClick={() => handleDownloadReport('Fiscal')}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
               
               <div className="flex items-center justify-between p-2 bg-slate-100 rounded-md">
