@@ -9,7 +9,7 @@ import FiscalInfoModal from './FiscalInfoModal';
 import { useFiscalData } from '../hooks/useFiscalData';
 import { FileDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
+import { exportFiscalDataToPDF } from '@/utils/pdfExport';
 
 interface FiscalDetailContentProps {
   filteredData: PropertyHistoricalData[];
@@ -40,8 +40,8 @@ const FiscalDetailContent = ({ filteredData, selectedYear }: FiscalDetailContent
             const propertyFiscalData = fiscalData[property.propertyId];
             if (propertyFiscalData) {
               const filename = `Informe_Fiscal_${property.propertyName.replace(/\s+/g, "_")}_${selectedYear}.pdf`;
-              // Fixing the function call to match the expected parameters
-              exportPropertyTaxDataToPDF(propertyFiscalData, filename);
+              // Using the correct function with proper parameters
+              exportFiscalDataToPDF(propertyFiscalData, property.propertyName, selectedYear, filename);
             }
             
             // Notificación final cuando se completa todo

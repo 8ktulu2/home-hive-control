@@ -448,7 +448,7 @@ export const exportPropertyTaxDataToPDF = (property: Property, filename: string)
 };
 
 /**
- * Exports fiscal data to PDF
+ * Exports fiscal data to PDF directly from FiscalData object
  */
 export const exportFiscalDataToPDF = (data: FiscalData, propertyName: string, selectedYear: number, filename: string) => {
   try {
