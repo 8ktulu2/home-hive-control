@@ -23,7 +23,7 @@ function App() {
           <Route path="/property/new" element={<PropertyEdit />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/tasks" element={<Tasks />} />
-          <Route path="/historical" element={<Historical />} /> {/* Fixed to use Historical component */}
+          <Route path="/historical" element={<Historical />} /> 
           <Route path="/fiscal-report" element={<FiscalReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -7,8 +7,8 @@ import { FileText, Home, Briefcase, CreditCard, FileBox, CheckSquare, BarChart3,
 
 interface SidebarProps {
   className?: string;
-  isOpen?: boolean; // Added this prop
-  onClose?: () => void; // Added this prop
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const Sidebar = ({ className, isOpen, onClose }: SidebarProps) => {
@@ -26,7 +26,6 @@ const Sidebar = ({ className, isOpen, onClose }: SidebarProps) => {
 
   const navigationItems = [
     { name: 'Inicio', href: '/', icon: Home },
-    { name: 'Propiedades', href: '/properties', icon: Briefcase },
     { name: 'Finanzas', href: '/finances', icon: CreditCard },
     { name: 'Documentos', href: '/documents', icon: FileBox },
     { name: 'Tareas', href: '/tasks', icon: CheckSquare },
