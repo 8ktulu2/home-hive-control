@@ -10,7 +10,7 @@ import Tasks from './pages/Tasks';
 import NotFound from './pages/NotFound';
 import './App.css';
 import Historical from './pages/historical';
-import FiscalReport from './pages/FiscalReport';
+import FiscalReport from './pages/fiscal-report/FiscalReport';
 
 function App() {
   return (
