@@ -4,8 +4,9 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Search } from 'lucide-react';
 import { Property } from '@/types/property';
+import { Input } from '@/components/ui/input';
 
 interface SelectionSectionProps {
   properties: Property[];
@@ -16,6 +17,8 @@ interface SelectionSectionProps {
   onYearToggle: (year: number) => void;
   onSelectAllProperties: () => void;
   onSelectAllYears: () => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
 }
 
 const SelectionSection = ({
@@ -26,7 +29,9 @@ const SelectionSection = ({
   onPropertyToggle,
   onYearToggle,
   onSelectAllProperties,
-  onSelectAllYears
+  onSelectAllYears,
+  searchQuery,
+  onSearchChange
 }: SelectionSectionProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -43,6 +48,15 @@ const SelectionSection = ({
             >
               {selectedPropertyIds.length === properties.length ? "Deseleccionar todo" : "Seleccionar todo"}
             </Button>
+          </div>
+          <div className="relative mt-2">
+            <Input
+              placeholder="Buscar propiedades..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pr-8"
+            />
+            <Search className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
           </div>
         </CardHeader>
         <CardContent className="max-h-[300px] overflow-y-auto">

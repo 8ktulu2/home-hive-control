@@ -11,6 +11,7 @@ import SummarySection from './SummarySection';
 const FiscalReportContent = () => {
   // Estado para propiedades simuladas
   const [properties, setProperties] = useState(mockProperties);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Estado para gestionar años disponibles
   const currentYear = new Date().getFullYear();
@@ -39,6 +40,14 @@ const FiscalReportContent = () => {
     loadProperties();
   }, []);
 
+  // Filter properties based on search query
+  const filteredProperties = searchQuery.trim() 
+    ? properties.filter(property => 
+        property.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        property.address.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : properties;
+
   // Manejar selección de propiedades
   const handlePropertyToggle = (propertyId: string) => {
     setSelectedPropertyIds(prev => {
@@ -61,12 +70,17 @@ const FiscalReportContent = () => {
     });
   };
 
+  // Manejar búsqueda
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
   // Seleccionar todas las propiedades
   const handleSelectAllProperties = () => {
-    if (selectedPropertyIds.length === properties.length) {
+    if (selectedPropertyIds.length === filteredProperties.length) {
       setSelectedPropertyIds([]);
     } else {
-      setSelectedPropertyIds(properties.map(p => p.id));
+      setSelectedPropertyIds(filteredProperties.map(p => p.id));
     }
   };
 
@@ -96,7 +110,7 @@ const FiscalReportContent = () => {
       </div>
 
       <SelectionSection 
-        properties={properties}
+        properties={filteredProperties}
         selectedPropertyIds={selectedPropertyIds}
         availableYears={availableYears}
         selectedYears={selectedYears}
@@ -104,6 +118,8 @@ const FiscalReportContent = () => {
         onYearToggle={handleYearToggle}
         onSelectAllProperties={handleSelectAllProperties}
         onSelectAllYears={handleSelectAllYears}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
       />
 
       <SummarySection 
