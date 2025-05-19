@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Table2, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockProperties } from '@/data/mockData';
 import FiscalInfoModal from '@/components/finances/historical/fiscal/components/FiscalInfoModal';
 import SelectionSection from './SelectionSection';
 import SummarySection from './SummarySection';
+import FiscalReportTable from './FiscalReportTable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const FiscalReportContent = () => {
   // Estado para propiedades simuladas
@@ -22,6 +24,7 @@ const FiscalReportContent = () => {
   const [selectedYears, setSelectedYears] = useState<number[]>([currentYear - 1]);
   const [showFiscalInfoModal, setShowFiscalInfoModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [viewType, setViewType] = useState<'summary' | 'table'>('summary');
   
   // Cargar propiedades desde localStorage si están disponibles
   useEffect(() => {
@@ -93,6 +96,11 @@ const FiscalReportContent = () => {
     }
   };
 
+  // Manejar cambio de vista
+  const handleViewChange = (value: string) => {
+    setViewType(value as 'summary' | 'table');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -122,13 +130,48 @@ const FiscalReportContent = () => {
         onSearchChange={handleSearchChange}
       />
 
-      <SummarySection 
-        properties={properties}
-        selectedPropertyIds={selectedPropertyIds}
-        selectedYears={selectedYears}
-        isGenerating={isGenerating}
-        setIsGenerating={setIsGenerating}
-      />
+      {/* Tabs para alternar entre vistas */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-medium">Información Fiscal</h2>
+        <div className="flex items-center border rounded-md">
+          <Button 
+            type="button"
+            variant={viewType === 'summary' ? 'default' : 'outline'} 
+            className="rounded-r-none"
+            onClick={() => setViewType('summary')}
+            size="sm"
+          >
+            <LayoutGrid className="h-4 w-4 mr-2" /> 
+            Resumen
+          </Button>
+          <Button 
+            type="button"
+            variant={viewType === 'table' ? 'default' : 'outline'} 
+            className="rounded-l-none"
+            onClick={() => setViewType('table')}
+            size="sm"
+          >
+            <Table2 className="h-4 w-4 mr-2" /> 
+            Tabla
+          </Button>
+        </div>
+      </div>
+
+      {viewType === 'summary' ? (
+        <SummarySection 
+          properties={properties}
+          selectedPropertyIds={selectedPropertyIds}
+          selectedYears={selectedYears}
+          isGenerating={isGenerating}
+          setIsGenerating={setIsGenerating}
+        />
+      ) : (
+        <FiscalReportTable 
+          properties={properties}
+          selectedPropertyIds={selectedPropertyIds}
+          selectedYears={selectedYears}
+        />
+      )}
       
       <FiscalInfoModal 
         open={showFiscalInfoModal} 
