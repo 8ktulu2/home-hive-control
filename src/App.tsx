@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Index from './pages/Index';  // Fixed import path
+import Index from './pages/Index'; 
 import Finances from './pages/Finances';
 import PropertyDetail from './pages/PropertyDetail';
 import PropertyEdit from './pages/PropertyEdit';

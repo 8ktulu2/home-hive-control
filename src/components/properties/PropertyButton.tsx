@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEffect, useState, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { formatCurrency } from '@/lib/formatters';
 
 interface PropertyButtonProps {
   property: Property;
@@ -24,15 +25,6 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   const touchStartTime = useRef<number>(0);
   const isMobile = useIsMobile();
   const [isLongPress, setIsLongPress] = useState(false);
-  
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
 
   const handleTouchStart = () => {
     touchStartTime.current = Date.now();
@@ -42,7 +34,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       clearTimeout(touchTimeoutRef.current);
     }
     
-    // Set a new timeout for long press detection - reduce to 500ms for better responsiveness
+    // Set a new timeout for long press detection
     touchTimeoutRef.current = setTimeout(() => {
       console.log('Long press detected for property:', property.id);
       setIsLongPress(true);
@@ -63,9 +55,8 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
     
     // If we're already in selection mode or this was a long press
     if (isSelected !== undefined && onSelect) {
-      // Always prevent default to handle selection properly
-      e.preventDefault();
       // Toggle selection on click/tap when in selection mode
+      e.preventDefault();
       onSelect(property.id);
     }
     
