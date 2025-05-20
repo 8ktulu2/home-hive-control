@@ -9,7 +9,18 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const formatPercentage = (value: number): string => {
-  return `${(value * 100).toFixed(2)}%`;
+  return new Intl.NumberFormat('es-ES', {
+    style: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value / 100);
+};
+
+export const formatNumber = (value: number, decimals = 2): string => {
+  return new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(value);
 };
 
 export const formatDate = (dateString: string): string => {
