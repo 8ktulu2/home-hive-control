@@ -21,9 +21,12 @@ const PropertyGridList = ({
   const [selectionMode, setSelectionMode] = useState(false);
   const isMobile = useIsMobile();
 
-  const handleLongPress = () => {
-    console.log('Long press detected - activating selection mode');
+  const handleLongPress = (propertyId: string) => {
+    console.log('Long press detected for property:', propertyId);
     setSelectionMode(true);
+    // Auto-select the first property that triggered selection mode
+    onPropertySelect(propertyId);
+    
     // Notify user
     toast.info('Modo de selección activado. Toca las propiedades para seleccionarlas.');
   };
@@ -75,7 +78,7 @@ const PropertyGridList = ({
           <PropertyButton 
             property={property} 
             onPaymentUpdate={onPaymentUpdate}
-            onLongPress={handleLongPress}
+            onLongPress={() => handleLongPress(property.id)}
             onSelect={selectionMode ? handleSelect : undefined}
             isSelected={selectedProperties.includes(property.id)}
           />

@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { mockProperties } from '@/data/mockData';
 import { toast } from 'sonner';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
-import { usePaymentManagement } from '@/hooks/payment';
+import { usePaymentManagement } from '@/hooks/usePaymentManagement';
 import { Property } from '@/types/property';
 import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHeader';
 import PropertyDetailContent from '@/components/property-detail/PropertyDetailContent';
@@ -31,8 +31,7 @@ const PropertyDetail = () => {
 
   const { 
     handlePaymentUpdate, 
-    handleRentPaidChange,
-    isMonthInFuture
+    handleRentPaidChange 
   } = usePaymentManagement(property, setProperty);
 
   useEffect(() => {
@@ -168,7 +167,6 @@ const PropertyDetail = () => {
           handleDocumentAdd={handleDocumentAdd}
           handleExpenseDelete={handleExpenseDelete}
           setProperty={setProperty}
-          isMonthInFuture={isMonthInFuture}
         />
       </div>
     </Layout>

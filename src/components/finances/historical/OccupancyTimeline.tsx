@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { PropertyHistoricalData } from './types';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -14,8 +15,6 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
-  
-  const monthAbbreviations = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
   return (
     <Card className="bg-[#292F3F] border-none">
@@ -29,9 +28,8 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
         <div className="space-y-6">
           {data.map(property => (
             <div key={property.propertyId} className="mb-6">
-              <h3 className="text-white font-medium mb-3">{property.propertyName}</h3>
-              
-              <div className="space-y-2">
+              <h3 className="text-white font-medium mb-2">{property.propertyName}</h3>
+              <div className="grid grid-cols-12 gap-1">
                 {months.map((month, index) => {
                   const monthData = property.months.find(m => m.month === month);
                   const isOccupied = monthData?.wasRented;
@@ -42,20 +40,21 @@ const OccupancyTimeline = ({ data, year }: OccupancyTimelineProps) => {
                   return (
                     <div 
                       key={index} 
-                      className={`relative border ${bgColor} rounded-md p-2 flex items-center h-12`}
+                      className={`relative border ${bgColor} rounded-md p-1 h-16 flex flex-col justify-between`}
                       title={`${month}: ${isOccupied ? 'Alquilado' : 'Vacante'}`}
                     >
-                      <div className="text-[#E5DEFF] font-medium w-10">
-                        {monthAbbreviations[index]}
-                      </div>
+                      <div className="text-xs text-[#E5DEFF] opacity-60 w-full text-center">{month.substring(0, 3)}</div>
                       
                       {monthData && (
-                        <div className="flex-1 flex justify-end">
+                        <div className="mt-auto">
                           {isOccupied && (
-                            <div className="text-white text-sm font-medium">
-                              {formatCurrency(monthData.netIncome)}
+                            <div className="text-white text-xs text-center font-medium">
+                              {formatCurrency(monthData.rentAmount)}
                             </div>
                           )}
+                          <div className={`text-xs text-center ${isOccupied ? 'text-green-300' : 'text-red-300'}`}>
+                            {isOccupied ? 'Alquilado' : 'Vacío'}
+                          </div>
                         </div>
                       )}
                     </div>

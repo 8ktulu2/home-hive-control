@@ -3,21 +3,14 @@ import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
 import PaymentConfirmationDialog from '@/components/property-detail/dialogs/PaymentConfirmationDialog';
-import { toast } from 'sonner';
 
 interface MonthlyPaymentStatusProps {
   property: Property;
   onPaymentUpdate?: (month: number, year: number, isPaid: boolean, notes?: string) => void;
   compact?: boolean;
-  isMonthInFuture?: (month: number, year: number) => boolean;
 }
 
-const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ 
-  property, 
-  onPaymentUpdate, 
-  compact = false,
-  isMonthInFuture 
-}) => {
+const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, onPaymentUpdate, compact = false }) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -46,14 +39,6 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
   
   const handleConfirmPayment = (notes: string, paymentDate: Date) => {
     if (selectedPayment && onPaymentUpdate) {
-      // Check if this is a future month and notes are required
-      if (isFutureMonth(selectedPayment.month, selectedPayment.year) && 
-          !selectedPayment.isPaid && 
-          !notes.trim()) {
-        toast.error("Las notas son obligatorias para pagos de meses futuros");
-        return;
-      }
-      
       onPaymentUpdate(
         selectedPayment.month, 
         selectedPayment.year, 
@@ -66,11 +51,6 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
 
   // Determine if selected month is in the future
   const isFutureMonth = (month: number, year: number) => {
-    // Use provided function if available, otherwise use our own implementation
-    if (isMonthInFuture) {
-      return isMonthInFuture(month, year);
-    }
-    
     if (year > currentYear) return true;
     if (year === currentYear && month > currentMonth) return true;
     return false;

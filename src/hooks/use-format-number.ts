@@ -3,9 +3,7 @@ export function useFormatNumber() {
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      currency: 'EUR'
     }).format(amount);
   };
 

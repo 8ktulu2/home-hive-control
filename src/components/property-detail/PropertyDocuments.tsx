@@ -2,10 +2,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Document } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Upload, Download, Trash } from 'lucide-react';
+import { FileText, Upload, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { DocumentCategories } from './document/DocumentCategories';
+import { DocumentCard } from './document/DocumentCard';
+import { PrimaryContract } from './document/PrimaryContract';
 import { useLocation } from 'react-router-dom';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 
@@ -74,6 +76,9 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
     }
   }, [location.hash]);
 
+  const tenantContracts = documents.filter(doc => doc.category === 'tenant-contract');
+  const primaryContract = tenantContracts.find(doc => doc.isPrimary) || tenantContracts[0];
+
   return (
     <Card id="documents" ref={cardRef}>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -103,6 +108,13 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
       </CardHeader>
       
       <CardContent>
+        {primaryContract && (
+          <PrimaryContract 
+            contract={primaryContract} 
+            onDownload={handleDownload}
+          />
+        )}
+
         <DocumentCategories 
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
@@ -114,34 +126,14 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
               No hay documentos en esta categoría
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {filteredDocuments.map(document => (
-                <div key={document.id} className="flex items-center justify-between p-2 border rounded-md">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                    <span className="truncate text-sm">{document.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleDownload(document)}
-                    >
-                      <Download className="h-4 w-4 text-primary" />
-                      <span className="sr-only">Descargar</span>
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleDelete(document.id)}
-                    >
-                      <Trash className="h-4 w-4 text-destructive" />
-                      <span className="sr-only">Eliminar</span>
-                    </Button>
-                  </div>
-                </div>
+                <DocumentCard
+                  key={document.id}
+                  document={document}
+                  onDownload={handleDownload}
+                  onDelete={handleDelete}
+                />
               ))}
             </div>
           )}

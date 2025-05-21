@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +22,6 @@ interface PropertyActionsProps {
 const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const handleDelete = () => {
     try {

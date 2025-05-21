@@ -1,199 +1,382 @@
 
 import React from 'react';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { FiscalSectionProps } from './types';
 import { FiscalAmortizationGuide } from './FiscalAmortizationGuide';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { FiscalData } from '../types';
-
-interface ExpenseItemProps extends FiscalSectionProps {
-  label: string;
-  field: keyof FiscalData;
-  description?: string;
-  className?: string;
-}
-
-const ExpenseItem: React.FC<ExpenseItemProps> = ({ form, label, field, description, className }) => {
-  return (
-    <div className={cn("grid grid-cols-3 gap-4 items-center", className)}>
-      <Label htmlFor={String(field)} className="text-right">
-        {label}
-      </Label>
-      <Input
-        type="number"
-        id={String(field)}
-        placeholder="0.00"
-        className="col-span-2"
-        {...form.register(field as keyof FiscalData, { valueAsNumber: true })}
-      />
-      {description && (
-        <p className="col-span-3 text-sm text-muted-foreground mt-1">{description}</p>
-      )}
-    </div>
-  );
-};
 
 export const FiscalExpenseSection: React.FC<FiscalSectionProps> = ({ form }) => {
-  const totalExpenses = 
-    (form.watch('ibi') || 0) +
-    (form.watch('communityFees') || 0) +
-    (form.watch('mortgageInterest') || 0) +
-    (form.watch('homeInsurance') || 0) +
-    (form.watch('lifeInsurance') || 0) +
-    (form.watch('maintenance') || 0) +
-    (form.watch('agencyFees') || 0) +
-    (form.watch('administrativeFees') || 0) +
-    (form.watch('contractFormalization') || 0) +
-    (form.watch('propertyDepreciation') || 0) +
-    (form.watch('buildingDepreciation') || 0) +
-    (form.watch('furnitureDepreciation') || 0) +
-    (form.watch('utilities') || 0) +
-    (form.watch('municipalTaxes') || 0) +
-    (form.watch('legalFees') || 0) +
-    (form.watch('badDebts') || 0) +
-    (form.watch('otherExpenses') || 0);
-
-  // Update totalExpenses and netIncome when any expense changes
-  React.useEffect(() => {
-    form.setValue('totalExpenses', totalExpenses);
-    form.setValue('netIncome', (form.watch('totalIncome') || 0) - totalExpenses);
-  }, [totalExpenses, form]);
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Gastos deducibles</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <ExpenseItem
-          form={form}
-          label="IBI"
-          field="ibi"
-          description="Impuesto sobre Bienes Inmuebles"
-        />
-        <ExpenseItem
-          form={form}
-          label="Gastos de comunidad"
-          field="communityFees"
-          description="Cuotas de la comunidad de propietarios"
-        />
-        <ExpenseItem
-          form={form}
-          label="Intereses hipotecarios"
-          field="mortgageInterest"
-          description="Solo los intereses, no el capital amortizado"
-        />
-        <ExpenseItem
-          form={form}
-          label="Seguro del hogar"
-          field="homeInsurance"
-          description="Prima anual del seguro de hogar"
-        />
-        <ExpenseItem
-          form={form}
-          label="Seguro de vida"
-          field="lifeInsurance"
-          description="Si está vinculado a la hipoteca"
-        />
-        <ExpenseItem
-          form={form}
-          label="Mantenimiento"
-          field="maintenance"
-          description="Reparaciones y conservación"
-        />
-        <ExpenseItem
-          form={form}
-          label="Honorarios de agencia"
-          field="agencyFees"
-          description="Gestión del alquiler"
-        />
-        <ExpenseItem
-          form={form}
-          label="Gastos administrativos"
-          field="administrativeFees"
-          description="Gestoría, administración"
-        />
-        <ExpenseItem
-          form={form}
-          label="Formalización contrato"
-          field="contractFormalization"
-          description="Gastos de notaría, registro"
-        />
-        
-        <Separator />
-        
+      <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <ExpenseItem
-              form={form}
-              label="Amort. Inmueble"
-              field="buildingDepreciation"
-              description="3% valor construcción (sin suelo)"
-            />
-          </div>
-          <div>
-            <ExpenseItem
-              form={form}
-              label="Amort. Mobiliario"
-              field="furnitureDepreciation"
-              description="10% valor mobiliario"
-            />
-            <FiscalAmortizationGuide />
-          </div>
+          <FormField
+            control={form.control}
+            name="ibi"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>IBI</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Impuesto sobre Bienes Inmuebles
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="communityFees"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gastos de comunidad</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="mortgageInterest"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Intereses hipoteca</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Solo la parte de intereses, no el capital amortizado
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="homeInsurance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Seguro de hogar</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="lifeInsurance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Seguro de vida</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Si está asociado a la hipoteca
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="maintenance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Conservación y reparaciones</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Excluye mejoras o ampliaciones
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="agencyFees"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Honorarios de agencia</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="contractFormalization"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Formalización de contrato</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Honorarios de abogados, inmobiliarias
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="legalExpenses"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Defensa jurídica</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Costes de desahucio, etc.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="buildingDepreciation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amortización inmueble (3%)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  3% del valor de adquisición (sin suelo) o catastral de la construcción. 
+                  Solo se amortiza la construcción, nunca el suelo.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="furnitureDepreciation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amortización mobiliario (10%)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  10% del coste de muebles, electrodomésticos y enseres. 
+                  Se amortiza por completo durante 10 años.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="utilities"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Suministros</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Agua, luz, gas (si los paga el propietario)
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="municipalTaxes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tasas municipales</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Basuras, limpieza, alumbrado
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="administrativeExpenses"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gastos administrativos</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Notaría, gestoría, certificados
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="badDebts"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Saldos de dudoso cobro</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Impagos de alquiler deducibles
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="otherExpenses"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Otros gastos</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(parseFloat(e.target.value) || 0);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Certificación energética, jardinería, etc.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
         </div>
         
-        <Separator />
-        
-        <ExpenseItem
-          form={form}
-          label="Suministros"
-          field="utilities"
-          description="Agua, luz, gas (si los paga el propietario)"
-        />
-        <ExpenseItem
-          form={form}
-          label="Impuestos municipales"
-          field="municipalTaxes"
-          description="Tasas de basuras, etc."
-        />
-        <ExpenseItem
-          form={form}
-          label="Gastos jurídicos"
-          field="legalFees"
-          description="Abogado, procurador"
-        />
-        <ExpenseItem
-          form={form}
-          label="Saldos impagados"
-          field="badDebts"
-          description="Alquileres no cobrados"
-        />
-        <ExpenseItem
-          form={form}
-          label="Otros gastos"
-          field="otherExpenses"
-          description="Otros gastos deducibles"
-        />
-        
-        <Separator />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Total gastos declarados</p>
-            <p className="text-lg font-semibold">
-              {(form.watch('totalExpenses') || 0).toFixed(2)}€
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Rendimiento neto (antes de reducción)</p>
-            <p className="text-lg font-semibold">
-              {(form.watch('netIncome') || 0).toFixed(2)}€
-            </p>
-          </div>
-        </div>
+        <FiscalAmortizationGuide />
       </CardContent>
     </Card>
   );

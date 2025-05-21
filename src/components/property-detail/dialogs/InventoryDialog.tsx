@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface InventoryDialogProps {
   isOpen: boolean;
@@ -21,9 +20,7 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
     type: 'furniture',
     name: '',
     condition: 'good',
-    notes: '',
-    isNewPurchase: false,
-    purchaseAmount: 0
+    notes: ''
   });
 
   useEffect(() => {
@@ -34,9 +31,7 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
         type: 'furniture',
         name: '',
         condition: 'good',
-        notes: '',
-        isNewPurchase: false,
-        purchaseAmount: 0
+        notes: ''
       });
     }
   }, [initialItem, isOpen]);
@@ -47,9 +42,7 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
       type: 'furniture',
       name: '',
       condition: 'good',
-      notes: '',
-      isNewPurchase: false,
-      purchaseAmount: 0
+      notes: ''
     });
   };
 
@@ -133,44 +126,6 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
               onChange={(e) => setNewItem({...newItem, notes: e.target.value})}
             />
           </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <div className="text-right">
-              <Label htmlFor="is-new-purchase" className="text-right">
-                Compra nueva
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="is-new-purchase" 
-                checked={newItem.isNewPurchase} 
-                onCheckedChange={(checked) => {
-                  setNewItem({
-                    ...newItem, 
-                    isNewPurchase: !!checked,
-                    purchaseAmount: !checked ? 0 : newItem.purchaseAmount
-                  });
-                }}
-              />
-              <Label htmlFor="is-new-purchase">Registrar como nueva compra</Label>
-            </div>
-          </div>
-          
-          {newItem.isNewPurchase && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="purchase-amount" className="text-right">
-                Importe
-              </Label>
-              <Input
-                id="purchase-amount"
-                type="number"
-                placeholder="0.00"
-                className="col-span-3"
-                value={newItem.purchaseAmount || ''}
-                onChange={(e) => setNewItem({...newItem, purchaseAmount: parseFloat(e.target.value) || 0})}
-              />
-            </div>
-          )}
         </div>
         
         <DialogFooter>

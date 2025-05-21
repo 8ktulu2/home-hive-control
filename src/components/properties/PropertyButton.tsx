@@ -1,12 +1,11 @@
 
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEffect, useState, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { formatCurrency } from '@/lib/formatters';
 
 interface PropertyButtonProps {
   property: Property;
@@ -20,12 +19,20 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
-  const navigate = useNavigate();
   
   const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartTime = useRef<number>(0);
   const isMobile = useIsMobile();
   const [isLongPress, setIsLongPress] = useState(false);
+  
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
 
   const handleTouchStart = () => {
     touchStartTime.current = Date.now();
@@ -35,7 +42,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       clearTimeout(touchTimeoutRef.current);
     }
     
-    // Set a new timeout for long press detection
+    // Set a new timeout for long press detection - reduce to 500ms for better responsiveness
     touchTimeoutRef.current = setTimeout(() => {
       console.log('Long press detected for property:', property.id);
       setIsLongPress(true);
@@ -46,8 +53,6 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   };
 
   const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    
     const touchDuration = Date.now() - touchStartTime.current;
     
     // Clear the timeout
@@ -58,28 +63,13 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
     
     // If we're already in selection mode or this was a long press
     if (isSelected !== undefined && onSelect) {
+      // Always prevent default to handle selection properly
+      e.preventDefault();
       // Toggle selection on click/tap when in selection mode
       onSelect(property.id);
-    } else if (!isLongPress && touchDuration < 500) {
-      // Handle regular click navigation
-      console.log('Navigating to property detail:', property.id);
-      navigate(`/property/${property.id}`);
     }
     
     setIsLongPress(false);
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Click event triggered for property:', property.id);
-    
-    // Only handle normal clicks when not in selection mode
-    if (isSelected === undefined) {
-      navigate(`/property/${property.id}`);
-    } else if (onSelect) {
-      onSelect(property.id);
-    }
   };
 
   // Cleanup on unmount
@@ -92,7 +82,14 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   }, []);
 
   return (
-    <div 
+    <Link 
+      to={isSelected !== undefined && onSelect ? "#" : `/property/${property.id}`}
+      onClick={(e) => {
+        if (isSelected !== undefined && onSelect) {
+          e.preventDefault();
+          onSelect(property.id);
+        }
+      }}
       className={cn(
         "group block w-full transition-all duration-200 hover:scale-[1.02]",
         isSelected && "ring-2 ring-primary"
@@ -101,7 +98,6 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       onTouchEnd={handleTouchEnd as any}
       onMouseDown={isMobile ? undefined : handleTouchStart}
       onMouseUp={isMobile ? undefined : handleTouchEnd as any}
-      onClick={handleClick}
       onMouseLeave={() => {
         if (touchTimeoutRef.current) {
           clearTimeout(touchTimeoutRef.current);
@@ -159,7 +155,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
           </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 };
 

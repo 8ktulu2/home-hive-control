@@ -6,7 +6,7 @@ import FinancialSection from './finances/FinancialSection';
 
 interface MainContentProps {
   property: Property;
-  setProperty: (property: Property | null) => void;
+  setProperty: (property: Property) => void;
   handleExpenseDelete?: (expenseId: string) => void;
 }
 
@@ -14,10 +14,7 @@ const MainContent = ({ property, setProperty, handleExpenseDelete }: MainContent
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="col-span-1 lg:col-span-3">
-        <PropertyInfo 
-          property={property} 
-          setProperty={setProperty}
-        />
+        <PropertyInfo property={property} />
       </div>
       <div className="col-span-1 lg:col-span-3">
         <FinancialSection 

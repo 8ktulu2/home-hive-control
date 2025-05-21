@@ -1,15 +1,16 @@
+
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Card } from '@/components/ui/card';
 import { TabsContent } from '@/components/ui/tabs';
-import { PropertyHistoricalData, Transaction } from './types';
+import { PropertyHistoricalData } from './types';
 import HistoricalHeader from './HistoricalHeader';
 import HistoricalTabs from './HistoricalTabs';
 import AnnualSummaryCards from './AnnualSummaryCards';
 import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
-import FiscalDetailContent from './fiscal/FiscalDetailContent';
-import { useHistoricalData } from '@/hooks/useHistoricalData';
+import FiscalDetailContent from './FiscalDetailContent';
+import { useHistoricalData } from './hooks/useHistoricalData';
 import OccupancyTimeline from './OccupancyTimeline';
 import TransactionsTable from './TransactionsTable';
 import FinancialReports from './FinancialReports';
@@ -26,7 +27,7 @@ interface HistoricalDataProps {
 const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }: HistoricalDataProps) => {
   const [selectedProperty, setSelectedProperty] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("summary");
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   const { 
@@ -42,7 +43,7 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
   
   const annualTotals = calculateAnnualTotals(filteredData);
 
-  const handleTransactionClick = (transaction: Transaction) => {
+  const handleTransactionClick = (transaction: any) => {
     setSelectedTransaction(transaction);
     setIsTransactionModalOpen(true);
   };
@@ -84,7 +85,7 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
 
         <TabsContent value="transactions">
           <TransactionsTable 
-            transactions={allTransactions || []} 
+            transactions={allTransactions} 
             filteredPropertyId={selectedProperty !== "all" ? selectedProperty : undefined}
             onTransactionClick={handleTransactionClick}
           />
@@ -92,7 +93,7 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
 
         <TabsContent value="performance">
           <PropertyPerformanceContent 
-            metrics={performanceMetrics || []}
+            metrics={performanceMetrics}
             filteredPropertyId={selectedProperty !== "all" ? selectedProperty : undefined}
             year={selectedYear}
           />
