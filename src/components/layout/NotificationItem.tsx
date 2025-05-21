@@ -19,9 +19,13 @@ export const NotificationItem = ({
   const isHighlighted = notification.type === 'task' || !notification.read;
   const navigate = useNavigate();
   
-  const handleNotificationClick = () => {
+  const handleNotificationClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     // For task notifications, navigate directly to the property with task focus
     if (notification.type === 'task' && notification.propertyId) {
+      console.log('Navigating to property task:', notification.propertyId);
       navigate(`/property/${notification.propertyId}#tasks`);
     } else {
       onNotificationClick(notification);
@@ -55,7 +59,10 @@ export const NotificationItem = ({
         variant="ghost" 
         size="icon" 
         className="h-6 w-6 ml-2 opacity-50 hover:opacity-100"
-        onClick={(e) => onRemoveNotification(notification.id, e)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemoveNotification(notification.id, e);
+        }}
       >
         <X className="h-4 w-4" />
       </Button>

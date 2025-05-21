@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Property } from '@/types/property';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -42,8 +43,8 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
   
   const navigate = useNavigate();
   
-  const handlePropertyClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handlePropertyClick = () => {
+    console.log('Property card clicked - navigating to:', property.id);
     navigate(`/property/${property.id}`);
   };
 

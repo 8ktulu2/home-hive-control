@@ -46,6 +46,9 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   };
 
   const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const touchDuration = Date.now() - touchStartTime.current;
     
     // Clear the timeout
@@ -57,13 +60,10 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
     // If we're already in selection mode or this was a long press
     if (isSelected !== undefined && onSelect) {
       // Toggle selection on click/tap when in selection mode
-      e.preventDefault();
       onSelect(property.id);
     } else if (!isLongPress && touchDuration < 500) {
       // Handle regular click navigation
       console.log('Navigating to property detail:', property.id);
-      e.preventDefault();
-      e.stopPropagation();
       navigate(`/property/${property.id}`);
     }
     
@@ -71,12 +71,15 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('Click event triggered for property:', property.id);
+    
     // Only handle normal clicks when not in selection mode
     if (isSelected === undefined) {
-      e.preventDefault();
-      e.stopPropagation();
       navigate(`/property/${property.id}`);
+    } else if (onSelect) {
+      onSelect(property.id);
     }
   };
 
