@@ -37,7 +37,7 @@ export const useFiscalReportGeneration = ({
       // Recopilar todos los datos fiscales
       const allFiscalData = [];
       
-      // Crear una estructura para almacenar todos los datos fiscales, without using hooks in loops
+      // Crear una estructura para almacenar todos los datos fiscales
       for (const propId of selectedPropertyIds) {
         const property = properties.find(p => p.id === propId);
         if (!property) continue;
@@ -48,7 +48,7 @@ export const useFiscalReportGeneration = ({
           // Calculate fiscal data directly instead of using a hook
           const totalRent = historicalData.months.reduce((sum, month) => sum + month.rentAmount, 0);
           
-          // Create fiscal data object manually based on the same calculations as in useFiscalData
+          // Create fiscal data object manually
           const fiscalData = {
             year: year,
             propertyId: propId,

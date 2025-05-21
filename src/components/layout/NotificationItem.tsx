@@ -26,7 +26,7 @@ export const NotificationItem = ({
     // For task notifications, navigate directly to the property with task focus
     if (notification.type === 'task' && notification.propertyId) {
       console.log('Navigating to property task:', notification.propertyId);
-      navigate(`/property/${notification.propertyId}#tasks`);
+      navigate(`/property/${notification.propertyId}`);
     } else {
       onNotificationClick(notification);
     }

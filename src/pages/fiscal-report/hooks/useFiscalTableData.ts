@@ -24,7 +24,7 @@ export const useFiscalTableData = (
     property => selectedPropertyIds.includes(property.id)
   );
 
-  // Generate fiscal data for table without using hooks in loops
+  // Generate fiscal data for table
   const fiscalReportData = useMemo(() => {
     const data: FiscalReportItem[] = [];
 
@@ -33,12 +33,11 @@ export const useFiscalTableData = (
         // Generate historical data for this property and year
         const historicalData = generateHistoricalData(property.id, property, year);
         
-        // Calculate fiscal data manually instead of using the hook
-        // This recreates the logic from useFiscalData but without using hooks
+        // Calculate fiscal data manually
         const totalRent = historicalData.months.reduce((sum, month) => sum + month.rentAmount, 0);
         const totalExpenses = historicalData.months.reduce((sum, month) => sum + month.totalExpenses, 0);
-        const netIncome = Math.round(totalRent * 0.4); // Simplified calculation, matching the useFiscalData logic
-        const applicableReduction = 50; // Default reduction as in useFiscalData
+        const netIncome = Math.round(totalRent * 0.4); // Simplified calculation
+        const applicableReduction = 50; // Default reduction
         const reducedNetProfit = Math.round(netIncome * 0.5); // Apply the 50% reduction
         
         data.push({

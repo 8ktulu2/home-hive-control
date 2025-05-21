@@ -47,7 +47,6 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
 
   const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     
     const touchDuration = Date.now() - touchStartTime.current;
     
