@@ -28,7 +28,7 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
       id: `payment-${Date.now()}`,
       date: new Date().toISOString(),
       amount: property.rent || 0,
-      type: 'rent' as const, // Set a default value for the required field
+      type: 'rent' as const,
       isPaid: true,
       month: new Date().getMonth(),
       year: new Date().getFullYear(),
@@ -40,13 +40,32 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
       ? [...property.paymentHistory, newPayment] 
       : [newPayment];
     
-    setProperty({
+    const updatedProperty = {
       ...property,
       paymentHistory: updatedHistory,
       rentPaid: true
-    });
+    };
+    
+    setProperty(updatedProperty);
+    savePropertyToStorage(updatedProperty);
     
     return newPayment;
+  };
+  
+  // Save property to localStorage
+  const savePropertyToStorage = (updatedProperty: Property) => {
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const updatedProperties = properties.map((p: Property) => 
+          p.id === updatedProperty.id ? updatedProperty : p
+        );
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      }
+    } catch (error) {
+      console.error('Error saving property payment update to localStorage:', error);
+    }
   };
   
   // Handle payment update for a specific month and year
@@ -60,6 +79,8 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
       const existingPayment = property.paymentHistory?.find(
         p => p.month === month && p.year === year
       );
+      
+      let updatedProperty: Property;
       
       if (existingPayment) {
         // Update existing payment
@@ -75,22 +96,39 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
             : payment
         );
         
-        setProperty({
+        updatedProperty = {
           ...property,
           paymentHistory: updatedHistory,
           // Update rentPaid if this is the current month
           rentPaid: month === new Date().getMonth() && year === new Date().getFullYear() ? isPaid : property.rentPaid
-        });
+        };
       } else {
         // Create new payment record
-        addPaymentRecord({
+        const newPayment = {
+          id: `payment-${Date.now()}`,
+          date: isPaid ? new Date().toISOString() : new Date(year, month, 1).toISOString(),
+          amount: property.rent || 0,
+          type: 'rent' as const,
+          isPaid,
           month,
           year,
-          isPaid,
-          notes,
-          date: isPaid ? new Date().toISOString() : undefined
-        });
+          notes: notes || '',
+        };
+        
+        const updatedHistory = property.paymentHistory 
+          ? [...property.paymentHistory, newPayment] 
+          : [newPayment];
+        
+        updatedProperty = {
+          ...property,
+          paymentHistory: updatedHistory,
+          // Update rentPaid if this is the current month
+          rentPaid: month === new Date().getMonth() && year === new Date().getFullYear() ? isPaid : property.rentPaid
+        };
       }
+      
+      setProperty(updatedProperty);
+      savePropertyToStorage(updatedProperty);
       
       toast.success(isPaid ? 'Pago registrado con éxito' : 'Estado de pago actualizado');
     } catch (error) {
@@ -108,7 +146,12 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
     setIsUpdatingPayment(true);
     
     try {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
       const currentPayment = getCurrentMonthPayment();
+      
+      let updatedProperty: Property;
       
       if (currentPayment) {
         // Update existing payment record
@@ -123,20 +166,37 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
             : payment
         );
         
-        setProperty({
+        updatedProperty = {
           ...property,
           paymentHistory: updatedHistory,
           rentPaid: status
-        });
+        };
       } else {
         // Create new payment record for current month
-        addPaymentRecord({ 
+        const newPayment = {
+          id: `payment-${Date.now()}`,
+          date: status ? new Date().toISOString() : new Date(currentYear, currentMonth, 1).toISOString(),
+          amount: property.rent || 0,
+          type: 'rent' as const,
           isPaid: status,
-          month: new Date().getMonth(),
-          year: new Date().getFullYear(),
-          date: status ? new Date().toISOString() : undefined
-        });
+          month: currentMonth,
+          year: currentYear,
+          notes: '',
+        };
+        
+        const updatedHistory = property.paymentHistory 
+          ? [...property.paymentHistory, newPayment] 
+          : [newPayment];
+        
+        updatedProperty = {
+          ...property,
+          paymentHistory: updatedHistory,
+          rentPaid: status
+        };
       }
+      
+      setProperty(updatedProperty);
+      savePropertyToStorage(updatedProperty);
       
       toast.success(status ? 'Pago registrado con éxito' : 'Estado de pago actualizado');
     } catch (error) {

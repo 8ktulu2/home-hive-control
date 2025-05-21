@@ -81,6 +81,19 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
     };
   }, []);
 
+  // Get actual payment status from property payment history
+  const getActualPaymentStatus = () => {
+    if (property.paymentHistory && property.paymentHistory.length > 0) {
+      const currentMonthPayment = property.paymentHistory.find(
+        payment => payment.month === currentMonth && payment.year === currentYear
+      );
+      return currentMonthPayment ? currentMonthPayment.isPaid : property.rentPaid;
+    }
+    return property.rentPaid;
+  };
+
+  const actualRentPaid = getActualPaymentStatus();
+
   return (
     <Link 
       to={isSelected !== undefined && onSelect ? "#" : `/property/${property.id}`}
@@ -131,16 +144,16 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                onPaymentUpdate(property.id, currentMonth, currentYear, !property.rentPaid);
+                onPaymentUpdate(property.id, currentMonth, currentYear, !actualRentPaid);
               }}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
-                property.rentPaid 
+                actualRentPaid 
                   ? "bg-success/20 text-success hover:bg-success/30" 
                   : "bg-destructive/20 text-destructive hover:bg-destructive/30"
               )}
             >
-              <span>{property.rentPaid ? 'Pagado' : 'Pendiente'}</span>
+              <span>{actualRentPaid ? 'Pagado' : 'Pendiente'}</span>
             </div>
             
             <p className="text-xs text-muted-foreground capitalize">

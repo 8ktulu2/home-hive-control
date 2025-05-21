@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
 import PaymentConfirmationDialog from '@/components/property-detail/dialogs/PaymentConfirmationDialog';
@@ -16,19 +16,63 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
   const currentYear = currentDate.getFullYear();
   
   const [selectedPayment, setSelectedPayment] = useState<{ month: number; year: number; isPaid: boolean } | null>(null);
+  const [paymentStatuses, setPaymentStatuses] = useState<{[key: string]: boolean}>({});
   
   const months = [
     'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
     'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
   ];
   
+  // Initialize payment statuses when property changes
+  useEffect(() => {
+    if (property && property.paymentHistory) {
+      const statuses: {[key: string]: boolean} = {};
+      
+      // First set default values for all months
+      for (let month = 0; month < 12; month++) {
+        const key = `${currentYear}-${month}`;
+        statuses[key] = false;
+      }
+      
+      // Then update with actual payment history
+      property.paymentHistory.forEach(payment => {
+        if (payment.year === currentYear) {
+          const key = `${payment.year}-${payment.month}`;
+          statuses[key] = payment.isPaid;
+        }
+      });
+      
+      // Set current month status from property.rentPaid if no record exists
+      const currentMonthKey = `${currentYear}-${currentMonth}`;
+      if (statuses[currentMonthKey] === undefined) {
+        statuses[currentMonthKey] = property.rentPaid;
+      }
+      
+      setPaymentStatuses(statuses);
+    }
+  }, [property, property.paymentHistory, currentYear, currentMonth]);
+  
   const getPaymentStatus = (month: number, year: number) => {
+    const key = `${year}-${month}`;
+    if (paymentStatuses[key] !== undefined) {
+      return paymentStatuses[key];
+    }
+    
+    // Fallback to checking payment history directly
     if (property.paymentHistory && property.paymentHistory.length > 0) {
       const payment = property.paymentHistory.find(
         p => p.month === month && p.year === year
       );
-      return payment?.isPaid || false;
+      if (payment) {
+        return payment.isPaid;
+      }
     }
+    
+    // For current month, fall back to property.rentPaid
+    if (month === currentMonth && year === currentYear) {
+      return property.rentPaid;
+    }
+    
     return false;
   };
   
@@ -45,6 +89,12 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
         !selectedPayment.isPaid,
         notes
       );
+      
+      // Update local state immediately for better UX
+      setPaymentStatuses(prev => ({
+        ...prev,
+        [`${selectedPayment.year}-${selectedPayment.month}`]: !selectedPayment.isPaid
+      }));
     }
     setSelectedPayment(null);
   };
@@ -56,7 +106,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
     return false;
   };
 
-  // Generar todos los meses del año en curso
+  // Generate all months of the current year
   const generateMonths = () => {
     const result = [];
     const year = currentYear;
@@ -71,7 +121,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
   
   const monthsToShow = generateMonths();
   
-  // Dividir en dos filas de 6 meses si compact es true
+  // Split into two rows of 6 months if compact is true
   const firstRowMonths = compact ? monthsToShow.slice(0, 6) : monthsToShow;
   const secondRowMonths = compact ? monthsToShow.slice(6, 12) : [];
   

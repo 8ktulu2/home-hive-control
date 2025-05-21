@@ -39,7 +39,7 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
     // De lo contrario, usar el valor de rentPaid de la propiedad
     const isPaid = currentMonthPayment ? currentMonthPayment.isPaid : property.rentPaid;
     setActualPaymentStatus(isPaid);
-  }, [property, currentMonth, currentYear]);
+  }, [property, currentMonth, currentYear, property.paymentHistory]);
   
   const handleRentPaidToggle = () => {
     if (!actualPaymentStatus) {
