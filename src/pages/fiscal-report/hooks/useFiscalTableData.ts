@@ -1,7 +1,6 @@
 
 import { useMemo } from 'react';
 import { Property } from '@/types/property';
-import { useFiscalData } from '@/components/finances/historical/fiscal/hooks/useFiscalData';
 import { generateHistoricalData } from '../components/utils/fiscalReportUtils';
 
 export interface FiscalReportItem {
@@ -25,7 +24,7 @@ export const useFiscalTableData = (
     property => selectedPropertyIds.includes(property.id)
   );
 
-  // Generate fiscal data for table
+  // Generate fiscal data for table without using hooks in loops
   const fiscalReportData = useMemo(() => {
     const data: FiscalReportItem[] = [];
 
@@ -34,22 +33,24 @@ export const useFiscalTableData = (
         // Generate historical data for this property and year
         const historicalData = generateHistoricalData(property.id, property, year);
         
-        // Get fiscal data using the existing hook
-        const { fiscalData } = useFiscalData([historicalData], year);
-        const propertyFiscalData = fiscalData[property.id];
+        // Calculate fiscal data manually instead of using the hook
+        // This recreates the logic from useFiscalData but without using hooks
+        const totalRent = historicalData.months.reduce((sum, month) => sum + month.rentAmount, 0);
+        const totalExpenses = historicalData.months.reduce((sum, month) => sum + month.totalExpenses, 0);
+        const netIncome = Math.round(totalRent * 0.4); // Simplified calculation, matching the useFiscalData logic
+        const applicableReduction = 50; // Default reduction as in useFiscalData
+        const reducedNetProfit = Math.round(netIncome * 0.5); // Apply the 50% reduction
         
-        if (propertyFiscalData) {
-          data.push({
-            propertyId: property.id,
-            propertyName: property.name,
-            year: year,
-            totalIncome: propertyFiscalData.totalIncome || 0,
-            totalExpenses: propertyFiscalData.totalExpenses || 0,
-            netIncome: propertyFiscalData.netIncome || 0,
-            reducedNetProfit: propertyFiscalData.reducedNetProfit || 0,
-            applicableReduction: propertyFiscalData.applicableReduction || 0,
-          });
-        }
+        data.push({
+          propertyId: property.id,
+          propertyName: property.name,
+          year: year,
+          totalIncome: totalRent,
+          totalExpenses: Math.round(totalRent * 0.6), // Same calculation as in useFiscalData
+          netIncome: netIncome,
+          reducedNetProfit: reducedNetProfit,
+          applicableReduction: applicableReduction,
+        });
       });
     });
 

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Property } from '@/types/property';
 import { generateHistoricalData } from '../components/utils/fiscalReportUtils';
-import { useFiscalData } from '@/components/finances/historical/fiscal/hooks/useFiscalData';
 import { generateConsolidatedPdfReport } from '../components/utils/pdfGenerator';
 
 interface UseFiscalReportGenerationProps {
@@ -38,7 +37,7 @@ export const useFiscalReportGeneration = ({
       // Recopilar todos los datos fiscales
       const allFiscalData = [];
       
-      // Crear una estructura para almacenar todos los datos fiscales
+      // Crear una estructura para almacenar todos los datos fiscales, without using hooks in loops
       for (const propId of selectedPropertyIds) {
         const property = properties.find(p => p.id === propId);
         if (!property) continue;
@@ -46,17 +45,56 @@ export const useFiscalReportGeneration = ({
         for (const year of selectedYears) {
           const historicalData = generateHistoricalData(propId, property, year);
           
-          // Obtener datos fiscales para esta propiedad y año
-          const { fiscalData } = useFiscalData([historicalData], year);
-          const propertyFiscalData = fiscalData[propId];
+          // Calculate fiscal data directly instead of using a hook
+          const totalRent = historicalData.months.reduce((sum, month) => sum + month.rentAmount, 0);
           
-          if (propertyFiscalData) {
-            allFiscalData.push({
-              property: property,
-              year: year,
-              fiscalData: propertyFiscalData
-            });
-          }
+          // Create fiscal data object manually based on the same calculations as in useFiscalData
+          const fiscalData = {
+            year: year,
+            propertyId: propId,
+            totalIncome: totalRent,
+            totalExpenses: Math.round(totalRent * 0.6),
+            netIncome: Math.round(totalRent * 0.4),
+            rentalIncome: totalRent,
+            subsidies: 0,
+            otherIncome: 0,
+            ibi: Math.round(totalRent * 0.05),
+            communityFees: Math.round(totalRent * 0.1),
+            mortgageInterest: Math.round(totalRent * 0.2),
+            homeInsurance: Math.round(totalRent * 0.03),
+            maintenance: Math.round(totalRent * 0.05),
+            agencyFees: 0,
+            administrativeFees: 0,
+            propertyDepreciation: 0,
+            buildingDepreciation: Math.round(totalRent * 0.15),
+            furnitureDepreciation: Math.round(totalRent * 0.05),
+            utilities: 0,
+            municipalTaxes: Math.round(totalRent * 0.02),
+            legalFees: 0,
+            badDebts: 0,
+            otherExpenses: 0,
+            deductibleExpenses: {
+              ibi: Math.round(totalRent * 0.05),
+              community: Math.round(totalRent * 0.1),
+              mortgage: Math.round(totalRent * 0.2),
+              insurance: Math.round(totalRent * 0.03),
+              maintenance: Math.round(totalRent * 0.05),
+            },
+            amortization: Math.round(totalRent * 0.15) + Math.round(totalRent * 0.05),
+            applicableReduction: 50,
+            reducedNetProfit: Math.round(totalRent * 0.4 * 0.5),
+            taxableIncome: Math.round(totalRent * 0.4 * 0.5),
+            inTensionedArea: false,
+            rentLoweredFromPrevious: false,
+            youngTenant: false,
+            recentlyRenovated: false
+          };
+          
+          allFiscalData.push({
+            property: property,
+            year: year,
+            fiscalData: fiscalData
+          });
         }
       }
 
