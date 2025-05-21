@@ -1,7 +1,7 @@
 
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEffect, useState, useRef } from 'react';
@@ -61,11 +61,23 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       onSelect(property.id);
     } else if (!isLongPress && touchDuration < 500) {
       // Handle regular click navigation
+      console.log('Navigating to property detail:', property.id);
       e.preventDefault();
+      e.stopPropagation();
       navigate(`/property/${property.id}`);
     }
     
     setIsLongPress(false);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    console.log('Click event triggered for property:', property.id);
+    // Only handle normal clicks when not in selection mode
+    if (isSelected === undefined) {
+      e.preventDefault();
+      e.stopPropagation();
+      navigate(`/property/${property.id}`);
+    }
   };
 
   // Cleanup on unmount
@@ -87,7 +99,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       onTouchEnd={handleTouchEnd as any}
       onMouseDown={isMobile ? undefined : handleTouchStart}
       onMouseUp={isMobile ? undefined : handleTouchEnd as any}
-      onClick={(e) => handleTouchEnd(e)}
+      onClick={handleClick}
       onMouseLeave={() => {
         if (touchTimeoutRef.current) {
           clearTimeout(touchTimeoutRef.current);

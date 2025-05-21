@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Property } from '@/types/property';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -41,6 +40,13 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
     setActualPaymentStatus(isPaid);
   }, [property, currentMonth, currentYear]);
   
+  const navigate = useNavigate();
+  
+  const handlePropertyClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/property/${property.id}`);
+  };
+
   const handleRentPaidToggle = () => {
     if (!actualPaymentStatus) {
       setIsDialogOpen(true);
@@ -70,7 +76,7 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
 
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
-      <Link to={`/property/${property.id}`}>
+      <div onClick={handlePropertyClick} className="cursor-pointer">
         <div className="aspect-video overflow-hidden">
           <img
             src={property.image}
@@ -92,7 +98,7 @@ const PropertyCard = ({ property, onPaymentUpdate }: PropertyCardProps) => {
             <span className="font-medium text-destructive">-{formatCurrency(property.expenses)}</span>
           </div>
         </CardContent>
-      </Link>
+      </div>
       <CardFooter className={cn(
         "p-4 border-t flex justify-between items-center",
         property.netIncome > 0 ? "text-success" : "text-destructive"
