@@ -1,7 +1,7 @@
 
 import { Property } from '@/types/property';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEffect, useState, useRef } from 'react';
@@ -20,6 +20,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const monthName = format(new Date(currentYear, currentMonth), 'MMMM', { locale: es });
+  const navigate = useNavigate();
   
   const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartTime = useRef<number>(0);
@@ -58,6 +59,10 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       // Toggle selection on click/tap when in selection mode
       e.preventDefault();
       onSelect(property.id);
+    } else if (!isLongPress && touchDuration < 500) {
+      // Handle regular click navigation
+      e.preventDefault();
+      navigate(`/property/${property.id}`);
     }
     
     setIsLongPress(false);
@@ -73,14 +78,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
   }, []);
 
   return (
-    <Link 
-      to={isSelected !== undefined && onSelect ? "#" : `/property/${property.id}`}
-      onClick={(e) => {
-        if (isSelected !== undefined && onSelect) {
-          e.preventDefault();
-          onSelect(property.id);
-        }
-      }}
+    <div 
       className={cn(
         "group block w-full transition-all duration-200 hover:scale-[1.02]",
         isSelected && "ring-2 ring-primary"
@@ -89,6 +87,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
       onTouchEnd={handleTouchEnd as any}
       onMouseDown={isMobile ? undefined : handleTouchStart}
       onMouseUp={isMobile ? undefined : handleTouchEnd as any}
+      onClick={(e) => handleTouchEnd(e)}
       onMouseLeave={() => {
         if (touchTimeoutRef.current) {
           clearTimeout(touchTimeoutRef.current);
@@ -146,7 +145,7 @@ const PropertyButton = ({ property, onPaymentUpdate, onLongPress, onSelect, isSe
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 };
 

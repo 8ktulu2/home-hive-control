@@ -2,6 +2,7 @@
 import { X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Notification } from '@/types/notification';
+import { useNavigate } from 'react-router-dom';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -16,13 +17,23 @@ export const NotificationItem = ({
 }: NotificationItemProps) => {
   // Task notifications are always highlighted
   const isHighlighted = notification.type === 'task' || !notification.read;
+  const navigate = useNavigate();
+  
+  const handleNotificationClick = () => {
+    // For task notifications, navigate directly to the property with task focus
+    if (notification.type === 'task' && notification.propertyId) {
+      navigate(`/property/${notification.propertyId}#tasks`);
+    } else {
+      onNotificationClick(notification);
+    }
+  };
   
   return (
     <div 
       className={`flex items-start justify-between py-2 cursor-pointer hover:bg-accent/20 px-2 rounded-md border-l-4 ${
         isHighlighted ? 'border-l-primary' : 'border-l-muted'
       }`}
-      onClick={() => onNotificationClick(notification)}
+      onClick={handleNotificationClick}
     >
       <div className="flex-1">
         <span className={isHighlighted ? "font-medium" : "text-muted-foreground"}>

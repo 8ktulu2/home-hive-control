@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -85,7 +86,8 @@ export const useNotifications = () => {
       if (propertyExists) {
         // For task notifications, we don't mark as read since they should remain visible
         if (notification.type === 'task' && notification.taskId) {
-          navigateToProperty(notification);
+          // Direct navigation using hash for tasks
+          navigate(`/property/${notification.propertyId}#tasks`);
           return;
         }
         
