@@ -10,9 +10,9 @@ import { DocumentCard } from './document/DocumentCard';
 import { PrimaryContract } from './document/PrimaryContract';
 import { useLocation } from 'react-router-dom';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Trash } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 interface PropertyDocumentsProps {
   documents: Document[];
@@ -24,6 +24,7 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
   const [activeCategory, setActiveCategory] = useState('all');
   const [uploadCategory, setUploadCategory] = useState<string>('other');
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -36,8 +37,23 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
     ? documents 
     : documents.filter(doc => doc.category === activeCategory);
 
-  const handleFileUploadClick = () => {
-    fileInputRef.current?.click();
+  const handleUploadClick = () => {
+    setShowCategoryDialog(true);
+  };
+
+  const handleCategorySelect = (category: string) => {
+    if (category === 'all') {
+      toast.error("No se pueden subir documentos a 'Todos'. Por favor, selecciona una categoría específica.");
+      return;
+    }
+    
+    setUploadCategory(category);
+    setShowCategoryDialog(false);
+    
+    // Trigger file input click after closing the dialog
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
   };
 
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,6 +113,15 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
 
   const tenantContracts = documents.filter(doc => doc.category === 'tenant-contract');
   const primaryContract = tenantContracts.find(doc => doc.isPrimary) || tenantContracts[0];
+  
+  const categories = [
+    { id: 'all', name: 'Todos', icon: <FileText className="h-4 w-4" /> },
+    { id: 'tenant-contract', name: 'C. Alquiler', icon: <FileText className="h-4 w-4" /> },
+    { id: 'supply-contract', name: 'C. Suministros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'insurance', name: 'C. Seguros', icon: <FileText className="h-4 w-4" /> },
+    { id: 'invoice', name: 'Facturas', icon: <FileText className="h-4 w-4" /> },
+    { id: 'other', name: 'Otros', icon: <FileText className="h-4 w-4" /> }
+  ];
 
   return (
     <Card id="documents" ref={cardRef}>
@@ -114,34 +139,16 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
           />
           
-          <div className="flex items-center gap-1">
-            <Select
-              value={uploadCategory}
-              onValueChange={setUploadCategory}
-            >
-              <SelectTrigger className="w-[140px] text-xs h-8">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tenant-contract">Contratos</SelectItem>
-                <SelectItem value="supply-contract">Suministros</SelectItem>
-                <SelectItem value="insurance">Seguros</SelectItem>
-                <SelectItem value="invoice">Facturas</SelectItem>
-                <SelectItem value="other">Otros</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={handleFileUploadClick}
-              className="flex items-center gap-1 h-8"
-              disabled={isUploading || uploadCategory === 'all'}
-            >
-              <Upload className="h-4 w-4" />
-              <span>{isUploading ? 'Subiendo...' : 'Subir'}</span>
-            </Button>
-          </div>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleUploadClick}
+            className="flex items-center gap-1 h-8"
+            disabled={isUploading}
+          >
+            <Upload className="h-4 w-4" />
+            <span>{isUploading ? 'Subiendo...' : 'Subir'}</span>
+          </Button>
         </div>
       </CardHeader>
       
@@ -196,6 +203,35 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Category selection dialog */}
+      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Selecciona una categoría</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-2 py-4">
+            {categories.filter(cat => cat.id !== 'all').map((category) => (
+              <Button
+                key={category.id}
+                variant="outline"
+                className="flex justify-start items-center gap-2 h-10"
+                onClick={() => handleCategorySelect(category.id)}
+              >
+                {category.icon}
+                {category.name}
+              </Button>
+            ))}
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
