@@ -5,9 +5,9 @@ import { ExpenseList } from './expense-components/ExpenseList';
 import { AddExpenseDialog } from './AddExpenseDialog';
 import KPIBar from './KPIBar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check, ChevronUp } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface PropertyFinancesProps {
   property: Property;
@@ -48,21 +48,30 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      <Collapsible>
-        <KPIBar 
-          rent={rent}
-          expenses={expenses}
-          netIncome={netIncome}
-          onExpensesClick={handleToggleExpenses}
-          showExpenses={showExpenses}
-        />
+      <Collapsible 
+        open={showExpenses}
+        onOpenChange={setShowExpenses}
+      >
+        <CollapsibleTrigger asChild className="w-full">
+          <div>
+            <KPIBar 
+              rent={rent}
+              expenses={expenses}
+              netIncome={netIncome}
+              onExpensesClick={handleToggleExpenses}
+              showExpenses={showExpenses}
+            />
+          </div>
+        </CollapsibleTrigger>
         
         <CollapsibleContent className="mt-4">
           <Card className="animate-fade-in">
             <CardContent className="pt-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-sm font-medium">Desglose de Gastos</h3>
-                <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
+                {onExpenseAdd && (
+                  <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
+                )}
               </div>
               <ExpenseList 
                 property={property} 

@@ -11,7 +11,8 @@ import { PrimaryContract } from './document/PrimaryContract';
 import { useLocation } from 'react-router-dom';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Trash } from 'lucide-react';
 
 interface PropertyDocumentsProps {
   documents: Document[];
@@ -22,6 +23,7 @@ interface PropertyDocumentsProps {
 const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: PropertyDocumentsProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [uploadCategory, setUploadCategory] = useState<string>('other');
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -42,12 +44,13 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // Validate that a category other than 'all' is selected
-    if (uploadCategory === 'all') {
-      toast.error("Por favor, selecciona una categoría para el documento.");
+    // Ensure a specific category is selected, not "all"
+    if (!uploadCategory || uploadCategory === 'all') {
+      toast.error("Por favor, selecciona una categoría específica para el documento.");
       return;
     }
     
+    // Pass the selected category to the file upload handler
     handleFileUpload(file, uploadCategory);
     
     // Reset file input
@@ -71,9 +74,16 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
     });
   };
 
-  const handleDelete = (documentId: string) => {
-    onDocumentDelete(documentId);
-    toast.success('Documento eliminado', { duration: 2000 });
+  const confirmDeleteDocument = (documentId: string) => {
+    setDocumentToDelete(documentId);
+  };
+
+  const handleConfirmDelete = () => {
+    if (documentToDelete) {
+      onDocumentDelete(documentToDelete);
+      toast.success('Documento eliminado', { duration: 2000 });
+      setDocumentToDelete(null);
+    }
   };
 
   // Scroll to documents section if hash is present
@@ -160,13 +170,32 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
                   key={document.id}
                   document={document}
                   onDownload={handleDownload}
-                  onDelete={handleDelete}
+                  onDelete={confirmDeleteDocument}
                 />
               ))}
             </div>
           )}
         </div>
       </CardContent>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!documentToDelete} onOpenChange={(open) => !open && setDocumentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el documento y no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <Trash className="h-4 w-4 mr-2" />
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
