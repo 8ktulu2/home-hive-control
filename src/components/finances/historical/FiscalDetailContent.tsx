@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PropertyHistoricalData, FiscalData } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

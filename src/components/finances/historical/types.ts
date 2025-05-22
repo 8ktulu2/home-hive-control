@@ -61,3 +61,42 @@ export interface AnnualTotals {
   occupancyRate: number;
   expensesByCategory?: Record<string, number>;
 }
+
+export interface FiscalData {
+  // Income fields
+  rentalIncome: number;
+  subsidies: number;
+  otherIncome: number;
+  totalIncome: number;
+  
+  // Expense fields
+  ibi: number;
+  communityFees: number;
+  mortgageInterest: number;
+  homeInsurance: number;
+  maintenance: number;
+  agencyFees: number;
+  administrativeFees: number;
+  propertyDepreciation: number;
+  buildingDepreciation: number;
+  furnitureDepreciation: number;
+  utilities: number;
+  municipalTaxes: number;
+  legalFees: number;
+  badDebts: number;
+  otherExpenses: number;
+  totalExpenses: number;
+  
+  // Profit fields
+  netProfit: number;
+  
+  // Reduction fields
+  applicableReduction: number;
+  reducedNetProfit: number;
+  
+  // Additional info for reductions
+  inTensionedArea: boolean;
+  rentLoweredFromPrevious: boolean;
+  youngTenant: boolean;
+  recentlyRenovated: boolean;
+}

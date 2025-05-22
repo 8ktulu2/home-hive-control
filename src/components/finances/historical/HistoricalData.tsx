@@ -10,7 +10,7 @@ import AnnualSummaryCards from './AnnualSummaryCards';
 import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
 import FiscalDetailContent from './FiscalDetailContent';
-import { useHistoricalData } from './hooks/useHistoricalData';
+import { useHistoricalData } from '@/hooks/useHistoricalData';
 import OccupancyTimeline from './OccupancyTimeline';
 import TransactionsTable from './TransactionsTable';
 import FinancialReports from './FinancialReports';
@@ -33,8 +33,8 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
   const { 
     historicalData, 
     calculateAnnualTotals,
-    allTransactions,
-    performanceMetrics
+    allTransactions = [], // Provide default values
+    performanceMetrics = [] // Provide default values
   } = useHistoricalData(properties, selectedYear);
   
   const filteredData = selectedProperty === "all" 
