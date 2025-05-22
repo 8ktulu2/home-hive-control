@@ -49,12 +49,20 @@ export const ExpenseItem = ({
     >
       <div className="flex-1">
         <div className="flex items-center space-x-2">
-          <span className={cn("font-medium", isPaid && "text-muted-foreground")}>{name}</span>
+          <span className={cn(
+            "font-medium", 
+            isPaid ? "text-muted-foreground line-through" : ""
+          )}>
+            {name}
+          </span>
         </div>
         {!simplified && category && <span className="text-xs text-muted-foreground capitalize">{category}</span>}
       </div>
       <div className="flex items-center space-x-2">
-        <span className={cn("text-sm font-medium", isPaid && "text-muted-foreground")}>
+        <span className={cn(
+          "text-sm font-medium", 
+          isPaid ? "text-muted-foreground line-through" : ""
+        )}>
           {value.toFixed(0)}€
         </span>
         
@@ -72,7 +80,7 @@ export const ExpenseItem = ({
             </Button>
           )}
           
-          {onDeleteExpense && !isStatic && isPaid && (
+          {onDeleteExpense && !isStatic && (
             <Button
               type="button"
               variant="ghost"

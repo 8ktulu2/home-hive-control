@@ -1,9 +1,7 @@
 
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import KPIBar from '../finances/KPIBar';
 import { ExpenseList } from '../finances/expense-components/ExpenseList';
 import { AddExpenseDialog } from '../finances/AddExpenseDialog';
@@ -13,7 +11,7 @@ interface FinancesTabProps {
 }
 
 const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
-  const [showAllExpenses, setShowAllExpenses] = useState(false);
+  const [showExpenses, setShowExpenses] = useState(false);
   
   // Necesitamos simular estos manejadores ya que no tenemos la función setProperty aquí
   const handleExpenseAdd = (expense: any) => {
@@ -31,58 +29,40 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
   const expenses = property.expenses || 0;
   const netIncome = property.netIncome || (rent - expenses);
 
+  const handleToggleExpenses = () => {
+    setShowExpenses(!showExpenses);
+  };
+
   return (
     <div className="space-y-4">
+      {/* KPI Bar with toggle functionality */}
       <KPIBar 
         rent={rent}
         expenses={expenses}
         netIncome={netIncome}
-        onExpensesClick={() => setShowAllExpenses(!showAllExpenses)}
-        showExpenses={showAllExpenses}
+        onExpensesClick={handleToggleExpenses}
+        showExpenses={showExpenses}
       />
       
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Ingresos del Alquiler</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm font-medium">Renta Mensual</div>
-              <p className="text-muted-foreground">{property.rent}€/mes</p>
+      {/* Collapsible Expenses Section */}
+      {showExpenses && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-medium">Desglose de Gastos</h3>
+              <AddExpenseDialog onExpenseAdd={handleExpenseAdd} />
             </div>
-            {property.deposit && (
-              <div>
-                <div className="text-sm font-medium">Fianza</div>
-                <p className="text-muted-foreground">{property.deposit}€</p>
-              </div>
-            )}
-            {property.guarantee && (
-              <div>
-                <div className="text-sm font-medium">Garantía Adicional</div>
-                <p className="text-muted-foreground">{property.guarantee}€</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            
+            <ExpenseList 
+              property={property} 
+              onExpenseUpdate={handleExpenseUpdate} 
+              onlyDetails
+            />
+          </CardContent>
+        </Card>
+      )}
       
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium">Gastos</h3>
-            <AddExpenseDialog onExpenseAdd={handleExpenseAdd} />
-          </div>
-          
-          <ExpenseList 
-            property={property} 
-            onExpenseUpdate={handleExpenseUpdate} 
-            onlyDetails
-          />
-        </CardContent>
-      </Card>
-      
-      {/* Mostrar información de hipoteca si está disponible */}
+      {/* Display mortgage information only */}
       {property.mortgage && (
         <Card>
           <CardContent className="p-4">
@@ -113,7 +93,7 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
         </Card>
       )}
       
-      {/* Mostrar información de seguros si está disponible */}
+      {/* Show insurance information */}
       {(property.homeInsurance || property.lifeInsurance) && (
         <Card>
           <CardContent className="p-4">

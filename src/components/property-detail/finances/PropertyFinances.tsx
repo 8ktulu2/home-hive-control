@@ -4,10 +4,10 @@ import { Property, MonthlyExpense } from '@/types/property';
 import { ExpenseList } from './expense-components/ExpenseList';
 import { AddExpenseDialog } from './AddExpenseDialog';
 import KPIBar from './KPIBar';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Check, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface PropertyFinancesProps {
   property: Property;
@@ -34,6 +34,12 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
   const expenses = property.expenses || 0;
   const netIncome = property.netIncome || (rent - expenses);
 
+  const handleToggleExpenses = () => {
+    if (setShowExpenses) {
+      setShowExpenses(!showExpenses);
+    }
+  };
+
   const handleMarkAsPaid = (expenseId: string) => {
     if (onExpenseUpdate) {
       onExpenseUpdate(expenseId, { isPaid: true, paymentDate: new Date().toISOString() });
@@ -43,27 +49,21 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
   return (
     <div className="w-full space-y-4">
       <Collapsible>
-        <div className="flex items-center justify-between">
-          <KPIBar 
-            rent={rent}
-            expenses={expenses}
-            netIncome={netIncome}
-          />
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <ChevronUp className="h-4 w-4" />
-              <span className="sr-only">Mostrar/Ocultar Gastos</span>
-            </Button>
-          </CollapsibleTrigger>
-        </div>
+        <KPIBar 
+          rent={rent}
+          expenses={expenses}
+          netIncome={netIncome}
+          onExpensesClick={handleToggleExpenses}
+          showExpenses={showExpenses}
+        />
         
         <CollapsibleContent className="mt-4">
           <Card className="animate-fade-in">
-            <CardHeader className="flex flex-row items-center justify-between py-3">
-              <CardTitle className="text-sm">Desglose de Gastos</CardTitle>
-              <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
-            </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-sm font-medium">Desglose de Gastos</h3>
+                <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
+              </div>
               <ExpenseList 
                 property={property} 
                 onExpenseUpdate={onExpenseUpdate}
@@ -78,10 +78,8 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
       {/* Unpaid Expenses Section */}
       {unpaidExpenses.length > 0 && (
         <Card className="border-destructive/50 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="text-sm text-destructive">Gastos Pendientes</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
+            <h3 className="text-sm font-medium text-destructive mb-2">Gastos Pendientes</h3>
             <div className="space-y-2">
               {unpaidExpenses.map((expense) => (
                 <div 
