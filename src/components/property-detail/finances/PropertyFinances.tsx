@@ -7,6 +7,7 @@ import KPIBar from './KPIBar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Check, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface PropertyFinancesProps {
   property: Property;
@@ -41,42 +42,38 @@ const PropertyFinances: React.FC<PropertyFinancesProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      <KPIBar 
-        rent={rent}
-        expenses={expenses}
-        netIncome={netIncome}
-        onExpensesClick={() => setShowExpenses && setShowExpenses(!showExpenses)}
-        showExpenses={showExpenses}
-      />
-
-      {/* Expanded Expenses Section */}
-      {showExpenses && (
-        <Card className="animate-fade-in">
-          <CardHeader className="flex flex-row items-center justify-between py-3">
-            <CardTitle className="text-sm">Desglose de Gastos</CardTitle>
-            <div className="flex items-center gap-2">
+      <Collapsible>
+        <div className="flex items-center justify-between">
+          <KPIBar 
+            rent={rent}
+            expenses={expenses}
+            netIncome={netIncome}
+          />
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <ChevronUp className="h-4 w-4" />
+              <span className="sr-only">Mostrar/Ocultar Gastos</span>
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        
+        <CollapsibleContent className="mt-4">
+          <Card className="animate-fade-in">
+            <CardHeader className="flex flex-row items-center justify-between py-3">
+              <CardTitle className="text-sm">Desglose de Gastos</CardTitle>
               <AddExpenseDialog onExpenseAdd={onExpenseAdd} />
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowExpenses && setShowExpenses(false)}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronUp className="h-4 w-4" />
-                <span className="sr-only">Cerrar</span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <ExpenseList 
-              property={property} 
-              onExpenseUpdate={onExpenseUpdate}
-              onExpenseDelete={onExpenseDelete}
-              simplified={true}
-            />
-          </CardContent>
-        </Card>
-      )}
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ExpenseList 
+                property={property} 
+                onExpenseUpdate={onExpenseUpdate}
+                onExpenseDelete={onExpenseDelete}
+                simplified={true}
+              />
+            </CardContent>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Unpaid Expenses Section */}
       {unpaidExpenses.length > 0 && (

@@ -10,6 +10,8 @@ import { DocumentCard } from './document/DocumentCard';
 import { PrimaryContract } from './document/PrimaryContract';
 import { useLocation } from 'react-router-dom';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface PropertyDocumentsProps {
   documents: Document[];
@@ -19,6 +21,7 @@ interface PropertyDocumentsProps {
 
 const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: PropertyDocumentsProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [uploadCategory, setUploadCategory] = useState<string>('other');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -39,7 +42,13 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
     const file = event.target.files?.[0];
     if (!file) return;
     
-    handleFileUpload(file, activeCategory !== 'all' ? activeCategory : 'other');
+    // Validate that a category other than 'all' is selected
+    if (uploadCategory === 'all') {
+      toast.error("Por favor, selecciona una categoría para el documento.");
+      return;
+    }
+    
+    handleFileUpload(file, uploadCategory);
     
     // Reset file input
     if (fileInputRef.current) {
@@ -94,16 +103,35 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
             className="hidden"
             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
           />
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleFileUploadClick}
-            className="flex items-center gap-1"
-            disabled={isUploading}
-          >
-            <Upload className="h-4 w-4" />
-            <span>{isUploading ? 'Subiendo...' : 'Subir'}</span>
-          </Button>
+          
+          <div className="flex items-center gap-1">
+            <Select
+              value={uploadCategory}
+              onValueChange={setUploadCategory}
+            >
+              <SelectTrigger className="w-[140px] text-xs h-8">
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tenant-contract">Contratos</SelectItem>
+                <SelectItem value="supply-contract">Suministros</SelectItem>
+                <SelectItem value="insurance">Seguros</SelectItem>
+                <SelectItem value="invoice">Facturas</SelectItem>
+                <SelectItem value="other">Otros</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleFileUploadClick}
+              className="flex items-center gap-1 h-8"
+              disabled={isUploading || uploadCategory === 'all'}
+            >
+              <Upload className="h-4 w-4" />
+              <span>{isUploading ? 'Subiendo...' : 'Subir'}</span>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       
@@ -126,7 +154,7 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
               No hay documentos en esta categoría
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-1 gap-2">
               {filteredDocuments.map(document => (
                 <DocumentCard
                   key={document.id}

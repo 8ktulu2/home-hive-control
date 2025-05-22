@@ -1,5 +1,5 @@
 
-import { Property, InventoryItem } from '@/types/property';
+import { Property, InventoryItem, MonthlyExpense } from '@/types/property';
 import { toast } from 'sonner';
 
 export function useInventoryManagement(property: Property | null, setProperty: (property: Property | null) => void) {
@@ -14,6 +14,32 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         ...property,
         inventory: [...(property.inventory || []), newItem]
       };
+      
+      // Add as expense if there's a price
+      if (item.price && item.price > 0) {
+        const newExpense: MonthlyExpense = {
+          id: `expense-${Date.now()}`,
+          name: `Compra: ${item.name}`,
+          amount: item.price,
+          isPaid: true,
+          category: 'compra',
+          propertyId: property.id,
+          month: new Date().getMonth(),
+          year: new Date().getFullYear(),
+          date: new Date().toISOString(),
+          paymentDate: new Date().toISOString(),
+        };
+        
+        // Update expenses and net income
+        const newTotalExpenses = property.expenses + newExpense.amount;
+        const newNetIncome = property.rent - newTotalExpenses;
+        
+        updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
+        updatedProperty.expenses = newTotalExpenses;
+        updatedProperty.netIncome = newNetIncome;
+        
+        toast.success(`Se añadió el gasto de ${item.price}€ por la compra de ${item.name}`);
+      }
       
       setProperty(updatedProperty);
       

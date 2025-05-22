@@ -20,6 +20,7 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
     type: 'furniture',
     name: '',
     condition: 'good',
+    price: 0,
     notes: ''
   });
 
@@ -31,6 +32,7 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
         type: 'furniture',
         name: '',
         condition: 'good',
+        price: 0,
         notes: ''
       });
     }
@@ -42,6 +44,7 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
       type: 'furniture',
       name: '',
       condition: 'good',
+      price: 0,
       notes: ''
     });
   };
@@ -91,6 +94,20 @@ const InventoryDialog = ({ isOpen, onClose, onSave, initialItem }: InventoryDial
               className="col-span-3"
               value={newItem.name}
               onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+            />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="item-price" className="text-right">
+              Precio
+            </Label>
+            <Input
+              id="item-price"
+              type="number"
+              placeholder="Precio de adquisición"
+              className="col-span-3"
+              value={newItem.price !== undefined ? newItem.price : ''}
+              onChange={(e) => setNewItem({...newItem, price: parseFloat(e.target.value) || 0})}
             />
           </div>
           
