@@ -7,6 +7,8 @@ import { useState } from 'react';
 import TenantDialog from './dialogs/TenantDialog';
 import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
+import InventoryDialog from './dialogs/InventoryDialog';
+import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 
 interface PropertyInfoProps {
   property: Property;
@@ -14,6 +16,7 @@ interface PropertyInfoProps {
 
 const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
   const [activeTab, setActiveTab] = useState('general');
+  const [property, setProperty] = useState(initialProperty);
   
   const {
     selectedTenant,
@@ -29,6 +32,15 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
     handleEditInventoryItemClick
   } = usePropertyInfoDialogs();
 
+  const { 
+    handleAddInventoryItem, 
+    handleDeleteInventoryItem, 
+    handleEditInventoryItem 
+  } = useInventoryManagement(property, (updatedProperty) => {
+    setProperty(updatedProperty);
+    // Propagate changes to parent components if needed
+  });
+
   const handleAddInventoryClick = () => {
     handleInventoryDialogOpen();
   };
@@ -37,8 +49,16 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
     handleEditInventoryItemClick(item);
   };
 
-  const handleDeleteInventoryItem = (itemId: string) => {
-    // Handle deleting inventory item in the future
+  const handleInventorySave = (item: Omit<InventoryItem, 'id'>) => {
+    if (editingInventoryItem) {
+      handleEditInventoryItem({
+        ...item,
+        id: editingInventoryItem.id
+      });
+    } else {
+      handleAddInventoryItem(item);
+    }
+    handleInventoryDialogClose();
   };
 
   const handleCloseContactDialog = () => {
@@ -59,7 +79,7 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
       </CardHeader>
       <CardContent className="p-4">
         <PropertyInfoTabs 
-          property={initialProperty} 
+          property={property} 
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onTenantClick={handleTenantClick}
@@ -83,6 +103,13 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
             details={selectedContact.details}
           />
         )}
+
+        <InventoryDialog
+          isOpen={isInventoryDialogOpen}
+          onClose={handleInventoryDialogClose}
+          onSave={handleInventorySave}
+          initialItem={editingInventoryItem}
+        />
       </CardContent>
     </Card>
   );

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { DocumentCategories } from './document/DocumentCategories';
 import { DocumentCard } from './document/DocumentCard';
-import { PrimaryContract } from './document/PrimaryContract';
 import { useLocation } from 'react-router-dom';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -110,9 +109,6 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
       }, 100);
     }
   }, [location.hash]);
-
-  const tenantContracts = documents.filter(doc => doc.category === 'tenant-contract');
-  const primaryContract = tenantContracts.find(doc => doc.isPrimary) || tenantContracts[0];
   
   const categories = [
     { id: 'all', name: 'Todos', icon: <FileText className="h-4 w-4" /> },
@@ -153,13 +149,6 @@ const PropertyDocuments = ({ documents, onDocumentDelete, onDocumentAdd }: Prope
       </CardHeader>
       
       <CardContent>
-        {primaryContract && (
-          <PrimaryContract 
-            contract={primaryContract} 
-            onDownload={handleDownload}
-          />
-        )}
-
         <DocumentCategories 
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
