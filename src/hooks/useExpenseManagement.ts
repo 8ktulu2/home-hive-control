@@ -1,7 +1,7 @@
 
 import { Property, MonthlyExpense } from '@/types/property';
 import { toast } from 'sonner';
-import { calculateTotalExpenses, calculateExpenseImpact } from '@/utils/expenseCalculations';
+import { calculateTotalExpenses } from '@/utils/expenseCalculations';
 import { savePropertyToStorage } from '@/utils/expenseStorage';
 
 export function useExpenseManagement(
@@ -16,7 +16,7 @@ export function useExpenseManagement(
       name: expense.name || '',
       amount: expense.amount || 0,
       isPaid: expense.isPaid || false,
-      category: expense.category || 'compra',
+      category: expense.category || 'otros',
       propertyId: property.id,
       month: new Date().getMonth(),
       year: new Date().getFullYear(),

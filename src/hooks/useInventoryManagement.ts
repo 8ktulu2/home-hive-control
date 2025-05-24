@@ -19,7 +19,7 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       // Add as expense if there's a price
       if (item.price && item.price > 0) {
         const newExpense: MonthlyExpense = {
-          id: `expense-${Date.now()}`,
+          id: `expense-inventory-${newItem.id}`,
           name: `Compra: ${item.name}`,
           amount: item.price,
           isPaid: false,
@@ -31,8 +31,6 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         };
         
         updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
-        
-        toast.success(`Se añadió el gasto de ${item.price}€ por la compra de ${item.name} (pendiente de pago)`);
       }
       
       // Recalculate total expenses using the utility function
@@ -53,18 +51,33 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         localStorage.setItem('properties', JSON.stringify(updatedProperties));
       }
       
-      toast.success('Elemento añadido al inventario');
+      if (item.price && item.price > 0) {
+        toast.success(`Elemento añadido al inventario y gasto de ${item.price}€ añadido (pendiente de pago)`);
+      } else {
+        toast.success('Elemento añadido al inventario');
+      }
     }
   };
 
   const handleDeleteInventoryItem = (itemId: string) => {
     if (property && property.inventory) {
+      // Find the item being deleted
+      const itemToDelete = property.inventory.find(item => item.id === itemId);
+      
       const updatedInventory = property.inventory.filter(item => item.id !== itemId);
       
-      const updatedProperty = {
+      let updatedProperty = {
         ...property,
         inventory: updatedInventory
       };
+      
+      // Remove associated expense if it exists
+      if (itemToDelete && property.monthlyExpenses) {
+        const associatedExpenseId = `expense-inventory-${itemId}`;
+        updatedProperty.monthlyExpenses = property.monthlyExpenses.filter(
+          expense => expense.id !== associatedExpenseId
+        );
+      }
       
       // Recalculate total expenses
       const newTotalExpenses = calculateTotalExpenses(updatedProperty);
@@ -96,33 +109,52 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         item.id === updatedItem.id ? updatedItem : item
       );
       
-      const updatedProperty = {
+      let updatedProperty = {
         ...property,
         inventory: updatedInventory
       };
       
-      // If the price changed and there's a new price > 0, add a new expense
-      if (originalItem && updatedItem.price && updatedItem.price > 0 && 
-          (!originalItem.price || originalItem.price !== updatedItem.price)) {
-        
-        const priceDifference = updatedItem.price - (originalItem.price || 0);
-        
-        if (priceDifference > 0) {
-          const newExpense: MonthlyExpense = {
-            id: `expense-${Date.now()}`,
-            name: `Actualización inventario: ${updatedItem.name}`,
-            amount: priceDifference,
-            isPaid: false,
-            category: 'compra',
-            propertyId: property.id,
-            month: new Date().getMonth(),
-            year: new Date().getFullYear(),
-            date: new Date().toISOString(),
-          };
+      // Handle expense updates for price changes
+      const associatedExpenseId = `expense-inventory-${updatedItem.id}`;
+      
+      if (originalItem && updatedItem.price && updatedItem.price > 0) {
+        // Update existing expense or create new one
+        if (property.monthlyExpenses) {
+          const existingExpenseIndex = property.monthlyExpenses.findIndex(
+            expense => expense.id === associatedExpenseId
+          );
           
-          updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
-          
-          toast.success(`Se añadió un gasto adicional de ${priceDifference}€ por la actualización de ${updatedItem.name} (pendiente de pago)`);
+          if (existingExpenseIndex >= 0) {
+            // Update existing expense
+            const updatedExpenses = [...property.monthlyExpenses];
+            updatedExpenses[existingExpenseIndex] = {
+              ...updatedExpenses[existingExpenseIndex],
+              name: `Compra: ${updatedItem.name}`,
+              amount: updatedItem.price
+            };
+            updatedProperty.monthlyExpenses = updatedExpenses;
+          } else {
+            // Create new expense
+            const newExpense: MonthlyExpense = {
+              id: associatedExpenseId,
+              name: `Compra: ${updatedItem.name}`,
+              amount: updatedItem.price,
+              isPaid: false,
+              category: 'compra',
+              propertyId: property.id,
+              month: new Date().getMonth(),
+              year: new Date().getFullYear(),
+              date: new Date().toISOString(),
+            };
+            updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
+          }
+        }
+      } else if (!updatedItem.price || updatedItem.price === 0) {
+        // Remove expense if price is 0 or empty
+        if (property.monthlyExpenses) {
+          updatedProperty.monthlyExpenses = property.monthlyExpenses.filter(
+            expense => expense.id !== associatedExpenseId
+          );
         }
       }
       

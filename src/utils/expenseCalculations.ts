@@ -7,17 +7,17 @@ import { Property, MonthlyExpense } from '@/types/property';
 export const calculateTotalExpenses = (propertyToCalculate: Property) => {
   let totalExpenses = 0;
   
-  // Add mortgage payment
+  // Add mortgage payment (always counts as unpaid recurring expense)
   if (propertyToCalculate.mortgage?.monthlyPayment) {
     totalExpenses += propertyToCalculate.mortgage.monthlyPayment;
   }
   
-  // Add IBI (property tax) divided by 12 for monthly amount
+  // Add IBI (property tax) divided by 12 for monthly amount (always counts as unpaid recurring expense)
   if (propertyToCalculate.ibi) {
     totalExpenses += propertyToCalculate.ibi / 12;
   }
   
-  // Add community fee
+  // Add community fee (always counts as unpaid recurring expense)
   if (propertyToCalculate.communityFee) {
     totalExpenses += propertyToCalculate.communityFee;
   }
@@ -32,7 +32,7 @@ export const calculateTotalExpenses = (propertyToCalculate: Property) => {
     totalExpenses += propertyToCalculate.lifeInsurance.cost / 12;
   }
   
-  // Add unpaid monthly expenses
+  // Add unpaid monthly expenses (including inventory purchases)
   if (propertyToCalculate.monthlyExpenses) {
     propertyToCalculate.monthlyExpenses.forEach(expense => {
       if (!expense.isPaid) {
