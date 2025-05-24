@@ -21,16 +21,15 @@ export function useInventoryManagement(property: Property | null, setProperty: (
           id: `expense-${Date.now()}`,
           name: `Compra: ${item.name}`,
           amount: item.price,
-          isPaid: true,
+          isPaid: false, // Changed to false so it appears as unpaid expense
           category: 'compra',
           propertyId: property.id,
           month: new Date().getMonth(),
           year: new Date().getFullYear(),
           date: new Date().toISOString(),
-          paymentDate: new Date().toISOString(),
         };
         
-        // Update expenses and net income
+        // Update expenses and net income (only if not paid)
         const newTotalExpenses = property.expenses + newExpense.amount;
         const newNetIncome = property.rent - newTotalExpenses;
         
@@ -38,7 +37,7 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         updatedProperty.expenses = newTotalExpenses;
         updatedProperty.netIncome = newNetIncome;
         
-        toast.success(`Se añadió el gasto de ${item.price}€ por la compra de ${item.name}`);
+        toast.success(`Se añadió el gasto de ${item.price}€ por la compra de ${item.name} (pendiente de pago)`);
       }
       
       setProperty(updatedProperty);
@@ -104,16 +103,15 @@ export function useInventoryManagement(property: Property | null, setProperty: (
             id: `expense-${Date.now()}`,
             name: `Actualización inventario: ${updatedItem.name}`,
             amount: priceDifference,
-            isPaid: true,
+            isPaid: false, // Changed to false so it appears as unpaid expense
             category: 'compra',
             propertyId: property.id,
             month: new Date().getMonth(),
             year: new Date().getFullYear(),
             date: new Date().toISOString(),
-            paymentDate: new Date().toISOString(),
           };
           
-          // Update expenses and net income
+          // Update expenses and net income (only add to total since it's unpaid)
           const newTotalExpenses = property.expenses + priceDifference;
           const newNetIncome = property.rent - newTotalExpenses;
           
@@ -121,7 +119,7 @@ export function useInventoryManagement(property: Property | null, setProperty: (
           updatedProperty.expenses = newTotalExpenses;
           updatedProperty.netIncome = newNetIncome;
           
-          toast.success(`Se añadió un gasto adicional de ${priceDifference}€ por la actualización de ${updatedItem.name}`);
+          toast.success(`Se añadió un gasto adicional de ${priceDifference}€ por la actualización de ${updatedItem.name} (pendiente de pago)`);
         }
       }
       
