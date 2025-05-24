@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Card, CardContent } from '@/components/ui/card';
-import KPIBar from '../finances/KPIBar';
 import { ExpenseList } from '../finances/expense-components/ExpenseList';
 import { AddExpenseDialog } from '../finances/AddExpenseDialog';
 
@@ -11,8 +10,6 @@ interface FinancesTabProps {
 }
 
 const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
-  const [showExpenses, setShowExpenses] = useState(false);
-  
   // Necesitamos simular estos manejadores ya que no tenemos la función setProperty aquí
   const handleExpenseAdd = (expense: any) => {
     console.log('Añadiendo gasto:', expense);
@@ -24,43 +21,23 @@ const FinancesTab: React.FC<FinancesTabProps> = ({ property }) => {
     // Esto normalmente sería manejado por useExpenseManagement con setProperty
   };
 
-  // Obtener valores de la propiedad
-  const rent = property.rent || 0;
-  const expenses = property.expenses || 0;
-  const netIncome = property.netIncome || (rent - expenses);
-
-  const handleToggleExpenses = () => {
-    setShowExpenses(!showExpenses);
-  };
-
   return (
     <div className="space-y-4">
-      {/* KPI Bar with toggle functionality */}
-      <KPIBar 
-        rent={rent}
-        expenses={expenses}
-        netIncome={netIncome}
-        onExpensesClick={handleToggleExpenses}
-        showExpenses={showExpenses}
-      />
-      
-      {/* Collapsible Expenses Section */}
-      {showExpenses && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-medium">Desglose de Gastos</h3>
-              <AddExpenseDialog onExpenseAdd={handleExpenseAdd} />
-            </div>
-            
-            <ExpenseList 
-              property={property} 
-              onExpenseUpdate={handleExpenseUpdate} 
-              onlyDetails
-            />
-          </CardContent>
-        </Card>
-      )}
+      {/* Expenses Section */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-medium">Desglose de Gastos</h3>
+            <AddExpenseDialog onExpenseAdd={handleExpenseAdd} />
+          </div>
+          
+          <ExpenseList 
+            property={property} 
+            onExpenseUpdate={handleExpenseUpdate} 
+            onlyDetails
+          />
+        </CardContent>
+      </Card>
       
       {/* Display mortgage information only */}
       {property.mortgage && (

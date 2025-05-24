@@ -82,6 +82,8 @@ export function useInventoryManagement(property: Property | null, setProperty: (
 
   const handleEditInventoryItem = (updatedItem: InventoryItem) => {
     if (property && property.inventory) {
+      const originalItem = property.inventory.find(item => item.id === updatedItem.id);
+      
       const updatedInventory = property.inventory.map(item => 
         item.id === updatedItem.id ? updatedItem : item
       );
@@ -90,6 +92,38 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         ...property,
         inventory: updatedInventory
       };
+      
+      // If the price changed and there's a new price > 0, add a new expense
+      if (originalItem && updatedItem.price && updatedItem.price > 0 && 
+          (!originalItem.price || originalItem.price !== updatedItem.price)) {
+        
+        const priceDifference = updatedItem.price - (originalItem.price || 0);
+        
+        if (priceDifference > 0) {
+          const newExpense: MonthlyExpense = {
+            id: `expense-${Date.now()}`,
+            name: `Actualización inventario: ${updatedItem.name}`,
+            amount: priceDifference,
+            isPaid: true,
+            category: 'compra',
+            propertyId: property.id,
+            month: new Date().getMonth(),
+            year: new Date().getFullYear(),
+            date: new Date().toISOString(),
+            paymentDate: new Date().toISOString(),
+          };
+          
+          // Update expenses and net income
+          const newTotalExpenses = property.expenses + priceDifference;
+          const newNetIncome = property.rent - newTotalExpenses;
+          
+          updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
+          updatedProperty.expenses = newTotalExpenses;
+          updatedProperty.netIncome = newNetIncome;
+          
+          toast.success(`Se añadió un gasto adicional de ${priceDifference}€ por la actualización de ${updatedItem.name}`);
+        }
+      }
       
       setProperty(updatedProperty);
       
