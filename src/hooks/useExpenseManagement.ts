@@ -79,9 +79,40 @@ export function useExpenseManagement(
     }
   };
 
+  const handleExpenseDelete = (expenseId: string) => {
+    if (!property || !property.monthlyExpenses) return;
+
+    // Find the expense to be deleted
+    const expenseToDelete = property.monthlyExpenses.find(e => e.id === expenseId);
+    if (!expenseToDelete) return;
+
+    // Filter out the deleted expense
+    const updatedExpenses = property.monthlyExpenses.filter(e => e.id !== expenseId);
+    
+    const updatedProperty = {
+      ...property,
+      monthlyExpenses: updatedExpenses
+    };
+    
+    // Recalculate total expenses using the utility function
+    const newTotalExpenses = calculateTotalExpenses(updatedProperty);
+    const newNetIncome = updatedProperty.rent - newTotalExpenses;
+    
+    updatedProperty.expenses = newTotalExpenses;
+    updatedProperty.netIncome = newNetIncome;
+    
+    setProperty(updatedProperty);
+    
+    // Save to localStorage
+    if (savePropertyToStorage(updatedProperty)) {
+      toast.success('Gasto eliminado correctamente', { duration: 2000 });
+    }
+  };
+
   return {
     handleExpenseAdd,
     handleExpenseUpdate,
+    handleExpenseDelete,
     calculateTotalExpenses
   };
 }

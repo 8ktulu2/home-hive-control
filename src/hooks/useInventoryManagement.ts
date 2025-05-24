@@ -2,6 +2,7 @@
 import { Property, InventoryItem, MonthlyExpense } from '@/types/property';
 import { toast } from 'sonner';
 import { calculateTotalExpenses } from '@/utils/expenseCalculations';
+import { savePropertyToStorage } from '@/utils/expenseStorage';
 
 export function useInventoryManagement(property: Property | null, setProperty: (property: Property | null) => void) {
   const handleAddInventoryItem = (item: Omit<InventoryItem, 'id'>) => {
@@ -42,19 +43,13 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       
       setProperty(updatedProperty);
       
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: Property) => 
-          p.id === property.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
-      }
-      
-      if (item.price && item.price > 0) {
-        toast.success(`Elemento añadido al inventario y gasto de ${item.price}€ añadido (pendiente de pago)`);
-      } else {
-        toast.success('Elemento añadido al inventario');
+      // Save to localStorage
+      if (savePropertyToStorage(updatedProperty)) {
+        if (item.price && item.price > 0) {
+          toast.success(`Elemento añadido al inventario y gasto de ${item.price}€ añadido (pendiente de pago)`);
+        } else {
+          toast.success('Elemento añadido al inventario');
+        }
       }
     }
   };
@@ -88,16 +83,10 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       
       setProperty(updatedProperty);
       
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: Property) => 
-          p.id === property.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      // Save to localStorage
+      if (savePropertyToStorage(updatedProperty)) {
+        toast.success('Elemento eliminado del inventario');
       }
-      
-      toast.success('Elemento eliminado del inventario');
     }
   };
 
@@ -167,16 +156,10 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       
       setProperty(updatedProperty);
       
-      const savedProperties = localStorage.getItem('properties');
-      if (savedProperties) {
-        const properties = JSON.parse(savedProperties);
-        const updatedProperties = properties.map((p: Property) => 
-          p.id === property.id ? updatedProperty : p
-        );
-        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      // Save to localStorage
+      if (savePropertyToStorage(updatedProperty)) {
+        toast.success('Elemento actualizado en el inventario');
       }
-      
-      toast.success('Elemento actualizado en el inventario');
     }
   };
 

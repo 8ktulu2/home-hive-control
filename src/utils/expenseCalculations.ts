@@ -32,7 +32,7 @@ export const calculateTotalExpenses = (propertyToCalculate: Property) => {
     totalExpenses += propertyToCalculate.lifeInsurance.cost / 12;
   }
   
-  // Add unpaid monthly expenses (including inventory purchases)
+  // Add ONLY unpaid monthly expenses (including inventory purchases)
   if (propertyToCalculate.monthlyExpenses) {
     propertyToCalculate.monthlyExpenses.forEach(expense => {
       if (!expense.isPaid) {
@@ -65,8 +65,8 @@ export const calculateExpenseImpact = (
     }
   }
   
-  // Handle amount change for unpaid expenses
-  if (updates.amount !== undefined && !expense.isPaid) {
+  // Handle amount change for unpaid expenses only
+  if (updates.amount !== undefined && !expense.isPaid && !updates.isPaid) {
     const amountDifference = updates.amount - expense.amount;
     expenseDifference += amountDifference;
   }
