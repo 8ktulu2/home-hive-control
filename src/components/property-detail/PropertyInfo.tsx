@@ -45,7 +45,7 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
     handleInventoryDialogOpen();
   };
 
-  const handleEditInventoryItem = (item: InventoryItem) => {
+  const handleEditInventoryClick = (item: InventoryItem) => {
     handleEditInventoryItemClick(item);
   };
 
@@ -85,7 +85,7 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
           onTenantClick={handleTenantClick}
           onContactClick={handleContactClick}
           onAddInventoryClick={handleAddInventoryClick}
-          onEditInventoryItem={handleEditInventoryItem}
+          onEditInventoryItem={handleEditInventoryClick}
           onDeleteInventoryItem={handleDeleteInventoryItem}
         />
 
