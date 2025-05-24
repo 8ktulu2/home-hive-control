@@ -1,6 +1,7 @@
 
 import { Property, InventoryItem, MonthlyExpense } from '@/types/property';
 import { toast } from 'sonner';
+import { calculateTotalExpenses } from '@/utils/expenseCalculations';
 
 export function useInventoryManagement(property: Property | null, setProperty: (property: Property | null) => void) {
   const handleAddInventoryItem = (item: Omit<InventoryItem, 'id'>) => {
@@ -21,7 +22,7 @@ export function useInventoryManagement(property: Property | null, setProperty: (
           id: `expense-${Date.now()}`,
           name: `Compra: ${item.name}`,
           amount: item.price,
-          isPaid: false, // Changed to false so it appears as unpaid expense
+          isPaid: false,
           category: 'compra',
           propertyId: property.id,
           month: new Date().getMonth(),
@@ -29,16 +30,17 @@ export function useInventoryManagement(property: Property | null, setProperty: (
           date: new Date().toISOString(),
         };
         
-        // Update expenses and net income (only if not paid)
-        const newTotalExpenses = property.expenses + newExpense.amount;
-        const newNetIncome = property.rent - newTotalExpenses;
-        
         updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
-        updatedProperty.expenses = newTotalExpenses;
-        updatedProperty.netIncome = newNetIncome;
         
         toast.success(`Se añadió el gasto de ${item.price}€ por la compra de ${item.name} (pendiente de pago)`);
       }
+      
+      // Recalculate total expenses using the utility function
+      const newTotalExpenses = calculateTotalExpenses(updatedProperty);
+      const newNetIncome = updatedProperty.rent - newTotalExpenses;
+      
+      updatedProperty.expenses = newTotalExpenses;
+      updatedProperty.netIncome = newNetIncome;
       
       setProperty(updatedProperty);
       
@@ -63,6 +65,13 @@ export function useInventoryManagement(property: Property | null, setProperty: (
         ...property,
         inventory: updatedInventory
       };
+      
+      // Recalculate total expenses
+      const newTotalExpenses = calculateTotalExpenses(updatedProperty);
+      const newNetIncome = updatedProperty.rent - newTotalExpenses;
+      
+      updatedProperty.expenses = newTotalExpenses;
+      updatedProperty.netIncome = newNetIncome;
       
       setProperty(updatedProperty);
       
@@ -103,7 +112,7 @@ export function useInventoryManagement(property: Property | null, setProperty: (
             id: `expense-${Date.now()}`,
             name: `Actualización inventario: ${updatedItem.name}`,
             amount: priceDifference,
-            isPaid: false, // Changed to false so it appears as unpaid expense
+            isPaid: false,
             category: 'compra',
             propertyId: property.id,
             month: new Date().getMonth(),
@@ -111,17 +120,18 @@ export function useInventoryManagement(property: Property | null, setProperty: (
             date: new Date().toISOString(),
           };
           
-          // Update expenses and net income (only add to total since it's unpaid)
-          const newTotalExpenses = property.expenses + priceDifference;
-          const newNetIncome = property.rent - newTotalExpenses;
-          
           updatedProperty.monthlyExpenses = [...(property.monthlyExpenses || []), newExpense];
-          updatedProperty.expenses = newTotalExpenses;
-          updatedProperty.netIncome = newNetIncome;
           
           toast.success(`Se añadió un gasto adicional de ${priceDifference}€ por la actualización de ${updatedItem.name} (pendiente de pago)`);
         }
       }
+      
+      // Recalculate total expenses using the utility function
+      const newTotalExpenses = calculateTotalExpenses(updatedProperty);
+      const newNetIncome = updatedProperty.rent - newTotalExpenses;
+      
+      updatedProperty.expenses = newTotalExpenses;
+      updatedProperty.netIncome = newNetIncome;
       
       setProperty(updatedProperty);
       

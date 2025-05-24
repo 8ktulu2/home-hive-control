@@ -24,16 +24,17 @@ export function useExpenseManagement(
       paymentDate: expense.paymentDate
     };
     
-    // Only count as expense if not paid
-    const newTotalExpenses = property.expenses + newExpense.amount;
-    const newNetIncome = property.rent - newTotalExpenses;
-    
     const updatedProperty = {
       ...property,
-      monthlyExpenses: [...(property.monthlyExpenses || []), newExpense],
-      expenses: newTotalExpenses,
-      netIncome: newNetIncome
+      monthlyExpenses: [...(property.monthlyExpenses || []), newExpense]
     };
+    
+    // Recalculate total expenses using the utility function
+    const newTotalExpenses = calculateTotalExpenses(updatedProperty);
+    const newNetIncome = updatedProperty.rent - newTotalExpenses;
+    
+    updatedProperty.expenses = newTotalExpenses;
+    updatedProperty.netIncome = newNetIncome;
     
     setProperty(updatedProperty);
     
@@ -49,9 +50,6 @@ export function useExpenseManagement(
     const expense = property.monthlyExpenses.find(e => e.id === expenseId);
     if (!expense) return;
     
-    // Calculate expense impact
-    const expenseDifference = calculateExpenseImpact(expense, updates);
-    
     // Update payment date if needed
     if (updates.isPaid !== undefined) {
       updates.paymentDate = updates.isPaid ? new Date().toISOString() : undefined;
@@ -61,15 +59,17 @@ export function useExpenseManagement(
       expense.id === expenseId ? { ...expense, ...updates } : expense
     );
     
-    const newTotalExpenses = property.expenses + expenseDifference;
-    const newNetIncome = property.rent - newTotalExpenses;
-    
     const updatedProperty = {
       ...property,
-      monthlyExpenses: updatedExpenses,
-      expenses: newTotalExpenses,
-      netIncome: newNetIncome
+      monthlyExpenses: updatedExpenses
     };
+    
+    // Recalculate total expenses using the utility function
+    const newTotalExpenses = calculateTotalExpenses(updatedProperty);
+    const newNetIncome = updatedProperty.rent - newTotalExpenses;
+    
+    updatedProperty.expenses = newTotalExpenses;
+    updatedProperty.netIncome = newNetIncome;
     
     setProperty(updatedProperty);
     

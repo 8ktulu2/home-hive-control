@@ -22,12 +22,12 @@ export const calculateTotalExpenses = (propertyToCalculate: Property) => {
     totalExpenses += propertyToCalculate.communityFee;
   }
   
-  // Add home insurance
+  // Add home insurance (monthly amount if not paid)
   if (propertyToCalculate.homeInsurance?.cost && !propertyToCalculate.homeInsurance.isPaid) {
     totalExpenses += propertyToCalculate.homeInsurance.cost / 12;
   }
   
-  // Add life insurance
+  // Add life insurance (monthly amount if not paid)
   if (propertyToCalculate.lifeInsurance?.cost && !propertyToCalculate.lifeInsurance.isPaid) {
     totalExpenses += propertyToCalculate.lifeInsurance.cost / 12;
   }
