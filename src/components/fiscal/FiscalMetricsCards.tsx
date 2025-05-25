@@ -70,53 +70,35 @@ const FiscalMetricsCards: React.FC<FiscalMetricsCardsProps> = ({ fiscalData }) =
       bgColor: "bg-purple-50",
       borderColor: "border-purple-200",
       tooltip: "Rendimiento neto ajustado que se integra en la base imponible general del IRPF para aplicar la escala de gravamen."
-    },
-    {
-      title: "Cuota IRPF Estimada",
-      value: formatCurrency(fiscalData.irpfQuota),
-      icon: Percent,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      borderColor: "border-orange-200",
-      tooltip: "Estimación de la cuota íntegra aplicando el tipo medio del 24%. El tipo real depende de la base imponible total del contribuyente."
-    },
-    {
-      title: "Rentabilidad Fiscal",
-      value: formatPercentage(profitabilityRate),
-      icon: Building,
-      color: profitabilityRate >= 0 ? "text-green-600" : "text-red-600",
-      bgColor: profitabilityRate >= 0 ? "bg-green-50" : "bg-red-50",
-      borderColor: profitabilityRate >= 0 ? "border-green-200" : "border-red-200",
-      tooltip: "Porcentaje de rentabilidad neta sobre ingresos brutos. Indica la eficiencia fiscal de la inversión inmobiliaria."
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
       {metrics.map((metric, index) => (
-        <Card key={index} className={`${metric.bgColor} ${metric.borderColor} border-2`}>
+        <Card key={index} className={`${metric.bgColor} ${metric.borderColor} border-2 h-full`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-700">
+            <CardTitle className="text-sm font-medium text-gray-700 pr-2">
               {metric.title}
             </CardTitle>
-            <div className="flex items-center gap-1">
-              <metric.icon className={`h-5 w-5 ${metric.color}`} />
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <metric.icon className={`h-4 w-4 lg:h-5 lg:w-5 ${metric.color}`} />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                      <HelpCircle className="h-3 w-3 lg:h-4 lg:w-4 text-gray-400" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-sm">
-                    <p>{metric.tooltip}</p>
+                    <p className="text-xs lg:text-sm">{metric.tooltip}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${metric.color}`}>
+            <div className={`text-lg lg:text-2xl font-bold ${metric.color} break-all`}>
               {metric.value}
             </div>
           </CardContent>
