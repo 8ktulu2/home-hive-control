@@ -8,36 +8,47 @@ interface MainPropertyImageProps {
   imageInputRef: RefObject<HTMLInputElement>;
   handleImageUpload: () => void;
   handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onImageClick?: () => void;
 }
 
 const MainPropertyImage = ({ 
   image, 
   imageInputRef, 
   handleImageUpload, 
-  handleImageChange 
+  handleImageChange,
+  onImageClick 
 }: MainPropertyImageProps) => {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative w-full h-48 overflow-hidden rounded-lg border">
-        <img 
-          src={image} 
-          alt="Imagen principal" 
-          className="w-full h-full object-cover"
-        />
+      <div className="relative w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+        {image ? (
+          <img 
+            src={image} 
+            alt="Imagen principal de la propiedad" 
+            className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={onImageClick}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-gray-400 text-sm text-center">Sin imagen</span>
+          </div>
+        )}
       </div>
+      
       <Button 
         type="button" 
         variant="outline" 
         onClick={handleImageUpload}
-        className="w-full flex items-center gap-2"
+        className="flex items-center gap-2"
       >
         <Upload className="h-4 w-4" />
-        <span>Imagen principal</span>
+        <span>Subir imagen principal</span>
       </Button>
+      
       <input 
         ref={imageInputRef}
         type="file" 
-        accept="image/*" 
+        accept="image/*"
         className="hidden" 
         onChange={handleImageChange}
       />

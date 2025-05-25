@@ -8,9 +8,10 @@ interface PropertyImageGalleryProps {
   images: string[];
   onImageAdd: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageDelete: (index: number) => void;
+  onImageClick?: (index: number) => void;
 }
 
-const PropertyImageGallery = ({ images, onImageAdd, onImageDelete }: PropertyImageGalleryProps) => {
+const PropertyImageGallery = ({ images, onImageAdd, onImageDelete, onImageClick }: PropertyImageGalleryProps) => {
   return (
     <div className="mt-4 w-full">
       <ScrollArea className="h-32 w-full rounded-md border">
@@ -20,7 +21,8 @@ const PropertyImageGallery = ({ images, onImageAdd, onImageDelete }: PropertyIma
               <img 
                 src={img} 
                 alt={`Imagen ${index + 1}`} 
-                className="h-full w-full object-cover rounded-md"
+                className="h-full w-full object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => onImageClick?.(index)}
               />
               <Button
                 variant="destructive"

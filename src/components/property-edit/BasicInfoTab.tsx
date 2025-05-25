@@ -5,6 +5,7 @@ import { RefObject, useState, useEffect } from 'react';
 import MainPropertyImage from './image-gallery/MainPropertyImage';
 import PropertyImageGallery from './image-gallery/PropertyImageGallery';
 import PropertyDetails from './details/PropertyDetails';
+import ImageViewer from '../property-detail/image-viewer/ImageViewer';
 
 interface BasicInfoTabProps {
   property: Property;
@@ -22,6 +23,9 @@ const BasicInfoTab = ({
   setProperty 
 }: BasicInfoTabProps) => {
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [initialImageIndex, setInitialImageIndex] = useState(0);
   
   // Inicializar con las imágenes de la propiedad si existen
   useEffect(() => {
@@ -54,6 +58,22 @@ const BasicInfoTab = ({
     });
   };
 
+  const handleMainImageClick = () => {
+    if (property.image) {
+      const allImages = [property.image, ...additionalImages];
+      setViewerImages(allImages);
+      setInitialImageIndex(0);
+      setIsImageViewerOpen(true);
+    }
+  };
+
+  const handleGalleryImageClick = (index: number) => {
+    const allImages = [property.image, ...additionalImages].filter(Boolean);
+    setViewerImages(allImages);
+    setInitialImageIndex(property.image ? index + 1 : index);
+    setIsImageViewerOpen(true);
+  };
+
   return (
     <Card className="overflow-visible">
       <CardHeader>
@@ -67,11 +87,13 @@ const BasicInfoTab = ({
               imageInputRef={imageInputRef}
               handleImageUpload={handleImageUpload}
               handleImageChange={handleImageChange}
+              onImageClick={handleMainImageClick}
             />
             <PropertyImageGallery
               images={additionalImages}
               onImageAdd={handleMultipleImageUpload}
               onImageDelete={handleImageDelete}
+              onImageClick={handleGalleryImageClick}
             />
           </div>
           
@@ -80,6 +102,13 @@ const BasicInfoTab = ({
             setProperty={setProperty}
           />
         </div>
+
+        <ImageViewer
+          isOpen={isImageViewerOpen}
+          onClose={() => setIsImageViewerOpen(false)}
+          images={viewerImages}
+          initialIndex={initialImageIndex}
+        />
       </CardContent>
     </Card>
   );
