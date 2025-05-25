@@ -1,14 +1,15 @@
 
-import { Property } from '@/types/property';
+import { Property, Tenant } from '@/types/property';
 import { Building, MapPin, Ruler, Bed, Bath, Euro } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import ImageGalleryViewer from './ImageGalleryViewer';
 
 interface GeneralInfoTabProps {
   property: Property;
+  onTenantClick?: (tenant: Tenant) => void;
 }
 
-const GeneralInfoTab = ({ property }: GeneralInfoTabProps) => {
+const GeneralInfoTab = ({ property, onTenantClick }: GeneralInfoTabProps) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
