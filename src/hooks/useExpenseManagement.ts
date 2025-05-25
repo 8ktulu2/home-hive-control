@@ -38,8 +38,14 @@ export function useExpenseManagement(
     
     setProperty(updatedProperty);
     
-    // Save to localStorage
+    // Save to localStorage and trigger updates
     if (savePropertyToStorage(updatedProperty)) {
+      // Trigger a storage event to update other components
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'properties',
+        newValue: JSON.stringify([updatedProperty])
+      }));
+      
       toast.success('Gasto añadido correctamente', { duration: 2000 });
     }
   };
@@ -73,8 +79,14 @@ export function useExpenseManagement(
     
     setProperty(updatedProperty);
     
-    // Save to localStorage
+    // Save to localStorage and trigger updates
     if (savePropertyToStorage(updatedProperty)) {
+      // Trigger a storage event to update other components
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'properties',
+        newValue: JSON.stringify([updatedProperty])
+      }));
+      
       toast.success('Gasto actualizado correctamente', { duration: 2000 });
     }
   };
@@ -86,13 +98,24 @@ export function useExpenseManagement(
     const expenseToDelete = property.monthlyExpenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
+    // Check if it's an inventory-related expense
+    const isInventoryExpense = expenseId.startsWith('expense-inventory-');
+    let updatedProperty = { ...property };
+
+    if (isInventoryExpense) {
+      // Extract inventory item ID from expense ID
+      const inventoryId = expenseId.replace('expense-inventory-', '');
+      
+      // Remove the inventory item as well
+      if (property.inventory) {
+        updatedProperty.inventory = property.inventory.filter(item => item.id !== inventoryId);
+        console.log(`Eliminando elemento de inventario asociado: ${inventoryId}`);
+      }
+    }
+
     // Filter out the deleted expense
     const updatedExpenses = property.monthlyExpenses.filter(e => e.id !== expenseId);
-    
-    const updatedProperty = {
-      ...property,
-      monthlyExpenses: updatedExpenses
-    };
+    updatedProperty.monthlyExpenses = updatedExpenses;
     
     // Recalculate total expenses using the utility function
     const newTotalExpenses = calculateTotalExpenses(updatedProperty);
@@ -103,9 +126,19 @@ export function useExpenseManagement(
     
     setProperty(updatedProperty);
     
-    // Save to localStorage
+    // Save to localStorage and trigger updates
     if (savePropertyToStorage(updatedProperty)) {
-      toast.success('Gasto eliminado correctamente', { duration: 2000 });
+      // Trigger a storage event to update other components
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'properties',
+        newValue: JSON.stringify([updatedProperty])
+      }));
+      
+      if (isInventoryExpense) {
+        toast.success('Gasto e inventario eliminados correctamente', { duration: 2000 });
+      } else {
+        toast.success('Gasto eliminado correctamente', { duration: 2000 });
+      }
     }
   };
 

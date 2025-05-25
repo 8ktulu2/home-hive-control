@@ -43,8 +43,14 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       
       setProperty(updatedProperty);
       
-      // Save to localStorage
+      // Save to localStorage and update other components
       if (savePropertyToStorage(updatedProperty)) {
+        // Trigger a storage event to update other components
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'properties',
+          newValue: JSON.stringify([updatedProperty])
+        }));
+        
         if (item.price && item.price > 0) {
           toast.success(`Elemento añadido al inventario y gasto de ${item.price}€ añadido (pendiente de pago)`);
         } else {
@@ -69,9 +75,15 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       // Remove associated expense if it exists
       if (itemToDelete && property.monthlyExpenses) {
         const associatedExpenseId = `expense-inventory-${itemId}`;
-        updatedProperty.monthlyExpenses = property.monthlyExpenses.filter(
-          expense => expense.id !== associatedExpenseId
-        );
+        const expenseExists = property.monthlyExpenses.find(exp => exp.id === associatedExpenseId);
+        
+        if (expenseExists) {
+          updatedProperty.monthlyExpenses = property.monthlyExpenses.filter(
+            expense => expense.id !== associatedExpenseId
+          );
+          
+          console.log(`Eliminando gasto asociado: ${associatedExpenseId}`);
+        }
       }
       
       // Recalculate total expenses
@@ -83,8 +95,14 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       
       setProperty(updatedProperty);
       
-      // Save to localStorage
+      // Save to localStorage and trigger updates
       if (savePropertyToStorage(updatedProperty)) {
+        // Trigger a storage event to update other components
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'properties',
+          newValue: JSON.stringify([updatedProperty])
+        }));
+        
         toast.success('Elemento eliminado del inventario');
       }
     }
@@ -156,8 +174,14 @@ export function useInventoryManagement(property: Property | null, setProperty: (
       
       setProperty(updatedProperty);
       
-      // Save to localStorage
+      // Save to localStorage and trigger updates
       if (savePropertyToStorage(updatedProperty)) {
+        // Trigger a storage event to update other components
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'properties',
+          newValue: JSON.stringify([updatedProperty])
+        }));
+        
         toast.success('Elemento actualizado en el inventario');
       }
     }

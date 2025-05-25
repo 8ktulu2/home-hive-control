@@ -3,7 +3,7 @@ import { Property, Tenant, InventoryItem } from '@/types/property';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import PropertyInfoTabs from './property-info/PropertyInfoTabs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TenantDialog from './dialogs/TenantDialog';
 import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
@@ -12,11 +12,17 @@ import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 
 interface PropertyInfoProps {
   property: Property;
+  setProperty: (property: Property) => void;
 }
 
-const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
+const PropertyInfo = ({ property: initialProperty, setProperty }: PropertyInfoProps) => {
   const [activeTab, setActiveTab] = useState('general');
-  const [property, setProperty] = useState(initialProperty);
+  const [property, setLocalProperty] = useState(initialProperty);
+  
+  // Update local property when the prop changes
+  useEffect(() => {
+    setLocalProperty(initialProperty);
+  }, [initialProperty]);
   
   const {
     selectedTenant,
@@ -37,8 +43,8 @@ const PropertyInfo = ({ property: initialProperty }: PropertyInfoProps) => {
     handleDeleteInventoryItem, 
     handleEditInventoryItem 
   } = useInventoryManagement(property, (updatedProperty) => {
+    setLocalProperty(updatedProperty);
     setProperty(updatedProperty);
-    // Propagate changes to parent components if needed
   });
 
   const handleAddInventoryClick = () => {
