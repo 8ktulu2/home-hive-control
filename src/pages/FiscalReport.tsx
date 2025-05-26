@@ -46,7 +46,7 @@ const FiscalReport = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-4 p-4 overflow-x-hidden">
+      <div className="flex flex-col gap-4 p-4 overflow-x-hidden min-h-screen pb-32">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
           <div className="flex items-center gap-3">
@@ -109,11 +109,13 @@ const FiscalReport = () => {
         <FiscalAlerts properties={properties} selectedYear={selectedYear} />
 
         {/* Main Content - Tabs */}
-        <FiscalTabs 
-          properties={properties}
-          selectedYear={selectedYear}
-          fiscalData={fiscalData}
-        />
+        <div className="flex-1">
+          <FiscalTabs 
+            properties={properties}
+            selectedYear={selectedYear}
+            fiscalData={fiscalData}
+          />
+        </div>
 
         {/* Fixed Footer Export Buttons */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40 p-4">

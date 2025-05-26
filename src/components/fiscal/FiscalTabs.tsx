@@ -19,17 +19,17 @@ const FiscalTabs: React.FC<FiscalTabsProps> = ({
   fiscalData
 }) => {
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-hidden">
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-auto mb-4">
-          <TabsTrigger value="summary" className="text-xs sm:text-sm px-2 py-3">
-            Resumen por Propiedad
+          <TabsTrigger value="summary" className="text-xs sm:text-sm px-1 sm:px-2 py-3 leading-tight">
+            <span className="text-center">Resumen por Propiedad</span>
           </TabsTrigger>
-          <TabsTrigger value="expenses" className="text-xs sm:text-sm px-2 py-3">
-            Desglose de Gastos
+          <TabsTrigger value="expenses" className="text-xs sm:text-sm px-1 sm:px-2 py-3 leading-tight">
+            <span className="text-center">Desglose de Gastos</span>
           </TabsTrigger>
-          <TabsTrigger value="declaration" className="text-xs sm:text-sm px-2 py-3">
-            Declaración IRPF
+          <TabsTrigger value="declaration" className="text-xs sm:text-sm px-1 sm:px-2 py-3 leading-tight">
+            <span className="text-center">Declaración IRPF</span>
           </TabsTrigger>
         </TabsList>
 
