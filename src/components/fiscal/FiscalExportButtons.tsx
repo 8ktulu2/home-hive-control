@@ -179,12 +179,19 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
     <>
       {/* Mobile Layout */}
       <div className="flex flex-col sm:hidden space-y-3">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1">
           <Dialog open={showIndividualDialog} onOpenChange={setShowIndividualDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2 h-12 text-sm">
-                <FileText className="h-4 w-4" />
-                PDF Individual
+              <Button 
+                variant="outline" 
+                className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
+              >
+                <FileText className="h-3 w-3 mb-1" />
+                <span className="text-center">
+                  PDF
+                  <br />
+                  Individual
+                </span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -218,30 +225,42 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           <Button 
             onClick={() => handleExportPDF('consolidated')}
             variant="outline"
-            className="flex items-center gap-2 h-12 text-sm"
+            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
           >
-            <FileText className="h-4 w-4" />
-            PDF Consolidado
+            <FileText className="h-3 w-3 mb-1" />
+            <span className="text-center">
+              PDF
+              <br />
+              Consolidado
+            </span>
           </Button>
         </div>
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1">
           <Button 
             onClick={() => handleExportPDF('comparative')}
             variant="outline"
-            className="flex items-center gap-2 h-12 text-sm"
+            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
           >
-            <FileText className="h-4 w-4" />
-            PDF Comparativo
+            <FileText className="h-3 w-3 mb-1" />
+            <span className="text-center">
+              PDF
+              <br />
+              Comparativo
+            </span>
           </Button>
           
           <Button 
             onClick={handleExportExcel}
             variant="outline"
-            className="flex items-center gap-2 h-12 text-sm"
+            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
           >
-            <FileSpreadsheet className="h-4 w-4" />
-            Excel Completo
+            <FileSpreadsheet className="h-3 w-3 mb-1" />
+            <span className="text-center">
+              Excel
+              <br />
+              Completo
+            </span>
           </Button>
         </div>
       </div>
@@ -271,7 +290,7 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+                </Select>
               <Button 
                 onClick={() => handleExportPDF('individual')}
                 className="w-full"
