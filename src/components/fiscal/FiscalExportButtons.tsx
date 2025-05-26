@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { FiscalData } from '@/hooks/useFiscalCalculations';
@@ -188,8 +187,6 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
               >
                 <FileText className="h-3 w-3 mb-1" />
                 <span className="text-center">
-                  PDF
-                  <br />
                   Individual
                 </span>
               </Button>
@@ -229,8 +226,6 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           >
             <FileText className="h-3 w-3 mb-1" />
             <span className="text-center">
-              PDF
-              <br />
               Consolidado
             </span>
           </Button>
@@ -244,8 +239,6 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           >
             <FileText className="h-3 w-3 mb-1" />
             <span className="text-center">
-              PDF
-              <br />
               Comparativo
             </span>
           </Button>
@@ -257,8 +250,6 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           >
             <FileSpreadsheet className="h-3 w-3 mb-1" />
             <span className="text-center">
-              Excel
-              <br />
               Completo
             </span>
           </Button>
@@ -271,7 +262,7 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           <DialogTrigger asChild>
             <Button variant="outline" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              PDF Individual
+              Individual
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -308,7 +299,7 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           className="flex items-center gap-2"
         >
           <FileText className="h-4 w-4" />
-          PDF Consolidado
+          Consolidado
         </Button>
         
         <Button 
@@ -317,7 +308,7 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           className="flex items-center gap-2"
         >
           <FileText className="h-4 w-4" />
-          PDF Comparativo
+          Comparativo
         </Button>
         
         <Button 
@@ -326,7 +317,7 @@ ${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
           className="flex items-center gap-2"
         >
           <FileSpreadsheet className="h-4 w-4" />
-          Excel Completo
+          Completo
         </Button>
       </div>
     </>
