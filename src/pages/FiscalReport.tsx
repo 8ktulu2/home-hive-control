@@ -2,19 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { usePropertyLoader } from '@/hooks/usePropertyLoader';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calculator, HelpCircle, Download } from 'lucide-react';
+import { Calculator, HelpCircle } from 'lucide-react';
 import { mockProperties } from '@/data/mockData';
-import FiscalExecutiveSummary from '@/components/fiscal/FiscalExecutiveSummary';
-import FiscalMetricsCards from '@/components/fiscal/FiscalMetricsCards';
-import FiscalCharts from '@/components/fiscal/FiscalCharts';
-import FiscalDataTables from '@/components/fiscal/FiscalDataTables';
 import FiscalAlerts from '@/components/fiscal/FiscalAlerts';
-import FiscalExportButtons from '@/components/fiscal/FiscalExportButtons';
-import FiscalHeader from '@/components/fiscal/FiscalHeader';
 import FiscalHelpDialog from '@/components/fiscal/FiscalHelpDialog';
+import FiscalExportButtons from '@/components/fiscal/FiscalExportButtons';
+import FiscalTabs from '@/components/fiscal/FiscalTabs';
 import { useFiscalCalculations } from '@/hooks/useFiscalCalculations';
 
 const FiscalReport = () => {
@@ -51,66 +46,78 @@ const FiscalReport = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
-        {/* Fixed Header */}
-        <FiscalHeader 
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-          availableYears={availableYears}
-          properties={properties}
-          selectedPropertyId={selectedPropertyId}
-          setSelectedPropertyId={setSelectedPropertyId}
-          onShowHelp={() => setShowHelpDialog(true)}
-        />
-
-        {/* Main Content - Responsive Grid */}
-        <div className="pt-20 px-4 lg:px-6 pb-6 space-y-6 max-w-7xl mx-auto overflow-x-hidden">
-          {/* Alerts Panel */}
-          <FiscalAlerts properties={properties} selectedYear={selectedYear} />
-
-          {/* Executive Summary + Key Metrics */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Executive Summary - Left Column on Desktop, Full Width on Mobile */}
-            <div className="lg:col-span-4">
-              <FiscalExecutiveSummary fiscalData={fiscalData} selectedYear={selectedYear} />
-            </div>
-            
-            {/* Key Metrics - Right Column on Desktop, Full Width on Mobile */}
-            <div className="lg:col-span-8">
-              <FiscalMetricsCards fiscalData={fiscalData} />
+      <div className="flex flex-col gap-4 p-4 overflow-x-hidden">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
+          <div className="flex items-center gap-3">
+            <Calculator className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Informe Fiscal</h1>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowHelpDialog(true)}
+                className="h-8 w-8 p-0 rounded-full"
+              >
+                <HelpCircle className="h-4 w-4 text-blue-600" />
+              </Button>
             </div>
           </div>
+          
+          {/* Selectors */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Ejercicio:
+              </label>
+              <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Año" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Charts Section - Responsive Tabs */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg lg:text-xl">
-                <Calculator className="h-5 w-5" />
-                Análisis Gráfico
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <FiscalCharts 
-                properties={properties} 
-                selectedYear={selectedYear} 
-                fiscalData={fiscalData} 
-              />
-            </CardContent>
-          </Card>
-
-          {/* Detailed Data Tables - Mobile Optimized */}
-          <div className="lg:block">
-            <FiscalDataTables 
-              properties={properties} 
-              selectedYear={selectedYear} 
-              fiscalData={fiscalData} 
-            />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Propiedad:
+              </label>
+              <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las propiedades</SelectItem>
+                  {properties.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
+        {/* Alerts Panel */}
+        <FiscalAlerts properties={properties} selectedYear={selectedYear} />
+
+        {/* Main Content - Tabs */}
+        <FiscalTabs 
+          properties={properties}
+          selectedYear={selectedYear}
+          fiscalData={fiscalData}
+        />
+
         {/* Fixed Footer Export Buttons */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
-          <div className="max-w-7xl mx-auto p-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40 p-4">
+          <div className="max-w-7xl mx-auto">
             <FiscalExportButtons 
               properties={properties}
               selectedYear={selectedYear}
