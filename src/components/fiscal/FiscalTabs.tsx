@@ -21,15 +21,36 @@ const FiscalTabs: React.FC<FiscalTabsProps> = ({
   return (
     <div className="w-full overflow-x-hidden">
       <Tabs defaultValue="summary" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto mb-4">
-          <TabsTrigger value="summary" className="text-xs sm:text-sm px-1 sm:px-2 py-3 leading-tight">
-            <span className="text-center">Resumen por Propiedad</span>
+        <TabsList className="grid w-full grid-cols-3 h-auto mb-4 p-1">
+          <TabsTrigger 
+            value="summary" 
+            className="text-[10px] sm:text-xs md:text-sm px-1 py-2 leading-tight min-h-[44px] flex items-center justify-center"
+          >
+            <span className="text-center break-words hyphens-auto">
+              Resumen
+              <br className="hidden xs:block" />
+              <span className="hidden xs:inline">por </span>Propiedad
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="expenses" className="text-xs sm:text-sm px-1 sm:px-2 py-3 leading-tight">
-            <span className="text-center">Desglose de Gastos</span>
+          <TabsTrigger 
+            value="expenses" 
+            className="text-[10px] sm:text-xs md:text-sm px-1 py-2 leading-tight min-h-[44px] flex items-center justify-center"
+          >
+            <span className="text-center break-words hyphens-auto">
+              Desglose
+              <br className="hidden xs:block" />
+              <span className="hidden xs:inline">de </span>Gastos
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="declaration" className="text-xs sm:text-sm px-1 sm:px-2 py-3 leading-tight">
-            <span className="text-center">Declaración IRPF</span>
+          <TabsTrigger 
+            value="declaration" 
+            className="text-[10px] sm:text-xs md:text-sm px-1 py-2 leading-tight min-h-[44px] flex items-center justify-center"
+          >
+            <span className="text-center break-words hyphens-auto">
+              Declaración
+              <br className="hidden xs:block" />
+              IRPF
+            </span>
           </TabsTrigger>
         </TabsList>
 
