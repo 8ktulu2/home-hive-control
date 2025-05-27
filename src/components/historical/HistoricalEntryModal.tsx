@@ -57,7 +57,7 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
         type: editingEntry.type,
         amount: editingEntry.amount || 0,
         description: editingEntry.description,
-        category: editingEntry.category || 'rent',
+        category: editingEntry.category || (editingEntry.type === 'income' ? 'rent' : 'ibi'),
         isOccupied: editingEntry.isOccupied || false,
         tenantName: editingEntry.tenantName || ''
       });
@@ -134,7 +134,7 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
       type: formData.type,
       description: formData.description,
       ...(formData.type === 'income' || formData.type === 'expense' ? { amount: formData.amount } : {}),
-      ...(formData.type !== 'occupancy' ? { category: formData.category } : {}),
+      ...(formData.type === 'income' || formData.type === 'expense' ? { category: formData.category } : {}),
       ...(formData.type === 'occupancy' ? { 
         isOccupied: formData.isOccupied,
         tenantName: formData.isOccupied ? formData.tenantName : undefined
@@ -166,6 +166,8 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
     { value: 'deposit', label: 'Fianza' },
     { value: 'other', label: 'Otros Ingresos' }
   ];
+
+  const showCategoryField = formData.type === 'income' || formData.type === 'expense';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -280,21 +282,23 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
                 {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoría</Label>
-                <Select value={formData.category || ''} onValueChange={(value: HistoricalEntry['category']) => setFormData(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(formData.type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {showCategoryField && (
+                <div className="space-y-2">
+                  <Label htmlFor="category">Categoría</Label>
+                  <Select value={formData.category} onValueChange={(value: HistoricalEntry['category']) => setFormData(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(formData.type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </>
           )}
 
