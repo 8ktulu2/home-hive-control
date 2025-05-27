@@ -13,10 +13,10 @@ export const expenseCategories = [
   { value: 'utilities', label: 'Suministros' },
   { value: 'legal', label: 'Gastos Legales' },
   { value: 'other', label: 'Otros' }
-];
+].filter(cat => cat.value && cat.value.trim() !== ''); // Ensure no empty values
 
 export const incomeCategories = [
   { value: 'rent', label: 'Alquiler' },
   { value: 'deposit', label: 'Fianza' },
   { value: 'other', label: 'Otros Ingresos' }
-];
+].filter(cat => cat.value && cat.value.trim() !== ''); // Ensure no empty values

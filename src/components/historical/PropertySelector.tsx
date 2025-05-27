@@ -25,11 +25,13 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
           <SelectValue placeholder="Selecciona una propiedad" />
         </SelectTrigger>
         <SelectContent>
-          {properties.map(property => (
-            <SelectItem key={property.id} value={property.id}>
-              {property.name}
-            </SelectItem>
-          ))}
+          {properties
+            .filter(property => property.id && property.id.trim() !== '') // Filter out invalid properties
+            .map(property => (
+              <SelectItem key={property.id} value={property.id}>
+                {property.name}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       {error && <p className="text-sm text-red-500">{error}</p>}
