@@ -109,7 +109,7 @@ const HistoricalEntriesList: React.FC<HistoricalEntriesListProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Propiedad</label>
-              <Select value={filters.propertyId || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, propertyId: value || undefined }))}>
+              <Select value={filters.propertyId || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, propertyId: value === 'all' ? undefined : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todas las propiedades" />
                 </SelectTrigger>
@@ -132,7 +132,7 @@ const HistoricalEntriesList: React.FC<HistoricalEntriesListProps> = ({
 
             <div>
               <label className="text-sm font-medium mb-1 block">Año</label>
-              <Select value={filters.year?.toString() || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, year: value && value !== 'all' ? parseInt(value) : undefined }))}>
+              <Select value={filters.year?.toString() || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, year: value === 'all' ? undefined : parseInt(value) }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los años" />
                 </SelectTrigger>
@@ -155,7 +155,7 @@ const HistoricalEntriesList: React.FC<HistoricalEntriesListProps> = ({
 
             <div>
               <label className="text-sm font-medium mb-1 block">Tipo</label>
-              <Select value={filters.type || ''} onValueChange={(value: HistoricalEntry['type'] | '') => setFilters(prev => ({ ...prev, type: value && value !== 'all' ? value as HistoricalEntry['type'] : undefined }))}>
+              <Select value={filters.type || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, type: value === 'all' ? undefined : value as HistoricalEntry['type'] }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los tipos" />
                 </SelectTrigger>
