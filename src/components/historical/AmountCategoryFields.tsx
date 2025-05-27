@@ -23,11 +23,14 @@ const AmountCategoryFields: React.FC<AmountCategoryFieldsProps> = ({
   onCategoryChange,
   amountError
 }) => {
-  const showCategoryField = type === 'income' || type === 'expense';
-
   if (type !== 'income' && type !== 'expense') {
     return null;
   }
+
+  const categories = type === 'expense' ? expenseCategories : incomeCategories;
+  
+  // Ensure we have a valid category value, fallback to first category if empty/undefined
+  const validCategory = category && category.trim() !== '' ? category : categories[0]?.value || 'other';
 
   return (
     <>
@@ -43,23 +46,21 @@ const AmountCategoryFields: React.FC<AmountCategoryFieldsProps> = ({
         {amountError && <p className="text-sm text-red-500">{amountError}</p>}
       </div>
 
-      {showCategoryField && (
-        <div className="space-y-2">
-          <Label htmlFor="category">Categoría</Label>
-          <Select value={category} onValueChange={onCategoryChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="category">Categoría</Label>
+        <Select value={validCategory} onValueChange={onCategoryChange}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map(cat => (
+              <SelectItem key={cat.value} value={cat.value || 'other'}>
+                {cat.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </>
   );
 };

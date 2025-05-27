@@ -53,6 +53,8 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
 
   useEffect(() => {
     if (editingEntry) {
+      // Ensure we have valid category values when editing
+      const defaultCategory = editingEntry.type === 'income' ? 'rent' : 'ibi';
       setFormData({
         propertyId: editingEntry.propertyId,
         propertyName: editingEntry.propertyName,
@@ -61,7 +63,7 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
         type: editingEntry.type,
         amount: editingEntry.amount || 0,
         description: editingEntry.description,
-        category: editingEntry.category || (editingEntry.type === 'income' ? 'rent' : 'ibi'),
+        category: editingEntry.category || defaultCategory,
         isOccupied: editingEntry.isOccupied || false,
         tenantName: editingEntry.tenantName || ''
       });
