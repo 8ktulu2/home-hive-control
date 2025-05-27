@@ -1,223 +1,153 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
+import { HistoricalEntry, HistoricalSummary, HistoricalFilters } from '@/types/historical';
 import { Property } from '@/types/property';
-import { PropertyHistoricalData } from '../components/finances/historical/types';
+import { toast } from 'sonner';
 
-export const useHistoricalData = (properties: Property[], selectedYear: number) => {
-  const generateHistoricalData = () => {
-    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    
-    const historicalData: PropertyHistoricalData[] = [];
-    
-    for (const property of properties) {
-      const propertyData: PropertyHistoricalData = {
-        propertyId: property.id,
-        propertyName: property.name,
-        months: []
-      };
-      
-      for (let i = 0; i < months.length; i++) {
-        const month = months[i];
-        const rentAmount = property.rent * (0.9 + Math.random() * 0.2);
-        const wasRented = Math.random() > 0.2; // 80% probabilidad de estar alquilado
-        
-        const expenses = [];
-        
-        // Generate more diverse expenses for better reporting
-        if (Math.random() > 0.5) {
-          expenses.push({
-            id: `exp-${property.id}-${month}-1`,
-            name: 'Comunidad',
-            amount: Math.round(property.rent * 0.1),
-            isPaid: true,
-            category: 'comunidad'
-          });
-        }
-        
-        if (Math.random() > 0.7) {
-          expenses.push({
-            id: `exp-${property.id}-${month}-2`,
-            name: 'Reparación',
-            amount: Math.round(property.rent * 0.15 * (Math.random() + 0.5)),
-            isPaid: true,
-            category: 'reparaciones'
-          });
-        }
-        
-        if (Math.random() > 0.8) {
-          expenses.push({
-            id: `exp-${property.id}-${month}-3`,
-            name: 'IBI (proporcional)',
-            amount: Math.round(property.rent * 0.08),
-            isPaid: true,
-            category: 'impuestos'
-          });
-        }
-        
-        if (Math.random() > 0.85) {
-          expenses.push({
-            id: `exp-${property.id}-${month}-4`,
-            name: 'Seguro hogar',
-            amount: Math.round(property.rent * 0.05),
-            isPaid: true,
-            category: 'seguro'
-          });
-        }
+export const useHistoricalData = () => {
+  const [historicalEntries, setHistoricalEntries] = useState<HistoricalEntry[]>([]);
+  const [loading, setLoading] = useState(false);
 
-        if (Math.random() > 0.9) {
-          expenses.push({
-            id: `exp-${property.id}-${month}-5`,
-            name: 'Agua',
-            amount: Math.round(property.rent * 0.03),
-            isPaid: true,
-            category: 'suministros'
-          });
+  // Cargar datos históricos del localStorage
+  useEffect(() => {
+    const loadHistoricalData = () => {
+      try {
+        const savedData = localStorage.getItem('historicalData');
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          setHistoricalEntries(parsedData);
         }
-        
-        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-        const netIncome = wasRented ? rentAmount - totalExpenses : -totalExpenses;
-        
-        propertyData.months.push({
-          month,
-          wasRented,
-          rentAmount: wasRented ? rentAmount : 0,
-          expenses,
-          totalExpenses,
-          netIncome,
-          date: new Date(selectedYear, i, 1), // Create a date object for the first day of each month
-          notes: wasRented ? 
-            Math.random() > 0.8 ? 'Pago con retraso' : 'Pago recibido puntual' : 
-            'Propiedad vacante'
-        });
+      } catch (error) {
+        console.error('Error loading historical data:', error);
+        toast.error('Error al cargar los datos históricos');
       }
-      
-      historicalData.push(propertyData);
+    };
+
+    loadHistoricalData();
+  }, []);
+
+  // Guardar en localStorage
+  const saveToStorage = (entries: HistoricalEntry[]) => {
+    try {
+      localStorage.setItem('historicalData', JSON.stringify(entries));
+      return true;
+    } catch (error) {
+      console.error('Error saving historical data:', error);
+      toast.error('Error al guardar los datos históricos');
+      return false;
     }
-    
-    return historicalData;
   };
 
-  const historicalData = useMemo(generateHistoricalData, [properties, selectedYear]);
+  // Añadir nueva entrada histórica
+  const addHistoricalEntry = (entry: Omit<HistoricalEntry, 'id' | 'createdAt' | 'updatedAt' | 'isHistorical'>) => {
+    const newEntry: HistoricalEntry = {
+      ...entry,
+      id: `hist-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isHistorical: true
+    };
 
-  // Generate all transactions across all properties for the transaction list view
-  const allTransactions = useMemo(() => {
-    const transactions: any[] = [];
+    const updatedEntries = [...historicalEntries, newEntry];
+    setHistoricalEntries(updatedEntries);
     
-    // Add rent payments
-    historicalData.forEach(property => {
-      property.months.forEach(monthData => {
-        if (monthData.wasRented) {
-          transactions.push({
-            id: `rent-${property.propertyId}-${monthData.month}`,
-            date: monthData.date,
-            propertyId: property.propertyId,
-            propertyName: property.propertyName,
-            type: 'income',
-            category: 'rent',
-            description: `Alquiler ${monthData.month} ${selectedYear}`,
-            amount: monthData.rentAmount,
-            notes: monthData.notes,
-            documents: Math.random() > 0.7 ? ['recibo_alquiler.pdf'] : []
-          });
-        }
-        
-        // Add all expenses as transactions
-        monthData.expenses.forEach(expense => {
-          transactions.push({
-            id: expense.id,
-            date: monthData.date,
-            propertyId: property.propertyId,
-            propertyName: property.propertyName,
-            type: 'expense',
-            category: expense.category || 'otros',
-            description: expense.name,
-            amount: -expense.amount, // Negative for expenses
-            notes: `Gasto ${expense.name} de ${monthData.month}`,
-            documents: Math.random() > 0.8 ? ['factura.pdf'] : []
-          });
-        });
-      });
-    });
-    
-    // Sort by date
-    return transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [historicalData, selectedYear]);
+    if (saveToStorage(updatedEntries)) {
+      toast.success('Registro histórico añadido correctamente');
+      return newEntry;
+    }
+    return null;
+  };
 
-  // Calculate performance metrics for each property
-  const performanceMetrics = useMemo(() => {
-    return historicalData.map(property => {
-      // Calculate totals for this property
-      const totalRent = property.months.reduce((sum, month) => sum + month.rentAmount, 0);
-      const totalExpenses = property.months.reduce((sum, month) => sum + month.totalExpenses, 0);
-      const netIncome = totalRent - totalExpenses;
-      const rentedMonths = property.months.filter(month => month.wasRented).length;
-      const occupancyRate = (rentedMonths / property.months.length) * 100;
-      
-      // Property value estimation (mock data)
-      const estimatedValue = property.months[0].rentAmount * 12 * (10 + Math.random() * 5);
-      
-      // Calculate all metrics
-      const capRate = (netIncome / estimatedValue) * 100;
-      const cashOnCash = (netIncome / (estimatedValue * 0.3)) * 100; // Assuming 30% down payment
-      const expenseRatio = (totalExpenses / totalRent) * 100;
-      const grossYield = (totalRent / estimatedValue) * 100;
-      
-      return {
-        propertyId: property.propertyId,
-        propertyName: property.propertyName,
-        occupancyRate,
-        vacancyRate: 100 - occupancyRate,
-        grossRentalIncome: totalRent,
-        totalExpenses,
-        netOperatingIncome: netIncome,
-        estimatedValue,
-        capRate,
-        cashOnCashReturn: cashOnCash,
-        expenseRatio,
-        grossYield
-      };
-    });
-  }, [historicalData]);
-
-  const calculateAnnualTotals = (filteredData: PropertyHistoricalData[]) => {
-    const allMonthsData = filteredData.flatMap(property => 
-      property.months.map(month => ({
-        propertyName: property.propertyName,
-        ...month
-      }))
+  // Actualizar entrada existente
+  const updateHistoricalEntry = (id: string, updates: Partial<HistoricalEntry>) => {
+    const updatedEntries = historicalEntries.map(entry => 
+      entry.id === id 
+        ? { ...entry, ...updates, updatedAt: new Date().toISOString() }
+        : entry
     );
     
-    const totalRent = allMonthsData.reduce((sum, month) => sum + month.rentAmount, 0);
-    const totalExpenses = allMonthsData.reduce((sum, month) => sum + month.totalExpenses, 0);
-    const totalProfit = totalRent - totalExpenses;
-    const rentedMonths = allMonthsData.filter(month => month.wasRented).length;
-    const vacantMonths = allMonthsData.length - rentedMonths;
-    const occupancyRate = (rentedMonths / allMonthsData.length) * 100;
+    setHistoricalEntries(updatedEntries);
     
-    // Calculate expense breakdown by category
-    const expensesByCategory = allMonthsData.flatMap(month => month.expenses)
-      .reduce((acc, expense) => {
-        const category = expense.category || 'otros';
-        acc[category] = (acc[category] || 0) + expense.amount;
-        return acc;
-      }, {} as Record<string, number>);
+    if (saveToStorage(updatedEntries)) {
+      toast.success('Registro histórico actualizado');
+      return true;
+    }
+    return false;
+  };
+
+  // Eliminar entrada
+  const deleteHistoricalEntry = (id: string) => {
+    const updatedEntries = historicalEntries.filter(entry => entry.id !== id);
+    setHistoricalEntries(updatedEntries);
     
+    if (saveToStorage(updatedEntries)) {
+      toast.success('Registro histórico eliminado');
+      return true;
+    }
+    return false;
+  };
+
+  // Filtrar entradas
+  const getFilteredEntries = (filters: HistoricalFilters): HistoricalEntry[] => {
+    return historicalEntries.filter(entry => {
+      if (filters.propertyId && entry.propertyId !== filters.propertyId) return false;
+      if (filters.year && entry.year !== filters.year) return false;
+      if (filters.type && entry.type !== filters.type) return false;
+      if (filters.category && entry.category !== filters.category) return false;
+      return true;
+    });
+  };
+
+  // Generar resumen anual por propiedad
+  const getAnnualSummary = (propertyId: string, year: number): HistoricalSummary | null => {
+    const entries = getFilteredEntries({ propertyId, year });
+    if (entries.length === 0) return null;
+
+    const property = entries[0];
+    const months = Array.from({ length: 12 }, (_, month) => {
+      const monthEntries = entries.filter(e => e.month === month);
+      const income = monthEntries
+        .filter(e => e.type === 'income')
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      const expenses = monthEntries
+        .filter(e => e.type === 'expense')
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      const occupancyEntry = monthEntries.find(e => e.type === 'occupancy');
+      const incidents = monthEntries.filter(e => e.type === 'incident').length;
+
+      return {
+        month,
+        income,
+        expenses,
+        isOccupied: occupancyEntry?.isOccupied || false,
+        tenantName: occupancyEntry?.tenantName,
+        incidentsCount: incidents
+      };
+    });
+
+    const totalIncome = months.reduce((sum, m) => sum + m.income, 0);
+    const totalExpenses = months.reduce((sum, m) => sum + m.expenses, 0);
+    const occupiedMonths = months.filter(m => m.isOccupied).length;
+
     return {
-      totalRent,
+      propertyId,
+      propertyName: property.propertyName,
+      year,
+      totalIncome,
       totalExpenses,
-      totalProfit,
-      rentedMonths,
-      vacantMonths,
-      occupancyRate,
-      expensesByCategory
+      netProfit: totalIncome - totalExpenses,
+      occupancyRate: (occupiedMonths / 12) * 100,
+      months
     };
   };
-  
+
   return {
-    historicalData,
-    calculateAnnualTotals,
-    allTransactions,
-    performanceMetrics
+    historicalEntries,
+    loading,
+    addHistoricalEntry,
+    updateHistoricalEntry,
+    deleteHistoricalEntry,
+    getFilteredEntries,
+    getAnnualSummary
   };
 };
