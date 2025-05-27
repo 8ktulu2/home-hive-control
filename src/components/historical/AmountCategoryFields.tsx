@@ -53,11 +53,15 @@ const AmountCategoryFields: React.FC<AmountCategoryFieldsProps> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {categories.map(cat => (
-              <SelectItem key={cat.value} value={cat.value || 'other'}>
-                {cat.label}
-              </SelectItem>
-            ))}
+            {categories.map(cat => {
+              // Ensure the value is never an empty string
+              const safeValue = cat.value && cat.value.trim() !== '' ? cat.value : 'other';
+              return (
+                <SelectItem key={cat.value || 'other'} value={safeValue}>
+                  {cat.label}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
