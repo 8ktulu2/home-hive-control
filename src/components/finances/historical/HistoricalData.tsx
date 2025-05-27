@@ -10,7 +10,7 @@ import AnnualSummaryCards from './AnnualSummaryCards';
 import ExpensesContent from './ExpensesContent';
 import MonthlyContent from './MonthlyContent';
 import FiscalDetailContent from './FiscalDetailContent';
-import { useHistoricalData } from '@/hooks/useHistoricalData';
+import { useHistoricalData } from './hooks/useHistoricalData';
 import OccupancyTimeline from './OccupancyTimeline';
 import TransactionsTable from './TransactionsTable';
 import FinancialReports from './FinancialReports';
@@ -32,9 +32,7 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
 
   const { 
     historicalData, 
-    calculateAnnualTotals,
-    allTransactions = [], // Provide default values
-    performanceMetrics = [] // Provide default values
+    calculateAnnualTotals
   } = useHistoricalData(properties, selectedYear);
   
   const filteredData = selectedProperty === "all" 
@@ -52,6 +50,51 @@ const HistoricalData = ({ properties, selectedYear, onPreviousYear, onNextYear }
     setIsTransactionModalOpen(false);
     setSelectedTransaction(null);
   };
+
+  // Generate placeholder transactions from historical data
+  const allTransactions = filteredData.flatMap(property => 
+    property.months.flatMap(month => {
+      const transactions = [];
+      if (month.rentAmount > 0) {
+        transactions.push({
+          id: `rent-${property.propertyId}-${month.month}`,
+          type: 'income',
+          amount: month.rentAmount,
+          description: 'Alquiler',
+          date: month.date,
+          propertyName: property.propertyName
+        });
+      }
+      month.expenses.forEach(expense => {
+        transactions.push({
+          id: expense.id,
+          type: 'expense',
+          amount: expense.amount,
+          description: expense.name,
+          date: month.date,
+          propertyName: property.propertyName
+        });
+      });
+      return transactions;
+    })
+  );
+
+  // Generate placeholder performance metrics
+  const performanceMetrics = filteredData.map(property => {
+    const totalIncome = property.months.reduce((sum, month) => sum + month.rentAmount, 0);
+    const totalExpenses = property.months.reduce((sum, month) => sum + month.totalExpenses, 0);
+    const occupiedMonths = property.months.filter(month => month.wasRented).length;
+    
+    return {
+      propertyId: property.propertyId,
+      propertyName: property.propertyName,
+      totalIncome,
+      totalExpenses,
+      netIncome: totalIncome - totalExpenses,
+      occupancyRate: (occupiedMonths / 12) * 100,
+      months: property.months.length
+    };
+  });
 
   return (
     <Card className="bg-[#1A1F2C] text-white rounded-lg overflow-hidden">
