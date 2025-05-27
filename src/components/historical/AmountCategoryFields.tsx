@@ -29,8 +29,16 @@ const AmountCategoryFields: React.FC<AmountCategoryFieldsProps> = ({
 
   const categories = type === 'expense' ? expenseCategories : incomeCategories;
   
-  // Ensure we have a valid category value, fallback to first category if empty/undefined
-  const validCategory = category && category.trim() !== '' ? category : categories[0]?.value || 'other';
+  // Filtrar categorías válidas
+  const validCategories = categories.filter(cat => 
+    cat.value && 
+    cat.value.trim() !== '' && 
+    cat.label && 
+    cat.label.trim() !== ''
+  );
+  
+  // Ensure we have a valid category value, fallback to first valid category if empty/undefined
+  const validCategory = category && category.trim() !== '' ? category : validCategories[0]?.value || 'other';
 
   return (
     <>
@@ -50,18 +58,20 @@ const AmountCategoryFields: React.FC<AmountCategoryFieldsProps> = ({
         <Label htmlFor="category">Categoría</Label>
         <Select value={validCategory} onValueChange={onCategoryChange}>
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Selecciona una categoría" />
           </SelectTrigger>
           <SelectContent>
-            {categories.map(cat => {
-              // Ensure the value is never an empty string
-              const safeValue = cat.value && cat.value.trim() !== '' ? cat.value : 'other';
-              return (
-                <SelectItem key={cat.value || 'other'} value={safeValue}>
+            {validCategories.length > 0 ? (
+              validCategories.map(cat => (
+                <SelectItem key={cat.value} value={cat.value}>
                   {cat.label}
                 </SelectItem>
-              );
-            })}
+              ))
+            ) : (
+              <SelectItem value="other">
+                Otros
+              </SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>

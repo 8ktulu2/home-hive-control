@@ -17,6 +17,14 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
   properties,
   error
 }) => {
+  // Filtrar propiedades válidas
+  const validProperties = properties.filter(property => 
+    property.id && 
+    property.id.trim() !== '' && 
+    property.name && 
+    property.name.trim() !== ''
+  );
+
   return (
     <div className="space-y-2">
       <Label htmlFor="property">Propiedad *</Label>
@@ -25,13 +33,17 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
           <SelectValue placeholder="Selecciona una propiedad" />
         </SelectTrigger>
         <SelectContent>
-          {properties
-            .filter(property => property.id && property.id.trim() !== '') // Filter out invalid properties
-            .map(property => (
+          {validProperties.length > 0 ? (
+            validProperties.map(property => (
               <SelectItem key={property.id} value={property.id}>
                 {property.name}
               </SelectItem>
-            ))}
+            ))
+          ) : (
+            <SelectItem value="no-properties" disabled>
+              No hay propiedades disponibles
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
       {error && <p className="text-sm text-red-500">{error}</p>}

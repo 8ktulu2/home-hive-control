@@ -44,8 +44,18 @@ const HistoricalEntriesList: React.FC<HistoricalEntriesListProps> = ({
     return b.month - a.month;
   });
 
-  // Obtener años únicos
-  const availableYears = [...new Set(entries.map(e => e.year))].sort((a, b) => b - a);
+  // Obtener años únicos y filtrar valores válidos
+  const availableYears = [...new Set(entries.map(e => e.year))]
+    .filter(year => year && !isNaN(year))
+    .sort((a, b) => b - a);
+
+  // Filtrar propiedades válidas
+  const validProperties = properties.filter(property => 
+    property.id && 
+    property.id.trim() !== '' && 
+    property.name && 
+    property.name.trim() !== ''
+  );
 
   const getTypeIcon = (type: HistoricalEntry['type']) => {
     switch (type) {
@@ -101,44 +111,56 @@ const HistoricalEntriesList: React.FC<HistoricalEntriesListProps> = ({
               <label className="text-sm font-medium mb-1 block">Propiedad</label>
               <Select value={filters.propertyId || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, propertyId: value || undefined }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todas" />
+                  <SelectValue placeholder="Todas las propiedades" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas las propiedades</SelectItem>
-                  {properties.map(property => (
-                    <SelectItem key={property.id} value={property.id}>
-                      {property.name}
+                  <SelectItem value="all">Todas las propiedades</SelectItem>
+                  {validProperties.length > 0 ? (
+                    validProperties.map(property => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-properties" disabled>
+                      No hay propiedades disponibles
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <label className="text-sm font-medium mb-1 block">Año</label>
-              <Select value={filters.year?.toString() || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, year: value ? parseInt(value) : undefined }))}>
+              <Select value={filters.year?.toString() || ''} onValueChange={(value) => setFilters(prev => ({ ...prev, year: value && value !== 'all' ? parseInt(value) : undefined }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
+                  <SelectValue placeholder="Todos los años" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los años</SelectItem>
-                  {availableYears.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
+                  <SelectItem value="all">Todos los años</SelectItem>
+                  {availableYears.length > 0 ? (
+                    availableYears.map(year => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-years" disabled>
+                      No hay años disponibles
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <label className="text-sm font-medium mb-1 block">Tipo</label>
-              <Select value={filters.type || ''} onValueChange={(value: HistoricalEntry['type'] | '') => setFilters(prev => ({ ...prev, type: value || undefined }))}>
+              <Select value={filters.type || ''} onValueChange={(value: HistoricalEntry['type'] | '') => setFilters(prev => ({ ...prev, type: value && value !== 'all' ? value as HistoricalEntry['type'] : undefined }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
+                  <SelectValue placeholder="Todos los tipos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los tipos</SelectItem>
+                  <SelectItem value="all">Todos los tipos</SelectItem>
                   <SelectItem value="income">Ingresos</SelectItem>
                   <SelectItem value="expense">Gastos</SelectItem>
                   <SelectItem value="occupancy">Ocupación</SelectItem>
