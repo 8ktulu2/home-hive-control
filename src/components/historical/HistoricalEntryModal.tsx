@@ -88,6 +88,22 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
     }));
   };
 
+  const handleTypeChange = (value: HistoricalEntry['type']) => {
+    // Reset category to appropriate default when type changes
+    let defaultCategory: HistoricalEntry['category'] = 'rent';
+    if (value === 'expense') {
+      defaultCategory = 'ibi';
+    } else if (value === 'income') {
+      defaultCategory = 'rent';
+    }
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      type: value,
+      category: defaultCategory
+    }));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -216,7 +232,7 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
           {/* Tipo de Registro */}
           <div className="space-y-2">
             <Label htmlFor="type">Tipo de Registro</Label>
-            <Select value={formData.type} onValueChange={(value: HistoricalEntry['type']) => setFormData(prev => ({ ...prev, type: value }))}>
+            <Select value={formData.type} onValueChange={handleTypeChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -266,7 +282,7 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
 
               <div className="space-y-2">
                 <Label htmlFor="category">Categoría</Label>
-                <Select value={formData.category} onValueChange={(value: HistoricalEntry['category']) => setFormData(prev => ({ ...prev, category: value }))}>
+                <Select value={formData.category || ''} onValueChange={(value: HistoricalEntry['category']) => setFormData(prev => ({ ...prev, category: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
