@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, AlertTriangle, Edit3 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import MonthCalendarGrid from './MonthCalendarGrid';
 import { historicalCategories } from './historicalCategories';
@@ -33,14 +33,6 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
   const [selectedProperty, setSelectedProperty] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   const [categoryValues, setCategoryValues] = useState<CategoryValues>({});
-  const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
-
-  const validProperties = properties.filter(property => 
-    property.id && 
-    property.id.trim() !== '' && 
-    property.name && 
-    property.name.trim() !== ''
-  );
 
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
@@ -59,21 +51,29 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
       return;
     }
 
-    const hasData = getMonthData(month).length > 0;
+    const existingDataForMonth = getMonthData(month);
     
-    if (hasData) {
+    if (existingDataForMonth.length > 0) {
       // Mostrar confirmación para sobrescribir
-      if (confirm(`El mes ${getMonthName(month)} ya tiene datos. ¿Quieres sobrescribirlos?`)) {
-        saveDataForMonth(month, true);
+      const shouldOverwrite = confirm(`El mes ${getMonthName(month)} ya tiene datos. ¿Deseas sobrescribirlos?`);
+      if (!shouldOverwrite) {
+        return;
       }
-    } else {
-      saveDataForMonth(month, false);
     }
+
+    saveDataForMonth(month);
   };
 
-  const saveDataForMonth = (month: number, isUpdate: boolean) => {
-    const property = validProperties.find(p => p.id === selectedProperty);
+  const saveDataForMonth = (month: number) => {
+    const property = properties.find(p => p.id === selectedProperty);
     if (!property) return;
+
+    // Verificar que hay al menos un valor
+    const hasAnyValue = Object.values(categoryValues).some(value => value > 0);
+    if (!hasAnyValue) {
+      toast.error('Introduce al menos un valor para guardar');
+      return;
+    }
 
     const entries: Array<Omit<HistoricalEntry, 'id' | 'createdAt' | 'updatedAt' | 'isHistorical'>> = [];
 
@@ -94,26 +94,18 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
       }
     });
 
-    if (entries.length === 0) {
-      toast.error('Introduce al menos un valor para guardar');
-      return;
-    }
-
-    // Si es actualización, eliminar entradas existentes primero
-    if (isUpdate) {
-      const existingForMonth = getMonthData(month);
-      existingForMonth.forEach(entry => {
-        // Aquí necesitaríamos una función de eliminación, por simplicidad solo guardamos
-      });
-    }
-
     // Guardar todas las entradas
     entries.forEach(entry => {
       onSaveData(entry);
     });
 
-    const totalSaved = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
-    toast.success(`Datos guardados para ${getMonthName(month)}: ${formatCurrency(totalSaved)}`);
+    const totalAmount = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
+    const incomeTotal = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + (e.amount || 0), 0);
+    const expenseTotal = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+    toast.success(
+      `Datos guardados para ${getMonthName(month)}: +${formatCurrency(incomeTotal)} / -${formatCurrency(expenseTotal)}`
+    );
   };
 
   const getMonthData = (month: number): HistoricalEntry[] => {
@@ -136,11 +128,9 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
   };
 
-  const getMonthStatus = (month: number): 'empty' | 'hasData' | 'selected' => {
+  const getMonthStatus = (month: number): 'empty' | 'hasData' => {
     const hasData = getMonthData(month).length > 0;
-    if (selectedMonths.includes(month)) return 'selected';
-    if (hasData) return 'hasData';
-    return 'empty';
+    return hasData ? 'hasData' : 'empty';
   };
 
   return (
@@ -159,8 +149,8 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
                   <SelectValue placeholder="Selecciona una propiedad" />
                 </SelectTrigger>
                 <SelectContent>
-                  {validProperties.length > 0 ? (
-                    validProperties.map(property => (
+                  {properties.length > 0 ? (
+                    properties.map(property => (
                       <SelectItem key={property.id} value={property.id}>
                         {property.name}
                       </SelectItem>
@@ -193,87 +183,98 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna de categorías editables */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Valores por Categoría</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Introduce los valores que se aplicarán a los meses seleccionados
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {historicalCategories.map(category => (
-                <div key={category.key} className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <span className={category.type === 'income' ? 'text-green-600' : 'text-red-600'}>
-                      {category.icon}
-                    </span>
-                    {category.label}
-                  </Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={categoryValues[category.key] || ''}
-                    onChange={(e) => handleCategoryChange(category.key, e.target.value)}
-                    placeholder="0.00"
-                    className="text-right"
-                  />
-                </div>
-              ))}
-              
-              <div className="pt-4 border-t">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Total:</span>
-                  <span className="font-bold text-lg">
-                    {formatCurrency(Object.values(categoryValues).reduce((sum, val) => sum + (val || 0), 0))}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      {!selectedProperty && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Selecciona una propiedad para comenzar a introducir datos históricos.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        {/* Calendario de meses */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Calendario {selectedYear}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Haz clic en los meses para aplicar los valores introducidos
-              </p>
-            </CardHeader>
-            <CardContent>
-              <MonthCalendarGrid
-                year={selectedYear}
-                onMonthClick={handleMonthClick}
-                getMonthStatus={getMonthStatus}
-                getMonthData={getMonthData}
-                formatCurrency={formatCurrency}
-                selectedProperty={selectedProperty}
-              />
-              
-              {/* Leyenda */}
-              <div className="mt-6 flex flex-wrap gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-gray-100 border rounded"></div>
-                  <span>Sin datos</span>
+      {selectedProperty && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Columna de categorías editables */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Valores de Categorías</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Introduce los valores y haz clic en un mes para guardar
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {historicalCategories.map(category => (
+                  <div key={category.key} className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <span className={category.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                        {category.icon}
+                      </span>
+                      {category.label}
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={categoryValues[category.key] || ''}
+                      onChange={(e) => handleCategoryChange(category.key, e.target.value)}
+                      placeholder="0.00"
+                      className="text-right"
+                    />
+                  </div>
+                ))}
+                
+                <div className="pt-4 border-t">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-green-600">Ingresos:</span>
+                      <span className="font-medium">
+                        {formatCurrency(
+                          historicalCategories
+                            .filter(cat => cat.type === 'income')
+                            .reduce((sum, cat) => sum + (categoryValues[cat.key] || 0), 0)
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-red-600">Gastos:</span>
+                      <span className="font-medium">
+                        {formatCurrency(
+                          historicalCategories
+                            .filter(cat => cat.type === 'expense')
+                            .reduce((sum, cat) => sum + (categoryValues[cat.key] || 0), 0)
+                        )}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-                  <span>Con datos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                  <span>Recién guardado</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Calendario de meses */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Calendario {selectedYear}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Haz clic en un mes para aplicar los valores introducidos
+                </p>
+              </CardHeader>
+              <CardContent>
+                <MonthCalendarGrid
+                  year={selectedYear}
+                  onMonthClick={handleMonthClick}
+                  getMonthStatus={getMonthStatus}
+                  getMonthData={getMonthData}
+                  formatCurrency={formatCurrency}
+                  selectedProperty={selectedProperty}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -39,18 +39,18 @@ export const historicalCategories: HistoricalCategory[] = [
     icon: '📄'
   },
   {
-    key: 'homeInsurance',
-    label: 'Seguro de hogar',
-    type: 'expense',
-    category: 'insurance',
-    icon: '🛡️'
-  },
-  {
     key: 'lifeInsurance',
-    label: 'Seguro de vida',
+    label: 'Seguro de Vida',
     type: 'expense',
     category: 'insurance',
     icon: '💼'
+  },
+  {
+    key: 'homeInsurance',
+    label: 'Seguro de Hogar',
+    type: 'expense',
+    category: 'insurance',
+    icon: '🛡️'
   },
   {
     key: 'purchases',
@@ -72,12 +72,5 @@ export const historicalCategories: HistoricalCategory[] = [
     type: 'expense',
     category: 'utilities',
     icon: '⚡'
-  },
-  {
-    key: 'other',
-    label: 'Otros',
-    type: 'expense',
-    category: 'other',
-    icon: '📝'
   }
 ];
