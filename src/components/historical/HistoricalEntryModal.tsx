@@ -10,12 +10,16 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { History, Calendar, Euro, FileText } from 'lucide-react';
+import { History } from 'lucide-react';
+import { HistoricalFormData, FormErrors } from './types';
+import { validateHistoricalForm } from './HistoricalFormValidation';
+import PropertySelector from './PropertySelector';
+import DateSelector from './DateSelector';
+import TypeSelector from './TypeSelector';
+import AmountCategoryFields from './AmountCategoryFields';
+import OccupancyFields from './OccupancyFields';
 
 interface HistoricalEntryModalProps {
   isOpen: boolean;
@@ -32,20 +36,20 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
   properties,
   editingEntry
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<HistoricalFormData>({
     propertyId: '',
     propertyName: '',
     year: new Date().getFullYear(),
     month: new Date().getMonth(),
-    type: 'income' as HistoricalEntry['type'],
+    type: 'income',
     amount: 0,
     description: '',
-    category: 'rent' as HistoricalEntry['category'],
+    category: 'rent',
     isOccupied: true,
     tenantName: ''
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     if (editingEntry) {
@@ -62,7 +66,6 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
         tenantName: editingEntry.tenantName || ''
       });
     } else {
-      // Reset form for new entry
       setFormData({
         propertyId: '',
         propertyName: '',
@@ -89,7 +92,6 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
   };
 
   const handleTypeChange = (value: HistoricalEntry['type']) => {
-    // Reset category to appropriate default when type changes
     let defaultCategory: HistoricalEntry['category'] = 'rent';
     if (value === 'expense') {
       defaultCategory = 'ibi';
@@ -104,27 +106,14 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
     }));
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.propertyId) {
-      newErrors.propertyId = 'Selecciona una propiedad';
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = 'La descripción es obligatoria';
-    }
-    if ((formData.type === 'income' || formData.type === 'expense') && formData.amount <= 0) {
-      newErrors.amount = 'El importe debe ser mayor que 0';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    const validationErrors = validateHistoricalForm(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     const entryData: Omit<HistoricalEntry, 'id' | 'createdAt' | 'updatedAt' | 'isHistorical'> = {
       propertyId: formData.propertyId,
@@ -145,29 +134,14 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
     onClose();
   };
 
-  const months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-
-  const expenseCategories = [
-    { value: 'ibi', label: 'IBI' },
-    { value: 'community', label: 'Comunidad' },
-    { value: 'insurance', label: 'Seguros' },
-    { value: 'maintenance', label: 'Mantenimiento' },
-    { value: 'repairs', label: 'Reparaciones' },
-    { value: 'utilities', label: 'Suministros' },
-    { value: 'legal', label: 'Gastos Legales' },
-    { value: 'other', label: 'Otros' }
-  ];
-
-  const incomeCategories = [
-    { value: 'rent', label: 'Alquiler' },
-    { value: 'deposit', label: 'Fianza' },
-    { value: 'other', label: 'Otros Ingresos' }
-  ];
-
-  const showCategoryField = formData.type === 'income' || formData.type === 'expense';
+  const getDescriptionPlaceholder = () => {
+    switch (formData.type) {
+      case 'income': return 'Ej: Alquiler mensual';
+      case 'expense': return 'Ej: Pago IBI anual';
+      case 'occupancy': return 'Ej: Inquilino Juan Pérez';
+      default: return 'Ej: Reparación fontanería';
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -183,164 +157,54 @@ const HistoricalEntryModal: React.FC<HistoricalEntryModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Selector de Propiedad */}
-          <div className="space-y-2">
-            <Label htmlFor="property">Propiedad *</Label>
-            <Select value={formData.propertyId} onValueChange={handlePropertyChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona una propiedad" />
-              </SelectTrigger>
-              <SelectContent>
-                {properties.map(property => (
-                  <SelectItem key={property.id} value={property.id}>
-                    {property.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.propertyId && <p className="text-sm text-red-500">{errors.propertyId}</p>}
-          </div>
+          <PropertySelector
+            value={formData.propertyId}
+            onChange={handlePropertyChange}
+            properties={properties}
+            error={errors.propertyId}
+          />
 
-          {/* Fecha */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="month">Mes</Label>
-              <Select value={formData.month.toString()} onValueChange={(value) => setFormData(prev => ({ ...prev, month: parseInt(value) }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <DateSelector
+            month={formData.month}
+            year={formData.year}
+            onMonthChange={(month) => setFormData(prev => ({ ...prev, month }))}
+            onYearChange={(year) => setFormData(prev => ({ ...prev, year }))}
+          />
 
-            <div className="space-y-2">
-              <Label htmlFor="year">Año</Label>
-              <Input
-                type="number"
-                value={formData.year}
-                onChange={(e) => setFormData(prev => ({ ...prev, year: parseInt(e.target.value) }))}
-                min="2000"
-                max={new Date().getFullYear()}
-              />
-            </div>
-          </div>
+          <TypeSelector
+            value={formData.type}
+            onChange={handleTypeChange}
+          />
 
-          {/* Tipo de Registro */}
-          <div className="space-y-2">
-            <Label htmlFor="type">Tipo de Registro</Label>
-            <Select value={formData.type} onValueChange={handleTypeChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="income">
-                  <div className="flex items-center gap-2">
-                    <Euro className="h-4 w-4 text-green-600" />
-                    Ingreso
-                  </div>
-                </SelectItem>
-                <SelectItem value="expense">
-                  <div className="flex items-center gap-2">
-                    <Euro className="h-4 w-4 text-red-600" />
-                    Gasto
-                  </div>
-                </SelectItem>
-                <SelectItem value="occupancy">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-blue-600" />
-                    Estado de Ocupación
-                  </div>
-                </SelectItem>
-                <SelectItem value="incident">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-orange-600" />
-                    Incidencia
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Campos condicionales según el tipo */}
-          {(formData.type === 'income' || formData.type === 'expense') && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="amount">Importe (€) *</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                  placeholder="0.00"
-                />
-                {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
-              </div>
-
-              {showCategoryField && (
-                <div className="space-y-2">
-                  <Label htmlFor="category">Categoría</Label>
-                  <Select value={formData.category} onValueChange={(value: HistoricalEntry['category']) => setFormData(prev => ({ ...prev, category: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(formData.type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </>
-          )}
+          <AmountCategoryFields
+            type={formData.type}
+            amount={formData.amount}
+            category={formData.category}
+            onAmountChange={(amount) => setFormData(prev => ({ ...prev, amount }))}
+            onCategoryChange={(category) => setFormData(prev => ({ ...prev, category }))}
+            amountError={errors.amount}
+          />
 
           {formData.type === 'occupancy' && (
-            <>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={formData.isOccupied}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isOccupied: checked }))}
-                />
-                <Label>¿Estaba ocupada la propiedad?</Label>
-              </div>
-
-              {formData.isOccupied && (
-                <div className="space-y-2">
-                  <Label htmlFor="tenantName">Nombre del inquilino</Label>
-                  <Input
-                    value={formData.tenantName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, tenantName: e.target.value }))}
-                    placeholder="Nombre del inquilino"
-                  />
-                </div>
-              )}
-            </>
+            <OccupancyFields
+              isOccupied={formData.isOccupied}
+              tenantName={formData.tenantName}
+              onOccupiedChange={(isOccupied) => setFormData(prev => ({ ...prev, isOccupied }))}
+              onTenantNameChange={(tenantName) => setFormData(prev => ({ ...prev, tenantName }))}
+            />
           )}
 
-          {/* Descripción */}
           <div className="space-y-2">
             <Label htmlFor="description">Descripción *</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder={formData.type === 'income' ? 'Ej: Alquiler mensual' : 
-                          formData.type === 'expense' ? 'Ej: Pago IBI anual' :
-                          formData.type === 'occupancy' ? 'Ej: Inquilino Juan Pérez' :
-                          'Ej: Reparación fontanería'}
+              placeholder={getDescriptionPlaceholder()}
               rows={2}
             />
             {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
           </div>
 
-          {/* Botones */}
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
