@@ -8,10 +8,19 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import MonthCalendarGrid from './MonthCalendarGrid';
 import { historicalCategories } from './historicalCategories';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface HistoricalDataInputProps {
   properties: Property[];
@@ -24,18 +33,35 @@ interface CategoryValues {
   [key: string]: number;
 }
 
+interface MonthData {
+  totalIncome: number;
+  totalExpenses: number;
+  categories: CategoryValues;
+}
+
 const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
   properties,
   onSaveData,
-  onUpdateData,
   existingEntries
 }) => {
   const [selectedProperty, setSelectedProperty] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
+  const [selectedYear, setSelectedYear] = useState<number>(2020);
   const [categoryValues, setCategoryValues] = useState<CategoryValues>({});
+  const [monthlyData, setMonthlyData] = useState<{ [month: number]: MonthData }>({});
+  const [showDetails, setShowDetails] = useState<number | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    month: number;
+    monthName: string;
+  }>({ open: false, month: -1, monthName: '' });
 
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
+
+  const months = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
 
   const handleCategoryChange = (category: string, value: string) => {
     const numValue = parseFloat(value) || 0;
@@ -45,43 +71,63 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
     }));
   };
 
+  const calculateTotals = (values: CategoryValues) => {
+    const income = historicalCategories
+      .filter(cat => cat.type === 'income')
+      .reduce((sum, cat) => sum + (values[cat.key] || 0), 0);
+    
+    const expenses = historicalCategories
+      .filter(cat => cat.type === 'expense')
+      .reduce((sum, cat) => sum + (values[cat.key] || 0), 0);
+
+    return { income, expenses };
+  };
+
   const handleMonthClick = (month: number) => {
     if (!selectedProperty) {
       toast.error('Selecciona primero una propiedad');
       return;
     }
 
-    const existingDataForMonth = getMonthData(month);
-    
-    if (existingDataForMonth.length > 0) {
-      // Mostrar confirmación para sobrescribir
-      const shouldOverwrite = confirm(`El mes ${getMonthName(month)} ya tiene datos. ¿Deseas sobrescribirlos?`);
-      if (!shouldOverwrite) {
-        return;
-      }
+    const hasValues = Object.values(categoryValues).some(value => value > 0);
+    if (!hasValues) {
+      toast.error('Introduce al menos un valor antes de guardar');
+      return;
     }
 
-    saveDataForMonth(month);
+    // Check if month already has data
+    if (monthlyData[month]) {
+      setConfirmDialog({
+        open: true,
+        month,
+        monthName: months[month]
+      });
+    } else {
+      saveDataForMonth(month);
+    }
   };
 
   const saveDataForMonth = (month: number) => {
     const property = properties.find(p => p.id === selectedProperty);
     if (!property) return;
 
-    // Verificar que hay al menos un valor
-    const hasAnyValue = Object.values(categoryValues).some(value => value > 0);
-    if (!hasAnyValue) {
-      toast.error('Introduce al menos un valor para guardar');
-      return;
-    }
+    const { income, expenses } = calculateTotals(categoryValues);
 
-    const entries: Array<Omit<HistoricalEntry, 'id' | 'createdAt' | 'updatedAt' | 'isHistorical'>> = [];
+    // Save to monthlyData state
+    setMonthlyData(prev => ({
+      ...prev,
+      [month]: {
+        totalIncome: income,
+        totalExpenses: expenses,
+        categories: { ...categoryValues }
+      }
+    }));
 
-    // Crear entradas para cada categoría con valor > 0
+    // Save individual entries to the backend
     historicalCategories.forEach(category => {
       const value = categoryValues[category.key] || 0;
       if (value > 0) {
-        entries.push({
+        onSaveData({
           propertyId: property.id,
           propertyName: property.name,
           year: selectedYear,
@@ -94,48 +140,25 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
       }
     });
 
-    // Guardar todas las entradas
-    entries.forEach(entry => {
-      onSaveData(entry);
-    });
-
-    const totalAmount = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
-    const incomeTotal = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + (e.amount || 0), 0);
-    const expenseTotal = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + (e.amount || 0), 0);
-    
-    toast.success(
-      `Datos guardados para ${getMonthName(month)}: +${formatCurrency(incomeTotal)} / -${formatCurrency(expenseTotal)}`
-    );
+    toast.success(`Datos guardados para ${months[month]}: +${income.toFixed(2)}€ / -${expenses.toFixed(2)}€`);
   };
 
-  const getMonthData = (month: number): HistoricalEntry[] => {
-    return existingEntries.filter(entry => 
-      entry.propertyId === selectedProperty &&
-      entry.year === selectedYear &&
-      entry.month === month
-    );
-  };
-
-  const getMonthName = (month: number): string => {
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return months[month];
+  const confirmOverwrite = () => {
+    saveDataForMonth(confirmDialog.month);
+    setConfirmDialog({ open: false, month: -1, monthName: '' });
   };
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+    return amount.toFixed(2);
   };
 
-  const getMonthStatus = (month: number): 'empty' | 'hasData' => {
-    const hasData = getMonthData(month).length > 0;
-    return hasData ? 'hasData' : 'empty';
+  const toggleDetails = (month: number) => {
+    setShowDetails(showDetails === month ? null : month);
   };
 
   return (
     <div className="space-y-6">
-      {/* Selectores de propiedad y año */}
+      {/* Configuration */}
       <Card>
         <CardHeader>
           <CardTitle>Configuración</CardTitle>
@@ -194,7 +217,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
 
       {selectedProperty && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Columna de categorías editables */}
+          {/* Categories Column */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
@@ -223,36 +246,11 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
                     />
                   </div>
                 ))}
-                
-                <div className="pt-4 border-t">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-green-600">Ingresos:</span>
-                      <span className="font-medium">
-                        {formatCurrency(
-                          historicalCategories
-                            .filter(cat => cat.type === 'income')
-                            .reduce((sum, cat) => sum + (categoryValues[cat.key] || 0), 0)
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-red-600">Gastos:</span>
-                      <span className="font-medium">
-                        {formatCurrency(
-                          historicalCategories
-                            .filter(cat => cat.type === 'expense')
-                            .reduce((sum, cat) => sum + (categoryValues[cat.key] || 0), 0)
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Calendario de meses */}
+          {/* Calendar */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
@@ -262,19 +260,89 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
                 </p>
               </CardHeader>
               <CardContent>
-                <MonthCalendarGrid
-                  year={selectedYear}
-                  onMonthClick={handleMonthClick}
-                  getMonthStatus={getMonthStatus}
-                  getMonthData={getMonthData}
-                  formatCurrency={formatCurrency}
-                  selectedProperty={selectedProperty}
-                />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {months.map((monthName, index) => {
+                    const hasData = !!monthlyData[index];
+                    const data = monthlyData[index];
+
+                    return (
+                      <div key={index} className="space-y-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => handleMonthClick(index)}
+                          disabled={!selectedProperty}
+                          className={`h-auto p-4 flex flex-col items-center gap-2 w-full transition-all hover:scale-105 ${
+                            hasData ? 'bg-green-50 border-green-300 hover:bg-green-100' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className="font-medium text-sm">{monthName}</span>
+                          {hasData && (
+                            <div className="w-full space-y-1 text-xs">
+                              <div className="text-green-600">
+                                📈 +{formatCurrency(data.totalIncome)}€
+                              </div>
+                              <div className="text-red-600">
+                                📉 -{formatCurrency(data.totalExpenses)}€
+                              </div>
+                            </div>
+                          )}
+                        </Button>
+                        
+                        {hasData && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleDetails(index)}
+                            className="w-full text-xs"
+                          >
+                            🔍 Detalles
+                            {showDetails === index ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                          </Button>
+                        )}
+
+                        {showDetails === index && hasData && (
+                          <div className="p-3 bg-gray-50 rounded-md space-y-1 text-xs">
+                            {Object.entries(data.categories).map(([key, value]) => {
+                              if (value > 0) {
+                                const category = historicalCategories.find(c => c.key === key);
+                                return (
+                                  <div key={key} className="flex justify-between">
+                                    <span>{category?.icon} {category?.label}:</span>
+                                    <span>{formatCurrency(value)}€</span>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sobrescribir datos existentes</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ya hay datos guardados para {confirmDialog.monthName}. ¿Quieres sobrescribirlos con los nuevos valores?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmOverwrite}>
+              Sí, sobrescribir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
