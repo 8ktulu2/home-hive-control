@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { HistoricalEntry } from '@/types/historical';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,6 +62,55 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
+
+  // Load existing data when property or year changes
+  useEffect(() => {
+    if (selectedProperty && selectedYear) {
+      const filteredEntries = existingEntries.filter(
+        entry => entry.propertyId === selectedProperty && entry.year === selectedYear
+      );
+      
+      // Reset monthly data
+      const newMonthlyData: { [month: number]: MonthData } = {};
+      
+      // Group entries by month
+      for (let month = 0; month < 12; month++) {
+        const monthEntries = filteredEntries.filter(entry => entry.month === month);
+        
+        if (monthEntries.length > 0) {
+          const categories: CategoryValues = {};
+          let totalIncome = 0;
+          let totalExpenses = 0;
+          
+          monthEntries.forEach(entry => {
+            if (entry.amount) {
+              const categoryKey = historicalCategories.find(cat => 
+                cat.type === entry.type && cat.category === entry.category
+              )?.key;
+              
+              if (categoryKey) {
+                categories[categoryKey] = entry.amount;
+                
+                if (entry.type === 'income') {
+                  totalIncome += entry.amount;
+                } else {
+                  totalExpenses += entry.amount;
+                }
+              }
+            }
+          });
+          
+          newMonthlyData[month] = {
+            totalIncome,
+            totalExpenses,
+            categories
+          };
+        }
+      }
+      
+      setMonthlyData(newMonthlyData);
+    }
+  }, [selectedProperty, selectedYear, existingEntries]);
 
   const handleCategoryChange = (category: string, value: string) => {
     const numValue = parseFloat(value) || 0;
@@ -141,6 +190,9 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
     });
 
     toast.success(`Datos guardados para ${months[month]}: +${income.toFixed(2)}€ / -${expenses.toFixed(2)}€`);
+    
+    // Clear input values after saving
+    setCategoryValues({});
   };
 
   const confirmOverwrite = () => {

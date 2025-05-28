@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, CheckSquare, BarChart2, X, History, FileSpreadsheet } from 'lucide-react';
+import { Home, FileText, CheckSquare, X, History, FileSpreadsheet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -16,7 +16,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { href: '/', icon: <Home className="h-5 w-5" />, label: 'Propiedades' },
     { href: '/documents', icon: <FileText className="h-5 w-5" />, label: 'Documentos' },
     { href: '/tasks', icon: <CheckSquare className="h-5 w-5" />, label: 'Tareas' },
-    { href: '/finances', icon: <BarChart2 className="h-5 w-5" />, label: 'Finanzas' },
     { href: '/historical', icon: <History className="h-5 w-5" />, label: 'Histórico' },
     { href: '/fiscal-report', icon: <FileSpreadsheet className="h-5 w-5" />, label: 'Informe Fiscal' },
   ];
