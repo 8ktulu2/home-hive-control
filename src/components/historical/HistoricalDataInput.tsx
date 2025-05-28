@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { HistoricalEntry } from '@/types/historical';
@@ -191,8 +190,8 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
 
     toast.success(`Datos guardados para ${months[month]}: +${income.toFixed(2)}€ / -${expenses.toFixed(2)}€`);
     
-    // Clear input values after saving
-    setCategoryValues({});
+    // DON'T clear input values after saving - keep them for next month
+    // setCategoryValues({});
   };
 
   const confirmOverwrite = () => {
@@ -382,15 +381,15 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({
       <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sobrescribir datos existentes</AlertDialogTitle>
+            <AlertDialogTitle>Ya hay datos en este mes</AlertDialogTitle>
             <AlertDialogDescription>
-              Ya hay datos guardados para {confirmDialog.monthName}. ¿Quieres sobrescribirlos con los nuevos valores?
+              Ya hay datos guardados para {confirmDialog.monthName}. ¿Quieres sobreescribirlos?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>No</AlertDialogCancel>
             <AlertDialogAction onClick={confirmOverwrite}>
-              Sí, sobrescribir
+              Sí, sobreescribir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
