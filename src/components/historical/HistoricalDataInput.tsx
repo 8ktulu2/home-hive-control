@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -34,6 +35,11 @@ interface CategoryValues {
   suministros: number;
 }
 
+interface ConfirmDialogState {
+  open: boolean;
+  month?: string;
+}
+
 const months = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -54,11 +60,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     suministros: 0
   });
   const [expandedMonth, setExpandedMonth] = useState<number | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    month: number;
-    monthName: string;
-  }>({ open: false, month: -1, monthName: '' });
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({ open: false });
 
   const { getRecord, getRecordsByPropertyYear, saveRecord } = useHistoricalStorage();
   const [monthlyRecords, setMonthlyRecords] = useState<{ [month: number]: HistoricalRecord }>({});
@@ -99,29 +101,6 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     return true;
   };
 
-  const handleMonthClick = (month: number) => {
-    if (!selectedProperty || !selectedYear) {
-      toast.error('Selecciona primero una propiedad y un año');
-      return;
-    }
-
-    if (!validateValues()) {
-      return;
-    }
-
-    const existingRecord = monthlyRecords[month];
-    
-    if (existingRecord) {
-      setConfirmDialog({
-        open: true,
-        month,
-        monthName: months[month]
-      });
-    } else {
-      saveDataForMonth(month);
-    }
-  };
-
   const saveDataForMonth = (month: number) => {
     if (!selectedProperty || !selectedYear) return;
 
@@ -142,9 +121,40 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     }
   };
 
-  const confirmOverwrite = () => {
-    saveDataForMonth(confirmDialog.month);
-    setConfirmDialog({ open: false, month: -1, monthName: '' });
+  const handleMonthClick = (month: number) => {
+    if (!selectedProperty || !selectedYear) {
+      toast.error('Selecciona primero una propiedad y un año');
+      return;
+    }
+
+    if (!validateValues()) {
+      return;
+    }
+
+    const existingRecord = monthlyRecords[month];
+    
+    if (existingRecord) {
+      setConfirmDialog({
+        open: true,
+        month: months[month]
+      });
+    } else {
+      saveDataForMonth(month);
+    }
+  };
+
+  const onConfirmOverwrite = () => {
+    if (confirmDialog.month) {
+      const monthIndex = months.indexOf(confirmDialog.month);
+      if (monthIndex !== -1) {
+        saveDataForMonth(monthIndex);
+      }
+    }
+    setConfirmDialog({ open: false });
+  };
+
+  const onCancelOverwrite = () => {
+    setConfirmDialog({ open: false });
   };
 
   const toggleExpanded = (month: number) => {
@@ -205,18 +215,18 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
       {/* Diálogo de confirmación */}
       <AlertDialog 
         open={confirmDialog.open} 
-        onOpenChange={(open: boolean) => setConfirmDialog(prev => ({ ...prev, open }))}
+        onOpenChange={(open: boolean) => setConfirmDialog({ ...confirmDialog, open })}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ya hay datos en {confirmDialog.monthName} de {selectedYear}</AlertDialogTitle>
+            <AlertDialogTitle>Ya hay datos en {confirmDialog.month} de {selectedYear}</AlertDialogTitle>
             <AlertDialogDescription>
               ¿Quieres sobreescribirlos?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>No</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmOverwrite}>
+            <AlertDialogCancel onClick={onCancelOverwrite}>No</AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirmOverwrite}>
               Sí, sobreescribir
             </AlertDialogAction>
           </AlertDialogFooter>
