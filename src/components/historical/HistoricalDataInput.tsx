@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -203,7 +204,10 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
       )}
 
       {/* Diálogo de confirmación */}
-      <AlertDialog open={confirmDialog.open} onOpenChange={(open: boolean) => setConfirmDialog(prev => ({ ...prev, open }))}>
+      <AlertDialog 
+        open={confirmDialog.open} 
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Ya hay datos en {confirmDialog.monthName} de {selectedYear}</AlertDialogTitle>
