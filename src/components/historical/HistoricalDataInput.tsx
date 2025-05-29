@@ -1,23 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
 import HistoricalConfiguration from './HistoricalConfiguration';
 import CategoriesInput from './CategoriesInput';
 import MonthCalendarGrid from './MonthCalendarGrid';
+import ConfirmationDialog from './ConfirmationDialog';
+import { useMonthDataHandler } from '@/hooks/useMonthDataHandler';
 
 interface HistoricalDataInputProps {
   properties: Property[];
@@ -35,16 +25,6 @@ interface CategoryValues {
   suministros: number;
 }
 
-interface ConfirmDialogState {
-  open: boolean;
-  month?: string;
-}
-
-const months = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
-
 const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties }) => {
   const [selectedProperty, setSelectedProperty] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
@@ -60,27 +40,15 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     suministros: 0
   });
   const [expandedMonth, setExpandedMonth] = useState<number | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({ open: false });
 
-  const { getRecord, getRecordsByPropertyYear, saveRecord } = useHistoricalStorage();
-  const [monthlyRecords, setMonthlyRecords] = useState<{ [month: number]: HistoricalRecord }>({});
-
-  // Cargar datos cuando cambia propiedad o año
-  useEffect(() => {
-    if (selectedProperty && selectedYear) {
-      const yearNumber = parseInt(selectedYear);
-      const records = getRecordsByPropertyYear(selectedProperty, yearNumber);
-      
-      const recordsMap: { [month: number]: HistoricalRecord } = {};
-      records.forEach(record => {
-        recordsMap[record.mes] = record;
-      });
-      
-      setMonthlyRecords(recordsMap);
-    } else {
-      setMonthlyRecords({});
-    }
-  }, [selectedProperty, selectedYear, getRecordsByPropertyYear]);
+  const {
+    monthlyRecords,
+    confirmDialog,
+    handleMonthClick,
+    onConfirmOverwrite,
+    onCancelOverwrite,
+    handleDialogOpenChange
+  } = useMonthDataHandler(selectedProperty, selectedYear, categoryValues);
 
   const handleCategoryChange = (category: keyof CategoryValues, value: string) => {
     const numValue = parseFloat(value) || 0;
@@ -90,77 +58,6 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
       ...prev,
       [category]: numValue
     }));
-  };
-
-  const validateValues = (): boolean => {
-    const hasAnyValue = Object.values(categoryValues).some(value => value > 0);
-    if (!hasAnyValue) {
-      toast.error('Introduce al menos un valor mayor que 0');
-      return false;
-    }
-    return true;
-  };
-
-  const saveDataForMonth = (month: number) => {
-    if (!selectedProperty || !selectedYear) return;
-
-    const yearNumber = parseInt(selectedYear);
-    const success = saveRecord(selectedProperty, yearNumber, month, categoryValues);
-    
-    if (success) {
-      toast.success(`Datos guardados para ${months[month]}`);
-      
-      // Actualizar el estado local
-      const newRecord = getRecord(selectedProperty, yearNumber, month);
-      if (newRecord) {
-        setMonthlyRecords(prev => ({
-          ...prev,
-          [month]: newRecord
-        }));
-      }
-    }
-  };
-
-  const handleMonthClick = (month: number) => {
-    if (!selectedProperty || !selectedYear) {
-      toast.error('Selecciona primero una propiedad y un año');
-      return;
-    }
-
-    if (!validateValues()) {
-      return;
-    }
-
-    const existingRecord = monthlyRecords[month];
-    
-    if (existingRecord) {
-      setConfirmDialog({
-        open: true,
-        month: months[month]
-      });
-    } else {
-      saveDataForMonth(month);
-    }
-  };
-
-  const onConfirmOverwrite = () => {
-    if (confirmDialog.month) {
-      const monthIndex = months.indexOf(confirmDialog.month);
-      if (monthIndex !== -1) {
-        saveDataForMonth(monthIndex);
-      }
-    }
-    setConfirmDialog({ open: false });
-  };
-
-  const onCancelOverwrite = () => {
-    setConfirmDialog({ open: false });
-  };
-
-  const handleDialogOpenChange = (open: boolean) => {
-    if (!open) {
-      setConfirmDialog({ open: false });
-    }
   };
 
   const toggleExpanded = (month: number) => {
@@ -219,25 +116,14 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
       )}
 
       {/* Diálogo de confirmación */}
-      <AlertDialog 
-        open={confirmDialog.open} 
+      <ConfirmationDialog
+        open={confirmDialog.open}
+        month={confirmDialog.month}
+        year={selectedYear}
+        onConfirm={onConfirmOverwrite}
+        onCancel={onCancelOverwrite}
         onOpenChange={handleDialogOpenChange}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Ya hay datos en {confirmDialog.month} de {selectedYear}</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Quieres sobreescribirlos?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={onCancelOverwrite}>No</AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirmOverwrite}>
-              Sí, sobreescribir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      />
     </div>
   );
 };
