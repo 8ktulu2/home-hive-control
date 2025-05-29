@@ -1,141 +1,121 @@
 
 import React from 'react';
-import { HistoricalEntry } from '@/types/historical';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { HistoricalRecord } from '@/hooks/useHistoricalStorage';
 
 interface MonthCalendarGridProps {
-  year: number;
+  selectedYear: string;
+  monthlyRecords: { [month: number]: HistoricalRecord };
+  expandedMonth: number | null;
   onMonthClick: (month: number) => void;
-  getMonthStatus: (month: number) => 'empty' | 'hasData';
-  getMonthData: (month: number) => HistoricalEntry[];
+  onToggleExpanded: (month: number) => void;
   formatCurrency: (amount: number) => string;
-  selectedProperty: string;
+  isCalendarEnabled: boolean;
 }
 
+const months = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+const categories = [
+  { key: 'alquiler', label: 'Alquiler', icon: '🏠' },
+  { key: 'hipoteca', label: 'Hipoteca', icon: '🏦' },
+  { key: 'comunidad', label: 'Comunidad', icon: '🏢' },
+  { key: 'ibi', label: 'IBI', icon: '📄' },
+  { key: 'seguroVida', label: 'Seguro de Vida', icon: '💼' },
+  { key: 'seguroHogar', label: 'Seguro de Hogar', icon: '🛡️' },
+  { key: 'compras', label: 'Compras', icon: '🛒' },
+  { key: 'averias', label: 'Averías', icon: '🔧' },
+  { key: 'suministros', label: 'Suministros', icon: '⚡' }
+];
+
 const MonthCalendarGrid: React.FC<MonthCalendarGridProps> = ({
-  year,
+  selectedYear,
+  monthlyRecords,
+  expandedMonth,
   onMonthClick,
-  getMonthStatus,
-  getMonthData,
+  onToggleExpanded,
   formatCurrency,
-  selectedProperty
+  isCalendarEnabled
 }) => {
-  const months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-
-  const getMonthSummary = (month: number) => {
-    const data = getMonthData(month);
-    const totalIncome = data
-      .filter(entry => entry.type === 'income')
-      .reduce((sum, entry) => sum + (entry.amount || 0), 0);
-    const totalExpenses = data
-      .filter(entry => entry.type === 'expense')
-      .reduce((sum, entry) => sum + (entry.amount || 0), 0);
-    
-    return { totalIncome, totalExpenses, count: data.length };
-  };
-
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {months.map((monthName, index) => {
-          const status = getMonthStatus(index);
-          const hasData = status === 'hasData';
-          const summary = getMonthSummary(index);
-          const isDisabled = !selectedProperty;
+    <Card>
+      <CardHeader>
+        <CardTitle>Calendario {selectedYear}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Haz clic en un mes para aplicar los valores introducidos
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {months.map((monthName, index) => {
+            const record = monthlyRecords[index];
+            const hasData = !!record;
 
-          return (
-            <Button
-              key={index}
-              variant="outline"
-              onClick={() => !isDisabled && onMonthClick(index)}
-              disabled={isDisabled}
-              className={cn(
-                "h-auto p-4 flex flex-col items-start gap-2 transition-all hover:scale-105",
-                {
-                  "bg-blue-50 border-blue-300 hover:bg-blue-100": hasData,
-                  "hover:bg-gray-50": !hasData && !isDisabled,
-                  "opacity-50 cursor-not-allowed": isDisabled
-                }
-              )}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="font-medium text-sm">{monthName}</span>
-                {hasData && <Check className="h-4 w-4 text-green-600" />}
-                {isDisabled && <AlertTriangle className="h-3 w-3 text-gray-400" />}
-              </div>
-              
-              {hasData && (
-                <div className="w-full space-y-2">
-                  {summary.totalIncome > 0 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3 text-green-600" />
-                        <span className="text-green-600">Ingresos</span>
+            return (
+              <div key={index} className="space-y-1">
+                <Button
+                  variant="outline"
+                  onClick={() => onMonthClick(index)}
+                  disabled={!isCalendarEnabled}
+                  className={`h-auto p-3 flex flex-col items-center gap-2 w-full transition-all hover:scale-105 ${
+                    hasData ? 'bg-green-50 border-green-300 hover:bg-green-100' : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="font-medium text-sm">📆 {monthName}</span>
+                  {hasData ? (
+                    <div className="w-full space-y-1 text-xs">
+                      <div className="text-green-600">
+                        📈 Ingresos: +{formatCurrency(record.ingresos)}€
                       </div>
-                      <span className="font-medium text-green-600">
-                        +{formatCurrency(summary.totalIncome)}
-                      </span>
+                      <div className="text-red-600">
+                        📉 Gastos: -{formatCurrency(record.gastos)}€
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-500 w-full text-center">
+                      Haz clic para guardar datos
                     </div>
                   )}
-                  
-                  {summary.totalExpenses > 0 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1">
-                        <TrendingDown className="h-3 w-3 text-red-600" />
-                        <span className="text-red-600">Gastos</span>
-                      </div>
-                      <span className="font-medium text-red-600">
-                        -{formatCurrency(summary.totalExpenses)}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="pt-1 border-t">
-                    <Badge variant="secondary" className="text-xs w-full justify-center">
-                      {summary.count} registros
-                    </Badge>
+                </Button>
+                
+                {hasData && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onToggleExpanded(index)}
+                    className="w-full text-xs p-1 h-7"
+                  >
+                    <Search className="h-3 w-3 mr-1" />
+                    {expandedMonth === index ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                  </Button>
+                )}
+
+                {expandedMonth === index && hasData && (
+                  <div className="p-2 bg-gray-50 rounded-md space-y-1 text-xs">
+                    {categories.map(category => {
+                      const value = record.categorias[category.key as keyof typeof record.categorias];
+                      if (value > 0) {
+                        return (
+                          <div key={category.key} className="flex justify-between">
+                            <span>{category.icon} {category.label}:</span>
+                            <span>{formatCurrency(value)}€</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
                   </div>
-                </div>
-              )}
-              
-              {!hasData && !isDisabled && (
-                <div className="text-xs text-gray-500 w-full text-center">
-                  Clic para guardar datos
-                </div>
-              )}
-              
-              {isDisabled && (
-                <div className="text-xs text-gray-400 w-full text-center">
-                  Selecciona propiedad
-                </div>
-              )}
-            </Button>
-          );
-        })}
-      </div>
-      
-      {/* Leyenda */}
-      <div className="flex flex-wrap gap-4 text-sm pt-4 border-t">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-gray-100 border rounded"></div>
-          <span>Sin datos</span>
+                )}
+              </div>
+            );
+          })}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-          <span>Con datos históricos</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Check className="h-4 w-4 text-green-600" />
-          <span>Mes guardado</span>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
