@@ -157,6 +157,12 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     setConfirmDialog({ open: false });
   };
 
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setConfirmDialog({ open: false });
+    }
+  };
+
   const toggleExpanded = (month: number) => {
     setExpandedMonth(expandedMonth === month ? null : month);
   };
@@ -215,7 +221,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
       {/* Diálogo de confirmación */}
       <AlertDialog 
         open={confirmDialog.open} 
-        onOpenChange={(open: boolean) => setConfirmDialog({ ...confirmDialog, open })}
+        onOpenChange={handleDialogOpenChange}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
