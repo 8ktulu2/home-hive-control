@@ -117,7 +117,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
 
       {/* Diálogo de confirmación */}
       <ConfirmationDialog
-        open={Boolean(confirmDialog.open)}
+        open={confirmDialog.open}
         month={confirmDialog.month}
         year={selectedYear}
         onConfirm={onConfirmOverwrite}
