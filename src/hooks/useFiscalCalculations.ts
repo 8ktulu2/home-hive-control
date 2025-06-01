@@ -1,142 +1,145 @@
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Property } from '@/types/property';
+import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
+
+export interface PropertyFiscalDetail {
+  id: string;
+  name: string;
+  address?: string;
+  grossIncome: number;
+  expenses: number;
+  netProfit: number;
+  reductionPercentage: number;
+  reducedProfit: number;
+  occupancyMonths: number;
+}
 
 export interface FiscalData {
   grossIncome: number;
   deductibleExpenses: number;
   netProfit: number;
+  reductionPercentage: number;
   taxableBase: number;
   irpfQuota: number;
-  retentions: number;
-  iva: number;
-  finalLiquidity: number;
-  depreciation: number;
-  financialExpenses: number;
   propertyDetails: PropertyFiscalDetail[];
+  filteredRecords: HistoricalRecord[];
 }
 
-export interface PropertyFiscalDetail {
-  id: string;
-  name: string;
-  grossIncome: number;
-  expenses: number;
-  netProfit: number;
-  depreciation: number;
-  taxableBase: number;
-}
+export const useFiscalCalculations = (properties: Property[], selectedYear: number, selectedPropertyId: string = 'all') => {
+  const [fiscalData, setFiscalData] = useState<FiscalData>({
+    grossIncome: 0,
+    deductibleExpenses: 0,
+    netProfit: 0,
+    reductionPercentage: 0,
+    taxableBase: 0,
+    irpfQuota: 0,
+    propertyDetails: [],
+    filteredRecords: []
+  });
 
-export const useFiscalCalculations = (properties: Property[], year: number): FiscalData => {
-  return useMemo(() => {
-    console.log('Calculando datos fiscales para año:', year);
+  // Conectamos con el almacenamiento histórico
+  const { records, getRecordsByPropertyYear } = useHistoricalStorage();
+
+  useEffect(() => {
+    // Calculamos todos los datos fiscales basados en los registros históricos
+    calculateFiscalData();
+  }, [properties, selectedYear, selectedPropertyId, records]);
+
+  const calculateFiscalData = () => {
+    // Filtramos las propiedades si se ha seleccionado una específica
+    const filteredProperties = selectedPropertyId === 'all' 
+      ? properties 
+      : properties.filter(p => p.id === selectedPropertyId);
     
+    // Inicializamos variables para totales
     let totalGrossIncome = 0;
-    let totalDeductibleExpenses = 0;
-    let totalDepreciation = 0;
-    let totalFinancialExpenses = 0;
-    let totalRetentions = 0;
-    let totalIva = 0;
-    
-    const propertyDetails: PropertyFiscalDetail[] = properties.map(property => {
-      // Ingresos brutos anuales (alquiler mensual × 12)
-      const grossIncome = (property.rent || 0) * 12;
+    let totalExpenses = 0;
+    let totalNetProfit = 0;
+    let totalTaxableBase = 0;
+    const propertyDetails: PropertyFiscalDetail[] = [];
+    let allRecords: HistoricalRecord[] = [];
+
+    // Procesamos cada propiedad
+    filteredProperties.forEach(property => {
+      // Obtenemos los registros históricos para esta propiedad y año
+      const propertyRecords = getRecordsByPropertyYear(property.id, selectedYear);
+      allRecords = [...allRecords, ...propertyRecords];
       
-      // Gastos deducibles
-      let expenses = 0;
+      // Calculamos los totales para esta propiedad
+      const propertyGrossIncome = propertyRecords.reduce((sum, record) => sum + record.ingresos, 0);
+      const propertyExpenses = propertyRecords.reduce((sum, record) => sum + record.gastos, 0);
+      const propertyNetProfit = propertyGrossIncome - propertyExpenses;
       
-      // IBI anual
-      if (property.taxInfo?.ibiAnnual) {
-        expenses += property.taxInfo.ibiAnnual;
-      } else if (property.ibi) {
-        expenses += property.ibi;
+      // Determinamos el porcentaje de reducción basado en reglas fiscales
+      // (En España, puede ser 60% para alquiler residencial habitual, 40% para otros)
+      const occupiedMonths = propertyRecords.filter(record => record.ingresos > 0).length;
+      let reductionPercentage = 0;
+      
+      if (occupiedMonths >= 1) {
+        reductionPercentage = (property.taxInfo?.isPrimaryResidence || 
+          property.taxInfo?.isTensionedArea) ? 60 : 40;
       }
       
-      // Gastos de comunidad anuales
-      if (property.taxInfo?.communityFeesAnnual) {
-        expenses += property.taxInfo.communityFeesAnnual;
-      } else if (property.communityFee) {
-        expenses += property.communityFee * 12;
+      // Si hay alguna condición especial, aumentamos la reducción
+      if (property.taxInfo?.hasYoungTenant || property.taxInfo?.rentReduction) {
+        reductionPercentage = Math.min(70, reductionPercentage + 10);
       }
       
-      // Seguros
-      if (property.homeInsurance?.cost) {
-        expenses += property.homeInsurance.cost;
-      }
-      if (property.lifeInsurance?.cost) {
-        expenses += property.lifeInsurance.cost;
-      }
+      // Calculamos el beneficio neto reducido
+      const reducedProfit = propertyNetProfit * (reductionPercentage / 100);
       
-      // Gastos mensuales registrados
-      if (property.monthlyExpenses) {
-        const yearlyExpenses = property.monthlyExpenses
-          .filter(expense => expense.year === year && expense.isPaid)
-          .reduce((sum, expense) => sum + expense.amount, 0);
-        expenses += yearlyExpenses;
-      }
+      // Actualizamos los totales generales
+      totalGrossIncome += propertyGrossIncome;
+      totalExpenses += propertyExpenses;
+      totalNetProfit += propertyNetProfit;
+      totalTaxableBase += propertyNetProfit - reducedProfit;
       
-      // Amortización (3% sobre valor de construcción)
-      let depreciation = 0;
-      if (property.taxInfo?.buildingDepreciation) {
-        depreciation = property.taxInfo.buildingDepreciation;
-      } else if (property.taxInfo?.acquisitionCost && property.taxInfo?.landValue) {
-        const constructionValue = property.taxInfo.acquisitionCost - property.taxInfo.landValue;
-        depreciation = constructionValue * 0.03;
-      }
-      
-      // Gastos financieros (intereses de hipoteca)
-      let financialExpenses = 0;
-      if (property.taxInfo?.mortgageInterest) {
-        financialExpenses = property.taxInfo.mortgageInterest;
-      } else if (property.mortgage?.annualInterest) {
-        financialExpenses = property.mortgage.annualInterest;
-      }
-      
-      expenses += depreciation + financialExpenses;
-      
-      const netProfit = grossIncome - expenses;
-      const taxableBase = Math.max(0, netProfit);
-      
-      // Acumular totales
-      totalGrossIncome += grossIncome;
-      totalDeductibleExpenses += expenses;
-      totalDepreciation += depreciation;
-      totalFinancialExpenses += financialExpenses;
-      
-      return {
+      // Añadimos los detalles de esta propiedad
+      propertyDetails.push({
         id: property.id,
         name: property.name,
-        grossIncome,
-        expenses,
-        netProfit,
-        depreciation,
-        taxableBase
-      };
+        address: property.address,
+        grossIncome: propertyGrossIncome,
+        expenses: propertyExpenses,
+        netProfit: propertyNetProfit,
+        reductionPercentage,
+        reducedProfit,
+        occupancyMonths: occupiedMonths
+      });
     });
     
-    const netProfit = totalGrossIncome - totalDeductibleExpenses;
-    const taxableBase = Math.max(0, netProfit);
+    // Calculamos el tipo medio aproximado de IRPF (esto es simplificado)
+    const irpfRate = calculateEstimatedIRPFRate(totalTaxableBase);
+    const irpfQuota = totalTaxableBase * (irpfRate / 100);
     
-    // Estimación IRPF (tipo medio aproximado del 24%)
-    const irpfQuota = taxableBase * 0.24;
+    // Calculamos el porcentaje de reducción promedio ponderado
+    const weightedReductionPercentage = totalNetProfit > 0 
+      ? ((totalNetProfit - totalTaxableBase) / totalNetProfit) * 100 
+      : 0;
     
-    // Retenciones estimadas (19% sobre ingresos brutos si aplica)
-    const retentions = totalGrossIncome * 0.19;
-    
-    // Liquidez final
-    const finalLiquidity = netProfit - irpfQuota + retentions;
-    
-    return {
+    // Actualizamos el estado con todos los datos calculados
+    setFiscalData({
       grossIncome: totalGrossIncome,
-      deductibleExpenses: totalDeductibleExpenses,
-      netProfit,
-      taxableBase,
+      deductibleExpenses: totalExpenses,
+      netProfit: totalNetProfit,
+      reductionPercentage: Math.round(weightedReductionPercentage),
+      taxableBase: totalTaxableBase,
       irpfQuota,
-      retentions: totalRetentions,
-      iva: totalIva,
-      finalLiquidity,
-      depreciation: totalDepreciation,
-      financialExpenses: totalFinancialExpenses,
-      propertyDetails
-    };
-  }, [properties, year]);
+      propertyDetails,
+      filteredRecords: allRecords
+    });
+  };
+  
+  // Función simplificada para estimar el tipo de IRPF basado en la base imponible
+  const calculateEstimatedIRPFRate = (taxableBase: number): number => {
+    if (taxableBase <= 12450) return 19;
+    if (taxableBase <= 20200) return 24;
+    if (taxableBase <= 35200) return 30;
+    if (taxableBase <= 60000) return 37;
+    if (taxableBase <= 300000) return 45;
+    return 47;
+  };
+
+  return fiscalData;
 };
