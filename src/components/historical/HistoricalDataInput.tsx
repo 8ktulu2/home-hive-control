@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Alert, AlertDescription } from '@/components/ui/alert';
