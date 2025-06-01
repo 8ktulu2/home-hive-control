@@ -31,7 +31,10 @@ export const useMonthDataHandler = (
   categoryValues: CategoryValues
 ) => {
   const [monthlyRecords, setMonthlyRecords] = useState<{ [month: number]: HistoricalRecord }>({});
-  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({ open: false });
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({ 
+    open: false,
+    month: undefined
+  });
   
   const { getRecord, getRecordsByPropertyYear, saveRecord } = useHistoricalStorage();
 
@@ -110,16 +113,16 @@ export const useMonthDataHandler = (
         saveDataForMonth(monthIndex);
       }
     }
-    setConfirmDialog({ open: false });
+    setConfirmDialog({ open: false, month: undefined });
   };
 
   const onCancelOverwrite = () => {
-    setConfirmDialog({ open: false });
+    setConfirmDialog({ open: false, month: undefined });
   };
 
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
-      setConfirmDialog({ open: false });
+      setConfirmDialog({ open: false, month: undefined });
     }
   };
 
