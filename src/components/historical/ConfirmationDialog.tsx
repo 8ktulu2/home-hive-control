@@ -28,14 +28,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   onCancel,
   onOpenChange
 }) => {
-  const handleDialogOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      onOpenChange(false);
-    }
-  };
-
   return (
-    <AlertDialog open={open} onOpenChange={handleDialogOpenChange}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Ya hay datos en {month} de {year}</AlertDialogTitle>
