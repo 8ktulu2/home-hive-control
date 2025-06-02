@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { usePropertyManagement } from '@/hooks/usePropertyManagement';
+import { useAllProperties } from '@/hooks/useAllProperties';
 import Layout from '@/components/layout/Layout';
 import { Calculator, HelpCircle } from 'lucide-react';
 import FiscalAlerts from '@/components/fiscal/FiscalAlerts';
@@ -12,7 +12,7 @@ import FiscalHeader from '@/components/fiscal/FiscalHeader';
 
 const FiscalReport = () => {
   // Usamos el hook para cargar las propiedades
-  const { properties, loading } = usePropertyManagement();
+  const { properties, loading } = useAllProperties();
   
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('all');
