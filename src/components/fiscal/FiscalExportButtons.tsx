@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { FiscalData } from '@/hooks/useFiscalCalculations';
@@ -8,7 +9,6 @@ import { FileDown, FileSpreadsheet, FileText, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 interface FiscalExportButtonsProps {
   properties: Property[];
@@ -27,146 +27,154 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
   const [exportPropertyId, setExportPropertyId] = useState<string>('');
   const [exporting, setExporting] = useState(false);
 
-  const generateIndividualPDF = (propertyId: string) => {
-    try {
-      setExporting(true);
-      const property = properties.find(p => p.id === propertyId);
-      if (!property) {
-        toast.error('No se encontró la propiedad seleccionada');
-        setExporting(false);
-        return;
-      }
-
-      const propertyDetail = fiscalData.propertyDetails.find(p => p.id === propertyId);
-      if (!propertyDetail) {
-        toast.error('No hay datos fiscales para esta propiedad');
-        setExporting(false);
-        return;
-      }
-
-      const doc = new jsPDF();
-      
-      doc.setFontSize(18);
-      doc.text(`Informe Fiscal - ${property.name} (${selectedYear})`, 14, 20);
-      
-      doc.setFontSize(12);
-      doc.text(`Dirección: ${property.address || 'No especificada'}`, 14, 30);
-      doc.text(`Periodo fiscal: Año ${selectedYear}`, 14, 38);
-      
-      let finalY = 45;
-      autoTable(doc, {
-        startY: 45,
-        head: [['Concepto', 'Importe (€)']],
-        body: [
-          ['Ingresos brutos', propertyDetail.grossIncome.toFixed(2)],
-          ['Gastos deducibles', propertyDetail.expenses.toFixed(2)],
-          ['Rendimiento neto', propertyDetail.netProfit.toFixed(2)],
-          ['Reducción aplicada (%)', `${propertyDetail.reductionPercentage}%`],
-          ['Importe de la reducción', propertyDetail.reducedProfit.toFixed(2)],
-          ['Base imponible', (propertyDetail.netProfit - propertyDetail.reducedProfit).toFixed(2)]
-        ],
-        didDrawPage: (data) => {
-          finalY = data.cursor?.y || finalY;
-        }
-      });
-      
-      doc.setFontSize(11);
-      let explanationY = finalY + 15;
-      doc.text('Explicación de la reducción aplicada:', 14, explanationY);
-      explanationY += 8;
-      
-      let explanation = '';
-      if (propertyDetail.reductionPercentage === 60) {
-        explanation = '60% - Reducción por alquiler de vivienda habitual';
-      } else if (propertyDetail.reductionPercentage === 70) {
-        explanation = '70% - Reducción por alquiler a jóvenes (18-35 años) o en zona tensionada';
-      } else if (propertyDetail.reductionPercentage === 40) {
-        explanation = '40% - Reducción estándar para alquiler no residencial';
-      } else {
-        explanation = `${propertyDetail.reductionPercentage}% - Reducción calculada según normativa fiscal`;
-      }
-      
-      doc.text(explanation, 14, explanationY);
-      doc.text(`Meses ocupados: ${propertyDetail.occupancyMonths} de 12 (${((propertyDetail.occupancyMonths/12)*100).toFixed(1)}%)`, 14, explanationY + 15);
-      
-      const pageHeight = doc.internal.pageSize.height;
-      doc.setFontSize(10);
-      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página 1 de 1`, 14, pageHeight - 10);
-      
-      doc.save(`Informe_Fiscal_${property.name.replace(/\s+/g, "_")}_${selectedYear}.pdf`);
-      
-      toast.success(`Informe individual de ${property.name} generado correctamente`);
-      setExporting(false);
-      setShowIndividualDialog(false);
-    } catch (error) {
-      console.error('Error generando PDF individual:', error);
-      toast.error('Error al generar el informe individual');
-      setExporting(false);
-    }
-  };
-
   const generateConsolidatedPDF = () => {
     try {
       setExporting(true);
       const doc = new jsPDF();
       
-      doc.setFontSize(18);
-      doc.text(`Informe Fiscal Consolidado - ${selectedYear}`, 14, 20);
+      // Configuración inicial
+      const pageHeight = doc.internal.pageSize.height;
+      const pageWidth = doc.internal.pageSize.width;
+      let currentY = 20;
+      
+      // Header del documento
+      doc.setFontSize(20);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Informe Fiscal Consolidado - ${fiscalData.yearRange}`, pageWidth/2, currentY, { align: 'center' });
+      currentY += 15;
       
       doc.setFontSize(12);
-      doc.text(`Periodo fiscal: Año ${selectedYear}`, 14, 30);
-      doc.text(`Propiedades incluidas: ${selectedPropertyId === 'all' ? 'Todas' : 'Seleccionada'}`, 14, 38);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')}`, pageWidth/2, currentY, { align: 'center' });
+      currentY += 20;
       
-      let finalY = 45;
-      autoTable(doc, {
-        startY: 45,
-        head: [['Concepto', 'Importe (€)']],
-        body: [
-          ['Ingresos totales', fiscalData.grossIncome.toFixed(2)],
-          ['Gastos deducibles', fiscalData.deductibleExpenses.toFixed(2)],
-          ['Rendimiento neto', fiscalData.netProfit.toFixed(2)],
-          ['Reducción aplicada (%)', `${fiscalData.reductionPercentage}%`],
-          ['Base imponible', fiscalData.taxableBase.toFixed(2)],
-          ['Cuota IRPF estimada', fiscalData.irpfQuota.toFixed(2)]
-        ],
-        didDrawPage: (data) => {
-          finalY = data.cursor?.y || finalY;
-        }
+      // Resumen ejecutivo
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('RESUMEN EJECUTIVO', 14, currentY);
+      currentY += 10;
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      
+      const summaryData = [
+        ['Ingresos Totales:', `${fiscalData.grossIncome.toFixed(2)}€`],
+        ['Gastos Deducibles:', `${fiscalData.deductibleExpenses.toFixed(2)}€`],
+        ['Rendimiento Neto:', `${fiscalData.netProfit.toFixed(2)}€`],
+        ['Reducción Aplicada:', `${fiscalData.reductionPercentage}%`],
+        ['Base Imponible:', `${fiscalData.taxableBase.toFixed(2)}€`],
+        ['Cuota IRPF Estimada:', `${fiscalData.irpfQuota.toFixed(2)}€`],
+        ['Retenciones (19%):', `${fiscalData.retentions.toFixed(2)}€`],
+        ['Liquidez Final:', `${fiscalData.finalLiquidity.toFixed(2)}€`]
+      ];
+      
+      summaryData.forEach(([label, value]) => {
+        doc.text(label, 14, currentY);
+        doc.text(value, 120, currentY);
+        currentY += 7;
       });
       
-      const propertyRows = fiscalData.propertyDetails.map(prop => [
-        prop.name,
-        prop.grossIncome.toFixed(2),
-        prop.expenses.toFixed(2),
-        prop.netProfit.toFixed(2),
-        `${prop.reductionPercentage}%`,
-        (prop.netProfit - prop.reducedProfit).toFixed(2)
-      ]);
+      currentY += 10;
       
-      autoTable(doc, {
-        startY: finalY + 15,
-        head: [['Propiedad', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Reducción', 'Base Imponible (€)']],
-        body: propertyRows,
-        headStyles: { fillColor: [60, 60, 120] },
-        didDrawPage: (data) => {
-          finalY = data.cursor?.y || finalY;
+      // Normativa aplicada
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('NORMATIVA APLICADA', 14, currentY);
+      currentY += 10;
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      const normativaText = [
+        '• Ley 35/2006, de 28 de noviembre, del Impuesto sobre la Renta de las Personas Físicas',
+        '• Ley 12/2023, de 24 de mayo, por el derecho a la vivienda (reducciones especiales)',
+        '• Real Decreto 439/2007, por el que se aprueba el Reglamento del IRPF',
+        '',
+        'REDUCCIONES APLICABLES SEGÚN LEY 12/2023:',
+        '• 90%: Zona tensionada con reducción del precio de alquiler (≥5%)',
+        '• 70%: Zona tensionada con inquilino joven (18-35 años)',
+        '• 60%: Obras de rehabilitación previas al contrato',
+        '• 50%: Reducción general para arrendamiento de vivienda habitual'
+      ];
+      
+      normativaText.forEach(line => {
+        if (currentY > pageHeight - 20) {
+          doc.addPage();
+          currentY = 20;
         }
+        doc.text(line, 14, currentY);
+        currentY += 5;
       });
       
-      let notesY = finalY + 15;
-      doc.setFontSize(11);
-      doc.text('Notas importantes:', 14, notesY);
-      notesY += 7;
-      doc.setFontSize(10);
-      doc.text('- Los cálculos de este informe son orientativos según la normativa fiscal vigente.', 14, notesY);
-      notesY += 6;
-      doc.text('- Se recomienda consultar con un asesor fiscal para la declaración final.', 14, notesY);
+      // Nueva página para detalle por propiedades
+      doc.addPage();
+      currentY = 20;
       
-      const pageHeight = doc.internal.pageSize.height;
-      doc.setFontSize(10);
-      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página 1 de 1`, 14, pageHeight - 10);
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('DETALLE POR PROPIEDADES', 14, currentY);
+      currentY += 15;
       
-      doc.save(`Informe_Fiscal_Consolidado_${selectedYear}.pdf`);
+      // Tabla de propiedades
+      fiscalData.propertyDetails.forEach((property, index) => {
+        if (currentY > pageHeight - 60) {
+          doc.addPage();
+          currentY = 20;
+        }
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text(`${index + 1}. ${property.name}`, 14, currentY);
+        currentY += 8;
+        
+        if (property.address) {
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'italic');
+          doc.text(`Dirección: ${property.address}`, 14, currentY);
+          currentY += 6;
+        }
+        
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'normal');
+        
+        const propertyData = [
+          ['Ingresos:', `${property.grossIncome.toFixed(2)}€`],
+          ['Gastos:', `${property.expenses.toFixed(2)}€`],
+          ['Rendimiento Neto:', `${property.netProfit.toFixed(2)}€`],
+          ['Reducción Aplicada:', `${property.reductionPercentage}% - ${property.reductionReason}`],
+          ['Base Imponible:', `${property.taxableBase.toFixed(2)}€`],
+          ['Ocupación:', `${property.occupancyMonths}/12 meses`]
+        ];
+        
+        propertyData.forEach(([label, value]) => {
+          doc.text(`  ${label}`, 14, currentY);
+          if (label === 'Reducción Aplicada:') {
+            // Para la reducción, usar fuente más pequeña si es muy largo
+            doc.setFontSize(9);
+            const lines = doc.splitTextToSize(value, pageWidth - 80);
+            lines.forEach((line: string, lineIndex: number) => {
+              doc.text(line, 80, currentY + (lineIndex * 4));
+            });
+            currentY += Math.max(6, lines.length * 4);
+            doc.setFontSize(11);
+          } else {
+            doc.text(value, 80, currentY);
+            currentY += 6;
+          }
+        });
+        
+        currentY += 5;
+      });
+      
+      // Footer en todas las páginas
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth - 30, pageHeight - 10);
+        doc.text('Este informe es orientativo según normativa fiscal española vigente', 14, pageHeight - 10);
+      }
+      
+      doc.save(`Informe_Fiscal_Consolidado_${fiscalData.yearRange.replace('-', '_')}.pdf`);
       
       toast.success('Informe consolidado generado correctamente');
       setExporting(false);
@@ -177,129 +185,78 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
     }
   };
 
-  const generateComparativePDF = () => {
-    try {
-      setExporting(true);
-      toast.info(`Generando informe comparativo para ${selectedYear}...`, {
-        duration: 3000
-      });
-      
-      const doc = new jsPDF();
-      
-      doc.setFontSize(18);
-      doc.text(`Informe Comparativo - ${selectedYear}`, 14, 20);
-      
-      doc.setFontSize(12);
-      doc.text('Este informe muestra una comparativa de rendimientos por propiedad.', 14, 30);
-      
-      const comparativeData = fiscalData.propertyDetails.map(prop => {
-        const rentabilidad = prop.grossIncome > 0 ? (prop.netProfit / prop.grossIncome) * 100 : 0;
-        return [
-          prop.name,
-          prop.grossIncome.toFixed(2),
-          prop.expenses.toFixed(2),
-          prop.netProfit.toFixed(2),
-          `${rentabilidad.toFixed(1)}%`,
-          prop.occupancyMonths
-        ];
-      });
-      
-      let finalY = 40;
-      autoTable(doc, {
-        startY: 40,
-        head: [['Propiedad', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Rentabilidad', 'Meses ocupados']],
-        body: comparativeData,
-        headStyles: { fillColor: [60, 90, 100] },
-        didDrawPage: (data) => {
-          finalY = data.cursor?.y || finalY;
-        }
-      });
-      
-      let chartY = finalY + 15;
-      doc.setFontSize(14);
-      doc.text('Rendimiento por propiedad:', 14, chartY);
-      chartY += 10;
-      
-      fiscalData.propertyDetails.forEach((prop, index) => {
-        const barLength = Math.min(100, Math.max(5, prop.netProfit / 100));
-        const bar = '█'.repeat(Math.floor(barLength/5));
-        doc.setFontSize(10);
-        doc.text(`${prop.name.substring(0, 15)}${prop.name.length > 15 ? '...' : ''}: ${bar} ${prop.netProfit.toFixed(2)}€`, 14, chartY + (index * 7));
-      });
-      
-      const pageHeight = doc.internal.pageSize.height;
-      doc.setFontSize(10);
-      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página 1 de 1`, 14, pageHeight - 10);
-      
-      doc.save(`Informe_Comparativo_${selectedYear}.pdf`);
-      
-      toast.success('Informe comparativo generado correctamente');
-      setExporting(false);
-    } catch (error) {
-      console.error('Error generando PDF comparativo:', error);
-      toast.error('Error al generar el informe comparativo');
-      setExporting(false);
-    }
-  };
-
   const handleExportExcel = () => {
     try {
       setExporting(true);
       
       const wb = XLSX.utils.book_new();
 
+      // Hoja de resumen
       const summaryData = [
-        ['RESUMEN FISCAL', selectedYear],
+        ['INFORME FISCAL CONSOLIDADO', fiscalData.yearRange],
+        ['Generado el', new Date().toLocaleDateString('es-ES')],
         [''],
+        ['RESUMEN EJECUTIVO'],
         ['Concepto', 'Importe (€)'],
         ['Ingresos totales', fiscalData.grossIncome],
         ['Gastos deducibles', fiscalData.deductibleExpenses],
-        ['Beneficio neto', fiscalData.netProfit],
+        ['Rendimiento neto', fiscalData.netProfit],
+        ['Reducción aplicada (%)', fiscalData.reductionPercentage],
         ['Base imponible', fiscalData.taxableBase],
-        ['Cuota IRPF estimada', fiscalData.irpfQuota]
+        ['Cuota IRPF estimada', fiscalData.irpfQuota],
+        ['Retenciones aplicadas', fiscalData.retentions],
+        ['Liquidez final', fiscalData.finalLiquidity],
+        [''],
+        ['CONSOLIDADO'],
+        ['Total propiedades', fiscalData.consolidatedSummary.totalProperties],
+        ['Meses ocupados', fiscalData.consolidatedSummary.totalMonthsOccupied],
+        ['Ocupación promedio (%)', fiscalData.consolidatedSummary.averageOccupancy.toFixed(1)],
+        ['Rentabilidad promedio (%)', fiscalData.consolidatedSummary.averageRentability.toFixed(1)]
       ];
       const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
       XLSX.utils.book_append_sheet(wb, ws1, 'Resumen');
 
+      // Hoja de propiedades
+      const propertiesHeader = [
+        'Propiedad', 'Dirección', 'Ingresos (€)', 'Gastos (€)', 'Rendimiento Neto (€)', 
+        'Reducción (%)', 'Motivo Reducción', 'Base Imponible (€)', 'Ocupación (meses)', 'Rentabilidad (%)'
+      ];
       const propertiesData = [
-        ['DETALLE POR PROPIEDADES'],
-        [''],
-        ['Propiedad', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Reducción (%)', 'Base Imponible (€)', 'Rentabilidad (%)'],
+        propertiesHeader,
         ...fiscalData.propertyDetails.map(prop => [
           prop.name,
+          prop.address || '',
           prop.grossIncome,
           prop.expenses,
           prop.netProfit,
           prop.reductionPercentage,
-          prop.netProfit - prop.reducedProfit,
+          prop.reductionReason,
+          prop.taxableBase,
+          prop.occupancyMonths,
           prop.grossIncome > 0 ? ((prop.netProfit / prop.grossIncome) * 100).toFixed(1) : '0.0'
         ])
       ];
       const ws2 = XLSX.utils.aoa_to_sheet(propertiesData);
       XLSX.utils.book_append_sheet(wb, ws2, 'Propiedades');
 
-      const recordsData = [
-        ['REGISTROS HISTÓRICOS DETALLADOS'],
+      // Hoja de desglose de gastos
+      const expensesData = [
+        ['DESGLOSE DE GASTOS POR CATEGORÍA'],
         [''],
-        ['Propiedad', 'Mes', 'Año', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Fecha Registro'],
-        ...fiscalData.filteredRecords.map(record => {
-          const property = properties.find(p => p.id === record.propiedadId);
-          const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-          return [
-            property?.name || record.propiedadId,
-            months[record.mes] || record.mes + 1,
-            record.año,
-            record.ingresos,
-            record.gastos,
-            record.ingresos - record.gastos,
-            new Date(record.createdAt).toLocaleDateString('es-ES')
-          ];
-        })
+        ['Categoría', 'Importe Total (€)'],
+        ['Hipoteca', fiscalData.expenseBreakdown.hipoteca],
+        ['Comunidad', fiscalData.expenseBreakdown.comunidad],
+        ['IBI', fiscalData.expenseBreakdown.ibi],
+        ['Seguro de Vida', fiscalData.expenseBreakdown.seguroVida],
+        ['Seguro de Hogar', fiscalData.expenseBreakdown.seguroHogar],
+        ['Compras', fiscalData.expenseBreakdown.compras],
+        ['Averías', fiscalData.expenseBreakdown.averias],
+        ['Suministros', fiscalData.expenseBreakdown.suministros]
       ];
-      const ws3 = XLSX.utils.aoa_to_sheet(recordsData);
-      XLSX.utils.book_append_sheet(wb, ws3, 'Registros');
+      const ws3 = XLSX.utils.aoa_to_sheet(expensesData);
+      XLSX.utils.book_append_sheet(wb, ws3, 'Gastos');
 
-      XLSX.writeFile(wb, `Informe_Fiscal_${selectedYear}_${selectedPropertyId === 'all' ? 'Completo' : 'Propiedad'}.xlsx`);
+      XLSX.writeFile(wb, `Informe_Fiscal_Consolidado_${fiscalData.yearRange.replace('-', '_')}.xlsx`);
       
       toast.success('Archivo Excel generado correctamente');
       setExporting(false);
@@ -310,221 +267,27 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
     }
   };
 
-  const exportCSV = () => {
-    try {
-      setExporting(true);
-      
-      const headers = ['Propiedad', 'Mes', 'Año', 'Ingresos', 'Gastos', 'Neto'];
-      
-      const csvData = [
-        headers.join(','),
-        ...fiscalData.filteredRecords.map(record => {
-          const property = properties.find(p => p.id === record.propiedadId);
-          const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-          return [
-            property?.name || 'Desconocida',
-            months[record.mes] || (record.mes + 1),
-            record.año,
-            record.ingresos,
-            record.gastos,
-            record.ingresos - record.gastos
-          ].join(',');
-        })
-      ].join('\n');
-      
-      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Datos_Fiscales_${selectedYear}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success('Archivo CSV generado correctamente');
-      setExporting(false);
-    } catch (error) {
-      console.error('Error generando CSV:', error);
-      toast.error('Error al generar el archivo CSV');
-      setExporting(false);
-    }
-  };
-
   return (
-    <>
-      {/* Diseño móvil */}
-      <div className="flex flex-col sm:hidden space-y-3">
-        <div className="grid grid-cols-2 gap-1">
-          <Dialog open={showIndividualDialog} onOpenChange={setShowIndividualDialog}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
-              >
-                <FileText className="h-3 w-3 mb-1" />
-                <span className="text-center">
-                  Individual
-                </span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Seleccionar Propiedad</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Select value={exportPropertyId} onValueChange={setExportPropertyId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una propiedad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {properties.map((property) => (
-                      <SelectItem key={property.id} value={property.id}>
-                        {property.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button 
-                  onClick={() => generateIndividualPDF(exportPropertyId)}
-                  className="w-full"
-                  disabled={!exportPropertyId || exporting}
-                >
-                  {exporting ? 'Generando...' : 'Generar PDF Individual'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          <Button 
-            onClick={generateConsolidatedPDF}
-            variant="outline"
-            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
-            disabled={exporting}
-          >
-            <FileText className="h-3 w-3 mb-1" />
-            <span className="text-center">
-              {exporting ? 'Generando...' : 'Consolidado'}
-            </span>
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-1">
-          <Button 
-            onClick={generateComparativePDF}
-            variant="outline"
-            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
-            disabled={exporting}
-          >
-            <FileText className="h-3 w-3 mb-1" />
-            <span className="text-center">
-              {exporting ? 'Generando...' : 'Comparativo'}
-            </span>
-          </Button>
-          
-          <Button 
-            onClick={handleExportExcel}
-            variant="outline"
-            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
-            disabled={exporting}
-          >
-            <FileSpreadsheet className="h-3 w-3 mb-1" />
-            <span className="text-center">
-              {exporting ? 'Generando...' : 'Excel'}
-            </span>
-          </Button>
-        </div>
-        
-        <Button
-          onClick={exportCSV}
-          variant="outline"
-          className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center"
-          disabled={exporting}
-        >
-          <Download className="h-3 w-3 mb-1" />
-          <span className="text-center">
-            {exporting ? 'Generando...' : 'CSV'}
-          </span>
-        </Button>
-      </div>
-
-      {/* Diseño desktop */}
-      <div className="hidden sm:flex items-center justify-end gap-3">
-        <Dialog open={showIndividualDialog} onOpenChange={setShowIndividualDialog}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2" disabled={exporting}>
-              <FileText className="h-4 w-4" />
-              Individual
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Seleccionar Propiedad</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Select value={exportPropertyId} onValueChange={setExportPropertyId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una propiedad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {properties.map((property) => (
-                    <SelectItem key={property.id} value={property.id}>
-                      {property.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button 
-                onClick={() => generateIndividualPDF(exportPropertyId)}
-                className="w-full"
-                disabled={!exportPropertyId || exporting}
-              >
-                {exporting ? 'Generando...' : 'Generar PDF Individual'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-        
-        <Button 
-          onClick={generateConsolidatedPDF}
-          variant="outline"
-          className="flex items-center gap-2"
-          disabled={exporting}
-        >
-          <FileText className="h-4 w-4" />
-          {exporting ? 'Generando...' : 'Consolidado'}
-        </Button>
-        
-        <Button 
-          onClick={generateComparativePDF}
-          variant="outline"
-          className="flex items-center gap-2"
-          disabled={exporting}
-        >
-          <FileText className="h-4 w-4" />
-          {exporting ? 'Generando...' : 'Comparativo'}
-        </Button>
-        
-        <Button 
-          onClick={handleExportExcel}
-          variant="outline"
-          className="flex items-center gap-2"
-          disabled={exporting}
-        >
-          <FileSpreadsheet className="h-4 w-4" />
-          {exporting ? 'Generando...' : 'Excel'}
-        </Button>
-        
-        <Button
-          onClick={exportCSV}
-          variant="outline"
-          className="flex items-center gap-2"
-          disabled={exporting}
-        >
-          <Download className="h-4 w-4" />
-          {exporting ? 'Generando...' : 'CSV'}
-        </Button>
-      </div>
-    </>
+    <div className="flex flex-wrap gap-3 justify-center items-center">
+      <Button 
+        onClick={generateConsolidatedPDF}
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+        disabled={exporting}
+      >
+        <FileText className="h-4 w-4" />
+        {exporting ? 'Generando...' : 'PDF Consolidado'}
+      </Button>
+      
+      <Button 
+        onClick={handleExportExcel}
+        variant="outline"
+        className="flex items-center gap-2"
+        disabled={exporting}
+      >
+        <FileSpreadsheet className="h-4 w-4" />
+        {exporting ? 'Generando...' : 'Excel Completo'}
+      </Button>
+    </div>
   );
 };
 

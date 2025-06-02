@@ -12,7 +12,9 @@ export interface PropertyFiscalDetail {
   netProfit: number;
   reductionPercentage: number;
   reducedProfit: number;
+  taxableBase: number;
   occupancyMonths: number;
+  reductionReason: string;
   expenseBreakdown: {
     alquiler: number;
     hipoteca: number;
@@ -48,9 +50,20 @@ export interface FiscalData {
     averias: number;
     suministros: number;
   };
+  yearRange: string;
+  consolidatedSummary: {
+    totalProperties: number;
+    totalMonthsOccupied: number;
+    averageOccupancy: number;
+    averageRentability: number;
+  };
 }
 
-export const useFiscalCalculations = (properties: Property[], selectedYear: number, selectedPropertyId: string = 'all') => {
+export const useFiscalCalculations = (
+  properties: Property[], 
+  selectedYear: number | number[], 
+  selectedPropertyId: string = 'all'
+) => {
   const [fiscalData, setFiscalData] = useState<FiscalData>({
     grossIncome: 0,
     deductibleExpenses: 0,
@@ -72,6 +85,13 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
       compras: 0,
       averias: 0,
       suministros: 0
+    },
+    yearRange: '',
+    consolidatedSummary: {
+      totalProperties: 0,
+      totalMonthsOccupied: 0,
+      averageOccupancy: 0,
+      averageRentability: 0
     }
   });
 
@@ -81,17 +101,68 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
     calculateFiscalData();
   }, [properties, selectedYear, selectedPropertyId]);
 
+  const calculateReductionForProperty = (property: Property, occupiedMonths: number): { percentage: number, reason: string } => {
+    // Solo aplica reducciones si tiene al menos 1 mes ocupado
+    if (occupiedMonths < 1) {
+      return { percentage: 0, reason: "Sin ocupación durante el año" };
+    }
+
+    // Normativa española actualizada (Ley 12/2023 - vigente desde mayo 2023)
+    if (property.taxInfo?.isPrimaryResidence) {
+      // 90% - Vivienda en zona tensionada con reducción del precio de alquiler
+      if (property.taxInfo?.isTensionedArea && property.taxInfo?.rentReduction) {
+        return { 
+          percentage: 90, 
+          reason: "Zona tensionada con reducción del precio de alquiler (≥5%)" 
+        };
+      }
+      
+      // 70% - Zona tensionada con inquilino joven o primer alquiler
+      if (property.taxInfo?.isTensionedArea && property.taxInfo?.hasYoungTenant) {
+        return { 
+          percentage: 70, 
+          reason: "Zona tensionada con inquilino joven (18-35 años)" 
+        };
+      }
+      
+      // 60% - Obras de rehabilitación previas al contrato
+      if (property.taxInfo?.recentlyRenovated) {
+        return { 
+          percentage: 60, 
+          reason: "Obras de rehabilitación previas al contrato" 
+        };
+      }
+      
+      // 50% - Reducción general para vivienda habitual
+      return { 
+        percentage: 50, 
+        reason: "Reducción general para arrendamiento de vivienda habitual" 
+      };
+    }
+    
+    return { 
+      percentage: 0, 
+      reason: "No es vivienda habitual - sin reducción aplicable" 
+    };
+  };
+
   const calculateFiscalData = () => {
+    const years = Array.isArray(selectedYear) ? selectedYear : [selectedYear];
     const filteredProperties = selectedPropertyId === 'all' 
       ? properties 
       : properties.filter(p => p.id === selectedPropertyId);
     
-    const allRecords = getFilteredRecords(selectedYear, selectedPropertyId);
+    let allRecords: HistoricalRecord[] = [];
+    years.forEach(year => {
+      const yearRecords = getFilteredRecords(year, selectedPropertyId);
+      allRecords = [...allRecords, ...yearRecords];
+    });
     
     let totalGrossIncome = 0;
     let totalExpenses = 0;
     let totalNetProfit = 0;
     let totalTaxableBase = 0;
+    let totalOccupiedMonths = 0;
     const propertyDetails: PropertyFiscalDetail[] = [];
     
     const totalExpenseBreakdown = {
@@ -135,25 +206,19 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
       });
       
       const propertyNetProfit = propertyGrossIncome - propertyExpenses;
-      
       const occupiedMonths = propertyRecords.filter(record => record.ingresos > 0).length;
-      let reductionPercentage = 0;
       
-      if (occupiedMonths >= 1) {
-        reductionPercentage = (property.taxInfo?.isPrimaryResidence || 
-          property.taxInfo?.isTensionedArea) ? 60 : 40;
-      }
-      
-      if (property.taxInfo?.hasYoungTenant || property.taxInfo?.rentReduction) {
-        reductionPercentage = Math.min(70, reductionPercentage + 10);
-      }
+      const { percentage: reductionPercentage, reason: reductionReason } = 
+        calculateReductionForProperty(property, occupiedMonths);
       
       const reducedProfit = propertyNetProfit * (reductionPercentage / 100);
+      const propertyTaxableBase = Math.max(0, propertyNetProfit - reducedProfit);
       
       totalGrossIncome += propertyGrossIncome;
       totalExpenses += propertyExpenses;
       totalNetProfit += propertyNetProfit;
-      totalTaxableBase += propertyNetProfit - reducedProfit;
+      totalTaxableBase += propertyTaxableBase;
+      totalOccupiedMonths += occupiedMonths;
       
       propertyDetails.push({
         id: property.id,
@@ -164,19 +229,38 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
         netProfit: propertyNetProfit,
         reductionPercentage,
         reducedProfit,
+        taxableBase: propertyTaxableBase,
         occupancyMonths: occupiedMonths,
+        reductionReason,
         expenseBreakdown: propertyExpenseBreakdown
       });
     });
     
+    // Cálculo de IRPF según tramos españoles 2024
     const irpfRate = calculateEstimatedIRPFRate(totalTaxableBase);
     const irpfQuota = totalTaxableBase * (irpfRate / 100);
+    
+    // Retenciones aplicadas (19% sobre ingresos brutos)
     const retentions = totalGrossIncome * 0.19;
+    
+    // Liquidez final (beneficio neto - IRPF + retenciones)
     const finalLiquidity = totalNetProfit - irpfQuota + retentions;
     
+    // Porcentaje de reducción promedio ponderado
     const weightedReductionPercentage = totalNetProfit > 0 
       ? ((totalNetProfit - totalTaxableBase) / totalNetProfit) * 100 
       : 0;
+
+    // Rango de años para mostrar
+    const yearRange = years.length === 1 
+      ? years[0].toString() 
+      : `${Math.min(...years)}-${Math.max(...years)}`;
+
+    // Resumen consolidado
+    const totalProperties = filteredProperties.length;
+    const maxPossibleMonths = totalProperties * years.length * 12;
+    const averageOccupancy = maxPossibleMonths > 0 ? (totalOccupiedMonths / maxPossibleMonths) * 100 : 0;
+    const averageRentability = totalGrossIncome > 0 ? (totalNetProfit / totalGrossIncome) * 100 : 0;
     
     setFiscalData({
       grossIncome: totalGrossIncome,
@@ -189,21 +273,19 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
       finalLiquidity,
       propertyDetails,
       filteredRecords: allRecords,
-      expenseBreakdown: totalExpenseBreakdown
-    });
-    
-    console.log('Datos fiscales calculados:', {
-      totalGrossIncome,
-      totalExpenses,
-      totalNetProfit,
-      totalTaxableBase,
-      propertyCount: propertyDetails.length,
-      recordCount: allRecords.length,
-      expenseBreakdown: totalExpenseBreakdown
+      expenseBreakdown: totalExpenseBreakdown,
+      yearRange,
+      consolidatedSummary: {
+        totalProperties,
+        totalMonthsOccupied: totalOccupiedMonths,
+        averageOccupancy,
+        averageRentability
+      }
     });
   };
   
   const calculateEstimatedIRPFRate = (taxableBase: number): number => {
+    // Tramos IRPF España 2024
     if (taxableBase <= 12450) return 19;
     if (taxableBase <= 20200) return 24;
     if (taxableBase <= 35200) return 30;
