@@ -44,19 +44,15 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         return;
       }
 
-      // Crear documento PDF
       const doc = new jsPDF();
       
-      // Título
       doc.setFontSize(18);
       doc.text(`Informe Fiscal - ${property.name} (${selectedYear})`, 14, 20);
       
-      // Información básica
       doc.setFontSize(12);
       doc.text(`Dirección: ${property.address || 'No especificada'}`, 14, 30);
       doc.text(`Periodo fiscal: Año ${selectedYear}`, 14, 38);
       
-      // Tabla de datos financieros
       let finalY = 45;
       autoTable(doc, {
         startY: 45,
@@ -74,13 +70,11 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         }
       });
       
-      // Explicación de reducciones
       doc.setFontSize(11);
       let explanationY = finalY + 15;
       doc.text('Explicación de la reducción aplicada:', 14, explanationY);
       explanationY += 8;
       
-      // Explicación de la reducción según condiciones
       let explanation = '';
       if (propertyDetail.reductionPercentage === 60) {
         explanation = '60% - Reducción por alquiler de vivienda habitual';
@@ -93,19 +87,12 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       }
       
       doc.text(explanation, 14, explanationY);
-      
-      // Información de ocupación
       doc.text(`Meses ocupados: ${propertyDetail.occupancyMonths} de 12 (${((propertyDetail.occupancyMonths/12)*100).toFixed(1)}%)`, 14, explanationY + 15);
       
-      // Pie de página
-      const pageCount = (doc as any).internal.getNumberOfPages();
+      const pageHeight = doc.internal.pageSize.height;
       doc.setFontSize(10);
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${i} de ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-      }
+      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página 1 de 1`, 14, pageHeight - 10);
       
-      // Guardar el PDF
       doc.save(`Informe_Fiscal_${property.name.replace(/\s+/g, "_")}_${selectedYear}.pdf`);
       
       toast.success(`Informe individual de ${property.name} generado correctamente`);
@@ -121,19 +108,15 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
   const generateConsolidatedPDF = () => {
     try {
       setExporting(true);
-      // Crear documento PDF
       const doc = new jsPDF();
       
-      // Título
       doc.setFontSize(18);
       doc.text(`Informe Fiscal Consolidado - ${selectedYear}`, 14, 20);
       
-      // Información general
       doc.setFontSize(12);
       doc.text(`Periodo fiscal: Año ${selectedYear}`, 14, 30);
       doc.text(`Propiedades incluidas: ${selectedPropertyId === 'all' ? 'Todas' : 'Seleccionada'}`, 14, 38);
       
-      // Resumen consolidado
       let finalY = 45;
       autoTable(doc, {
         startY: 45,
@@ -151,7 +134,6 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         }
       });
       
-      // Detalle por propiedades
       const propertyRows = fiscalData.propertyDetails.map(prop => [
         prop.name,
         prop.grossIncome.toFixed(2),
@@ -171,7 +153,6 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         }
       });
       
-      // Notas fiscales
       let notesY = finalY + 15;
       doc.setFontSize(11);
       doc.text('Notas importantes:', 14, notesY);
@@ -181,15 +162,10 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       notesY += 6;
       doc.text('- Se recomienda consultar con un asesor fiscal para la declaración final.', 14, notesY);
       
-      // Pie de página
-      const pageCount = (doc as any).internal.getNumberOfPages();
+      const pageHeight = doc.internal.pageSize.height;
       doc.setFontSize(10);
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${i} de ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-      }
+      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página 1 de 1`, 14, pageHeight - 10);
       
-      // Guardar el PDF
       doc.save(`Informe_Fiscal_Consolidado_${selectedYear}.pdf`);
       
       toast.success('Informe consolidado generado correctamente');
@@ -208,17 +184,14 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         duration: 3000
       });
       
-      // Crear documento PDF
       const doc = new jsPDF();
       
-      // Título
       doc.setFontSize(18);
       doc.text(`Informe Comparativo - ${selectedYear}`, 14, 20);
       
       doc.setFontSize(12);
       doc.text('Este informe muestra una comparativa de rendimientos por propiedad.', 14, 30);
       
-      // Tabla comparativa
       const comparativeData = fiscalData.propertyDetails.map(prop => {
         const rentabilidad = prop.grossIncome > 0 ? (prop.netProfit / prop.grossIncome) * 100 : 0;
         return [
@@ -242,13 +215,11 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         }
       });
       
-      // Gráfico simplificado (texto simulando un gráfico)
       let chartY = finalY + 15;
       doc.setFontSize(14);
       doc.text('Rendimiento por propiedad:', 14, chartY);
       chartY += 10;
       
-      // Simulamos un gráfico textual básico
       fiscalData.propertyDetails.forEach((prop, index) => {
         const barLength = Math.min(100, Math.max(5, prop.netProfit / 100));
         const bar = '█'.repeat(Math.floor(barLength/5));
@@ -256,15 +227,10 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         doc.text(`${prop.name.substring(0, 15)}${prop.name.length > 15 ? '...' : ''}: ${bar} ${prop.netProfit.toFixed(2)}€`, 14, chartY + (index * 7));
       });
       
-      // Pie de página
-      const pageCount = (doc as any).internal.getNumberOfPages();
+      const pageHeight = doc.internal.pageSize.height;
       doc.setFontSize(10);
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${i} de ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-      }
+      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} - Página 1 de 1`, 14, pageHeight - 10);
       
-      // Guardar el PDF
       doc.save(`Informe_Comparativo_${selectedYear}.pdf`);
       
       toast.success('Informe comparativo generado correctamente');
@@ -280,10 +246,8 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
     try {
       setExporting(true);
       
-      // Crear libro de Excel
       const wb = XLSX.utils.book_new();
 
-      // Hoja de resumen
       const summaryData = [
         ['RESUMEN FISCAL', selectedYear],
         [''],
@@ -297,7 +261,6 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
       XLSX.utils.book_append_sheet(wb, ws1, 'Resumen');
 
-      // Hoja de propiedades
       const propertiesData = [
         ['DETALLE POR PROPIEDADES'],
         [''],
@@ -315,7 +278,6 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       const ws2 = XLSX.utils.aoa_to_sheet(propertiesData);
       XLSX.utils.book_append_sheet(wb, ws2, 'Propiedades');
 
-      // Hoja de registros detallados
       const recordsData = [
         ['REGISTROS HISTÓRICOS DETALLADOS'],
         [''],
@@ -337,7 +299,6 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       const ws3 = XLSX.utils.aoa_to_sheet(recordsData);
       XLSX.utils.book_append_sheet(wb, ws3, 'Registros');
 
-      // Guardar archivo
       XLSX.writeFile(wb, `Informe_Fiscal_${selectedYear}_${selectedPropertyId === 'all' ? 'Completo' : 'Propiedad'}.xlsx`);
       
       toast.success('Archivo Excel generado correctamente');
@@ -349,12 +310,10 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
     }
   };
 
-  // Función para exportar datos en formato CSV
   const exportCSV = () => {
     try {
       setExporting(true);
       
-      // Crear datos para el CSV
       const headers = ['Propiedad', 'Mes', 'Año', 'Ingresos', 'Gastos', 'Neto'];
       
       const csvData = [
@@ -373,7 +332,6 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         })
       ].join('\n');
       
-      // Crear y descargar el archivo
       const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
