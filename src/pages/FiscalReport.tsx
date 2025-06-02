@@ -93,6 +93,12 @@ const FiscalReport = () => {
     setShowReport(false);
   };
 
+  const handleMultiYearChange = (checked: boolean | "indeterminate") => {
+    // Convert CheckedState to boolean, treating "indeterminate" as false
+    const boolValue = checked === true;
+    setIsMultiYear(boolValue);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -170,7 +176,7 @@ const FiscalReport = () => {
                     <Checkbox 
                       id="multi-year" 
                       checked={isMultiYear}
-                      onCheckedChange={setIsMultiYear}
+                      onCheckedChange={handleMultiYearChange}
                     />
                     <Label htmlFor="multi-year" className="text-sm font-medium">
                       Informe multi-ejercicio (rango de años)
