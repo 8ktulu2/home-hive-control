@@ -29,7 +29,7 @@ export const useMonthDataHandler = (
     month: -1
   });
 
-  const { getRecord, saveRecord } = useHistoricalStorage();
+  const { getRecord, saveRecord, getRecordsByPropertyYear } = useHistoricalStorage();
   const { syncHistoricalToProperty } = useDataSynchronization();
 
   // Cargar datos cuando cambian la propiedad o el año
@@ -40,10 +40,15 @@ export const useMonthDataHandler = (
   }, [selectedProperty, selectedYear]);
 
   const loadMonthlyData = () => {
+    if (!selectedProperty || !selectedYear) return;
+    
     const year = parseInt(selectedYear);
+    const records = getRecordsByPropertyYear(selectedProperty, year);
+    
     const newMonthlyRecords = Array(12).fill(null).map((_, index) => {
-      return getRecord(selectedProperty, year, index);
+      return records.find(r => r.mes === index) || null;
     });
+    
     setMonthlyRecords(newMonthlyRecords);
   };
 
@@ -63,6 +68,8 @@ export const useMonthDataHandler = (
   };
 
   const saveMonthData = (month: number) => {
+    if (!selectedProperty || !selectedYear) return;
+    
     const year = parseInt(selectedYear);
     
     const success = saveRecord(selectedProperty, year, month, categoryValues);
@@ -76,7 +83,7 @@ export const useMonthDataHandler = (
         syncHistoricalToProperty(selectedProperty, year, month);
       }
       
-      toast.success(`Datos guardados para ${getMonthName(month)} ${year}`);
+      toast.success(`Datos guardados para el mes ${month + 1} de ${year}`);
     } else {
       toast.error('Error al guardar los datos');
     }
@@ -97,20 +104,13 @@ export const useMonthDataHandler = (
     }
   };
 
-  const getMonthName = (month: number): string => {
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return months[month];
-  };
-
   return {
     monthlyRecords,
     confirmDialog,
     handleMonthClick,
     onConfirmOverwrite,
     onCancelOverwrite,
-    handleDialogOpenChange
+    handleDialogOpenChange,
+    loadMonthlyData
   };
 };

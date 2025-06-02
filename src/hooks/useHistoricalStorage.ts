@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useDataSynchronization } from './useDataSynchronization';
 
 export interface HistoricalRecord {
   id: string;
@@ -79,6 +78,12 @@ export const useHistoricalStorage = () => {
     return filteredRecords;
   };
 
+  // Obtener años disponibles en los datos históricos
+  const getAvailableYears = (): number[] => {
+    const years = new Set(records.map(r => r.año));
+    return Array.from(years).sort((a, b) => b - a);
+  };
+
   // Guardar o actualizar registro
   const saveRecord = (
     propiedadId: string, 
@@ -108,15 +113,7 @@ export const useHistoricalStorage = () => {
         updatedAt: now
       };
       
-      const success = saveToStorage(updatedRecords);
-      
-      // Sincronizar con propiedades si cambió el alquiler
-      if (success) {
-        const { syncHistoricalToProperty } = require('./useDataSynchronization').useDataSynchronization();
-        syncHistoricalToProperty(propiedadId, año, mes);
-      }
-      
-      return success;
+      return saveToStorage(updatedRecords);
     } else {
       // Crear nuevo registro
       const newRecord: HistoricalRecord = {
@@ -131,15 +128,7 @@ export const useHistoricalStorage = () => {
         updatedAt: now
       };
       
-      const success = saveToStorage([...records, newRecord]);
-      
-      // Sincronizar con propiedades si se creó un nuevo registro con alquiler
-      if (success && categorias.alquiler > 0) {
-        const { syncHistoricalToProperty } = require('./useDataSynchronization').useDataSynchronization();
-        syncHistoricalToProperty(propiedadId, año, mes);
-      }
-      
-      return success;
+      return saveToStorage([...records, newRecord]);
     }
   };
 
@@ -151,12 +140,20 @@ export const useHistoricalStorage = () => {
     return saveToStorage(updatedRecords);
   };
 
+  // Eliminar todos los registros de una propiedad
+  const deletePropertyRecords = (propiedadId: string): boolean => {
+    const updatedRecords = records.filter(r => r.propiedadId !== propiedadId);
+    return saveToStorage(updatedRecords);
+  };
+
   return {
     records,
     getRecord,
     getRecordsByPropertyYear,
     getFilteredRecords,
+    getAvailableYears,
     saveRecord,
-    deleteRecord
+    deleteRecord,
+    deletePropertyRecords
   };
 };

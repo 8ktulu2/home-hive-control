@@ -16,6 +16,13 @@ export const useDataSynchronization = () => {
     rentAmount: number
   ) => {
     try {
+      // Solo sincronizar si el año no es el actual (datos históricos)
+      const currentYear = new Date().getFullYear();
+      if (year >= currentYear) {
+        console.log(`No sincronizando año actual ${year} al histórico`);
+        return;
+      }
+
       // Obtener el registro histórico existente para este mes
       const existingRecord = getRecord(propertyId, year, month);
       
@@ -54,6 +61,13 @@ export const useDataSynchronization = () => {
   // Función para sincronizar datos históricos con el estado de propiedades
   const syncHistoricalToProperty = (propertyId: string, year: number, month: number) => {
     try {
+      // Solo sincronizar si el año no es el actual
+      const currentYear = new Date().getFullYear();
+      if (year >= currentYear) {
+        console.log(`No sincronizando año actual ${year} desde histórico`);
+        return;
+      }
+
       const record = getRecord(propertyId, year, month);
       
       if (record) {
@@ -85,7 +99,7 @@ export const useDataSynchronization = () => {
               // Crear nuevo registro de pago
               const newPayment = {
                 id: `payment-${Date.now()}`,
-                date: new Date().toISOString(),
+                date: new Date(year, month, 1).toISOString(),
                 amount: record.categorias.alquiler,
                 type: 'rent' as const,
                 isPaid,
@@ -94,12 +108,6 @@ export const useDataSynchronization = () => {
                 notes: ''
               };
               paymentHistory.push(newPayment);
-            }
-            
-            // Actualizar rentPaid si es el mes actual
-            const currentDate = new Date();
-            if (month === currentDate.getMonth() && year === currentDate.getFullYear()) {
-              property.rentPaid = isPaid;
             }
             
             // Guardar cambios
@@ -119,8 +127,57 @@ export const useDataSynchronization = () => {
     }
   };
 
+  // Función para migrar datos del año actual al histórico
+  const migrateCurrentYearToHistorical = (year: number) => {
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      if (!savedProperties) return false;
+
+      const properties: Property[] = JSON.parse(savedProperties);
+      let migratedCount = 0;
+
+      properties.forEach(property => {
+        if (property.paymentHistory) {
+          property.paymentHistory.forEach(payment => {
+            if (payment.year === year) {
+              // Crear registro histórico para este pago
+              const categories = {
+                alquiler: payment.isPaid ? payment.amount : 0,
+                hipoteca: 0,
+                comunidad: 0,
+                ibi: 0,
+                seguroVida: 0,
+                seguroHogar: 0,
+                compras: 0,
+                averias: 0,
+                suministros: 0
+              };
+
+              const success = saveRecord(property.id, payment.year, payment.month, categories);
+              if (success) {
+                migratedCount++;
+              }
+            }
+          });
+        }
+      });
+
+      if (migratedCount > 0) {
+        toast.success(`Se migraron ${migratedCount} registros del año ${year} al histórico`);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error migrando datos al histórico:', error);
+      toast.error('Error al migrar datos al histórico');
+      return false;
+    }
+  };
+
   return {
     syncPaymentToHistorical,
-    syncHistoricalToProperty
+    syncHistoricalToProperty,
+    migrateCurrentYearToHistorical
   };
 };
