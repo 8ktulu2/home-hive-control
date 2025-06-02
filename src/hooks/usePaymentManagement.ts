@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { Property, PaymentRecord } from '@/types/property';
 import { toast } from 'sonner';
+import { useDataSynchronization } from './useDataSynchronization';
 
 export function usePaymentManagement(property: Property | null, setProperty: React.Dispatch<React.SetStateAction<Property | null>>) {
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
+  const { syncPaymentToHistorical } = useDataSynchronization();
   
   // Find current month payment from payment history
   const getCurrentMonthPayment = () => {
@@ -18,38 +20,6 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
       payment.month === currentMonth && 
       payment.year === currentYear
     );
-  };
-  
-  // Add a new payment record
-  const addPaymentRecord = (paymentData: Partial<PaymentRecord>) => {
-    if (!property) return null;
-    
-    const newPayment = {
-      id: `payment-${Date.now()}`,
-      date: new Date().toISOString(),
-      amount: property.rent || 0,
-      type: 'rent' as const,
-      isPaid: true,
-      month: new Date().getMonth(),
-      year: new Date().getFullYear(),
-      notes: paymentData.notes || '',
-      ...paymentData
-    };
-    
-    const updatedHistory = property.paymentHistory 
-      ? [...property.paymentHistory, newPayment] 
-      : [newPayment];
-    
-    const updatedProperty = {
-      ...property,
-      paymentHistory: updatedHistory,
-      rentPaid: true
-    };
-    
-    setProperty(updatedProperty);
-    savePropertyToStorage(updatedProperty);
-    
-    return newPayment;
   };
   
   // Save property to localStorage
@@ -90,6 +60,7 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
                 ...payment, 
                 isPaid, 
                 notes: notes || payment.notes,
+                amount: isPaid ? property.rent : 0,
                 // Update payment date only if marking as paid
                 ...(isPaid ? { date: new Date().toISOString() } : {})
               }
@@ -107,7 +78,7 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
         const newPayment = {
           id: `payment-${Date.now()}`,
           date: isPaid ? new Date().toISOString() : new Date(year, month, 1).toISOString(),
-          amount: property.rent || 0,
+          amount: isPaid ? property.rent : 0,
           type: 'rent' as const,
           isPaid,
           month,
@@ -130,6 +101,9 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
       setProperty(updatedProperty);
       savePropertyToStorage(updatedProperty);
       
+      // Sincronizar con histórico
+      syncPaymentToHistorical(property.id, year, month, isPaid, property.rent);
+      
       toast.success(isPaid ? 'Pago registrado con éxito' : 'Estado de pago actualizado');
     } catch (error) {
       console.error('Error updating payment:', error);
@@ -143,68 +117,11 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
   const updateRentPaidStatus = async (status: boolean) => {
     if (!property) return;
     
-    setIsUpdatingPayment(true);
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
     
-    try {
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const currentPayment = getCurrentMonthPayment();
-      
-      let updatedProperty: Property;
-      
-      if (currentPayment) {
-        // Update existing payment record
-        const updatedHistory = property.paymentHistory?.map(payment => 
-          payment.id === currentPayment.id 
-            ? { 
-                ...payment, 
-                isPaid: status,
-                // Update date if marking as paid
-                ...(status ? { date: new Date().toISOString() } : {})
-              } 
-            : payment
-        );
-        
-        updatedProperty = {
-          ...property,
-          paymentHistory: updatedHistory,
-          rentPaid: status
-        };
-      } else {
-        // Create new payment record for current month
-        const newPayment = {
-          id: `payment-${Date.now()}`,
-          date: status ? new Date().toISOString() : new Date(currentYear, currentMonth, 1).toISOString(),
-          amount: property.rent || 0,
-          type: 'rent' as const,
-          isPaid: status,
-          month: currentMonth,
-          year: currentYear,
-          notes: '',
-        };
-        
-        const updatedHistory = property.paymentHistory 
-          ? [...property.paymentHistory, newPayment] 
-          : [newPayment];
-        
-        updatedProperty = {
-          ...property,
-          paymentHistory: updatedHistory,
-          rentPaid: status
-        };
-      }
-      
-      setProperty(updatedProperty);
-      savePropertyToStorage(updatedProperty);
-      
-      toast.success(status ? 'Pago registrado con éxito' : 'Estado de pago actualizado');
-    } catch (error) {
-      console.error('Error updating payment status:', error);
-      toast.error('Error al actualizar el estado de pago');
-    } finally {
-      setIsUpdatingPayment(false);
-    }
+    handlePaymentUpdate(currentMonth, currentYear, status);
   };
   
   // Add a handler to make the naming consistent with the usage in PropertyDetail.tsx
@@ -213,7 +130,6 @@ export function usePaymentManagement(property: Property | null, setProperty: Rea
   return {
     isUpdatingPayment,
     getCurrentMonthPayment,
-    addPaymentRecord,
     updateRentPaidStatus,
     handlePaymentUpdate,
     handleRentPaidChange

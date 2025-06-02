@@ -13,6 +13,17 @@ export interface PropertyFiscalDetail {
   reductionPercentage: number;
   reducedProfit: number;
   occupancyMonths: number;
+  expenseBreakdown: {
+    alquiler: number;
+    hipoteca: number;
+    comunidad: number;
+    ibi: number;
+    seguroVida: number;
+    seguroHogar: number;
+    compras: number;
+    averias: number;
+    suministros: number;
+  };
 }
 
 export interface FiscalData {
@@ -26,6 +37,17 @@ export interface FiscalData {
   finalLiquidity: number;
   propertyDetails: PropertyFiscalDetail[];
   filteredRecords: HistoricalRecord[];
+  expenseBreakdown: {
+    alquiler: number;
+    hipoteca: number;
+    comunidad: number;
+    ibi: number;
+    seguroVida: number;
+    seguroHogar: number;
+    compras: number;
+    averias: number;
+    suministros: number;
+  };
 }
 
 export const useFiscalCalculations = (properties: Property[], selectedYear: number, selectedPropertyId: string = 'all') => {
@@ -39,16 +61,27 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
     retentions: 0,
     finalLiquidity: 0,
     propertyDetails: [],
-    filteredRecords: []
+    filteredRecords: [],
+    expenseBreakdown: {
+      alquiler: 0,
+      hipoteca: 0,
+      comunidad: 0,
+      ibi: 0,
+      seguroVida: 0,
+      seguroHogar: 0,
+      compras: 0,
+      averias: 0,
+      suministros: 0
+    }
   });
 
   // Conectamos con el almacenamiento histórico
-  const { records, getRecordsByPropertyYear } = useHistoricalStorage();
+  const { getFilteredRecords } = useHistoricalStorage();
 
   useEffect(() => {
     // Calculamos todos los datos fiscales basados en los registros históricos
     calculateFiscalData();
-  }, [properties, selectedYear, selectedPropertyId, records]);
+  }, [properties, selectedYear, selectedPropertyId]);
 
   const calculateFiscalData = () => {
     // Filtramos las propiedades si se ha seleccionado una específica
@@ -56,27 +89,65 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
       ? properties 
       : properties.filter(p => p.id === selectedPropertyId);
     
+    // Obtenemos todos los registros históricos filtrados
+    const allRecords = getFilteredRecords(selectedYear, selectedPropertyId);
+    
     // Inicializamos variables para totales
     let totalGrossIncome = 0;
     let totalExpenses = 0;
     let totalNetProfit = 0;
     let totalTaxableBase = 0;
     const propertyDetails: PropertyFiscalDetail[] = [];
-    let allRecords: HistoricalRecord[] = [];
+    
+    // Inicializamos el desglose de gastos total
+    const totalExpenseBreakdown = {
+      alquiler: 0,
+      hipoteca: 0,
+      comunidad: 0,
+      ibi: 0,
+      seguroVida: 0,
+      seguroHogar: 0,
+      compras: 0,
+      averias: 0,
+      suministros: 0
+    };
 
     // Procesamos cada propiedad
     filteredProperties.forEach(property => {
       // Obtenemos los registros históricos para esta propiedad y año
-      const propertyRecords = getRecordsByPropertyYear(property.id, selectedYear);
-      allRecords = [...allRecords, ...propertyRecords];
+      const propertyRecords = allRecords.filter(record => record.propiedadId === property.id);
       
       // Calculamos los totales para esta propiedad
-      const propertyGrossIncome = propertyRecords.reduce((sum, record) => sum + record.ingresos, 0);
-      const propertyExpenses = propertyRecords.reduce((sum, record) => sum + record.gastos, 0);
+      let propertyGrossIncome = 0;
+      let propertyExpenses = 0;
+      const propertyExpenseBreakdown = {
+        alquiler: 0,
+        hipoteca: 0,
+        comunidad: 0,
+        ibi: 0,
+        seguroVida: 0,
+        seguroHogar: 0,
+        compras: 0,
+        averias: 0,
+        suministros: 0
+      };
+      
+      // Sumamos todos los datos de los registros históricos
+      propertyRecords.forEach(record => {
+        propertyGrossIncome += record.ingresos;
+        propertyExpenses += record.gastos;
+        
+        // Sumamos cada categoría de gastos
+        Object.keys(propertyExpenseBreakdown).forEach(key => {
+          const categoryKey = key as keyof typeof propertyExpenseBreakdown;
+          propertyExpenseBreakdown[categoryKey] += record.categorias[categoryKey] || 0;
+          totalExpenseBreakdown[categoryKey] += record.categorias[categoryKey] || 0;
+        });
+      });
+      
       const propertyNetProfit = propertyGrossIncome - propertyExpenses;
       
       // Determinamos el porcentaje de reducción basado en reglas fiscales
-      // (En España, puede ser 60% para alquiler residencial habitual, 40% para otros)
       const occupiedMonths = propertyRecords.filter(record => record.ingresos > 0).length;
       let reductionPercentage = 0;
       
@@ -109,11 +180,12 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
         netProfit: propertyNetProfit,
         reductionPercentage,
         reducedProfit,
-        occupancyMonths: occupiedMonths
+        occupancyMonths: occupiedMonths,
+        expenseBreakdown: propertyExpenseBreakdown
       });
     });
     
-    // Calculamos el tipo medio aproximado de IRPF (esto es simplificado)
+    // Calculamos el tipo medio aproximado de IRPF
     const irpfRate = calculateEstimatedIRPFRate(totalTaxableBase);
     const irpfQuota = totalTaxableBase * (irpfRate / 100);
     
@@ -139,7 +211,18 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
       retentions,
       finalLiquidity,
       propertyDetails,
-      filteredRecords: allRecords
+      filteredRecords: allRecords,
+      expenseBreakdown: totalExpenseBreakdown
+    });
+    
+    console.log('Datos fiscales calculados:', {
+      totalGrossIncome,
+      totalExpenses,
+      totalNetProfit,
+      totalTaxableBase,
+      propertyCount: propertyDetails.length,
+      recordCount: allRecords.length,
+      expenseBreakdown: totalExpenseBreakdown
     });
   };
   

@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
+import { useHistoricalStorage, HistoricalRecord } from './useHistoricalStorage';
+import { useDataSynchronization } from './useDataSynchronization';
 import { toast } from 'sonner';
-import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
 
 interface CategoryValues {
   alquiler: number;
@@ -15,115 +16,93 @@ interface CategoryValues {
   suministros: number;
 }
 
-interface ConfirmDialogState {
-  open: boolean;
-  month?: string;
-}
-
-const months = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
-
 export const useMonthDataHandler = (
   selectedProperty: string,
   selectedYear: string,
   categoryValues: CategoryValues
 ) => {
-  const [monthlyRecords, setMonthlyRecords] = useState<{ [month: number]: HistoricalRecord }>({});
-  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({ 
+  const [monthlyRecords, setMonthlyRecords] = useState<(HistoricalRecord | null)[]>(
+    Array(12).fill(null)
+  );
+  const [confirmDialog, setConfirmDialog] = useState({
     open: false,
-    month: undefined
+    month: -1
   });
-  
-  const { getRecord, getRecordsByPropertyYear, saveRecord } = useHistoricalStorage();
 
-  // Load data when property or year changes
+  const { getRecord, saveRecord } = useHistoricalStorage();
+  const { syncHistoricalToProperty } = useDataSynchronization();
+
+  // Cargar datos cuando cambian la propiedad o el año
   useEffect(() => {
     if (selectedProperty && selectedYear) {
-      const yearNumber = parseInt(selectedYear);
-      const records = getRecordsByPropertyYear(selectedProperty, yearNumber);
-      
-      const recordsMap: { [month: number]: HistoricalRecord } = {};
-      records.forEach(record => {
-        recordsMap[record.mes] = record;
-      });
-      
-      setMonthlyRecords(recordsMap);
-    } else {
-      setMonthlyRecords({});
+      loadMonthlyData();
     }
-  }, [selectedProperty, selectedYear, getRecordsByPropertyYear]);
+  }, [selectedProperty, selectedYear]);
 
-  const validateValues = (): boolean => {
-    const hasAnyValue = Object.values(categoryValues).some(value => value > 0);
-    if (!hasAnyValue) {
-      toast.error('Introduce al menos un valor mayor que 0');
-      return false;
-    }
-    return true;
-  };
-
-  const saveDataForMonth = (month: number) => {
-    if (!selectedProperty || !selectedYear) return;
-
-    const yearNumber = parseInt(selectedYear);
-    const success = saveRecord(selectedProperty, yearNumber, month, categoryValues);
-    
-    if (success) {
-      toast.success(`Datos guardados para ${months[month]}`);
-      
-      // Update local state
-      const newRecord = getRecord(selectedProperty, yearNumber, month);
-      if (newRecord) {
-        setMonthlyRecords(prev => ({
-          ...prev,
-          [month]: newRecord
-        }));
-      }
-    }
+  const loadMonthlyData = () => {
+    const year = parseInt(selectedYear);
+    const newMonthlyRecords = Array(12).fill(null).map((_, index) => {
+      return getRecord(selectedProperty, year, index);
+    });
+    setMonthlyRecords(newMonthlyRecords);
   };
 
   const handleMonthClick = (month: number) => {
-    if (!selectedProperty || !selectedYear) {
-      toast.error('Selecciona primero una propiedad y un año');
-      return;
-    }
-
-    if (!validateValues()) {
-      return;
-    }
-
     const existingRecord = monthlyRecords[month];
     
     if (existingRecord) {
+      // Si ya existe un registro, mostrar diálogo de confirmación
       setConfirmDialog({
         open: true,
-        month: months[month]
+        month
       });
     } else {
-      saveDataForMonth(month);
+      // Si no existe, crear directamente
+      saveMonthData(month);
+    }
+  };
+
+  const saveMonthData = (month: number) => {
+    const year = parseInt(selectedYear);
+    
+    const success = saveRecord(selectedProperty, year, month, categoryValues);
+    
+    if (success) {
+      // Recargar datos
+      loadMonthlyData();
+      
+      // Sincronizar con propiedades si hay ingresos de alquiler
+      if (categoryValues.alquiler > 0) {
+        syncHistoricalToProperty(selectedProperty, year, month);
+      }
+      
+      toast.success(`Datos guardados para ${getMonthName(month)} ${year}`);
+    } else {
+      toast.error('Error al guardar los datos');
     }
   };
 
   const onConfirmOverwrite = () => {
-    if (confirmDialog.month) {
-      const monthIndex = months.indexOf(confirmDialog.month);
-      if (monthIndex !== -1) {
-        saveDataForMonth(monthIndex);
-      }
-    }
-    setConfirmDialog({ open: false, month: undefined });
+    saveMonthData(confirmDialog.month);
+    setConfirmDialog({ open: false, month: -1 });
   };
 
   const onCancelOverwrite = () => {
-    setConfirmDialog({ open: false, month: undefined });
+    setConfirmDialog({ open: false, month: -1 });
   };
 
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
-      setConfirmDialog({ open: false, month: undefined });
+      setConfirmDialog({ open: false, month: -1 });
     }
+  };
+
+  const getMonthName = (month: number): string => {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return months[month];
   };
 
   return {

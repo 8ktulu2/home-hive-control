@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useDataSynchronization } from './useDataSynchronization';
 
 export interface HistoricalRecord {
   id: string;
@@ -67,6 +68,17 @@ export const useHistoricalStorage = () => {
     return records.filter(r => r.propiedadId === propiedadId && r.año === año);
   };
 
+  // Obtener todos los registros filtrados por año y propiedad
+  const getFilteredRecords = (año: number, propiedadId?: string): HistoricalRecord[] => {
+    let filteredRecords = records.filter(r => r.año === año);
+    
+    if (propiedadId && propiedadId !== 'all') {
+      filteredRecords = filteredRecords.filter(r => r.propiedadId === propiedadId);
+    }
+    
+    return filteredRecords;
+  };
+
   // Guardar o actualizar registro
   const saveRecord = (
     propiedadId: string, 
@@ -95,7 +107,16 @@ export const useHistoricalStorage = () => {
         categorias,
         updatedAt: now
       };
-      return saveToStorage(updatedRecords);
+      
+      const success = saveToStorage(updatedRecords);
+      
+      // Sincronizar con propiedades si cambió el alquiler
+      if (success) {
+        const { syncHistoricalToProperty } = require('./useDataSynchronization').useDataSynchronization();
+        syncHistoricalToProperty(propiedadId, año, mes);
+      }
+      
+      return success;
     } else {
       // Crear nuevo registro
       const newRecord: HistoricalRecord = {
@@ -109,7 +130,16 @@ export const useHistoricalStorage = () => {
         createdAt: now,
         updatedAt: now
       };
-      return saveToStorage([...records, newRecord]);
+      
+      const success = saveToStorage([...records, newRecord]);
+      
+      // Sincronizar con propiedades si se creó un nuevo registro con alquiler
+      if (success && categorias.alquiler > 0) {
+        const { syncHistoricalToProperty } = require('./useDataSynchronization').useDataSynchronization();
+        syncHistoricalToProperty(propiedadId, año, mes);
+      }
+      
+      return success;
     }
   };
 
@@ -125,6 +155,7 @@ export const useHistoricalStorage = () => {
     records,
     getRecord,
     getRecordsByPropertyYear,
+    getFilteredRecords,
     saveRecord,
     deleteRecord
   };
