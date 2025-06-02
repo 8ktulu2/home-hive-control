@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { FiscalData } from '@/hooks/useFiscalCalculations';
@@ -58,6 +57,7 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       doc.text(`Periodo fiscal: Año ${selectedYear}`, 14, 38);
       
       // Tabla de datos financieros
+      let finalY = 45;
       autoTable(doc, {
         startY: 45,
         head: [['Concepto', 'Importe (€)']],
@@ -69,11 +69,14 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
           ['Importe de la reducción', propertyDetail.reducedProfit.toFixed(2)],
           ['Base imponible', (propertyDetail.netProfit - propertyDetail.reducedProfit).toFixed(2)]
         ],
+        didDrawPage: (data) => {
+          finalY = data.cursor?.y || finalY;
+        }
       });
       
       // Explicación de reducciones
       doc.setFontSize(11);
-      let explanationY = doc.lastAutoTable.finalY + 15;
+      let explanationY = finalY + 15;
       doc.text('Explicación de la reducción aplicada:', 14, explanationY);
       explanationY += 8;
       
@@ -95,7 +98,7 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       doc.text(`Meses ocupados: ${propertyDetail.occupancyMonths} de 12 (${((propertyDetail.occupancyMonths/12)*100).toFixed(1)}%)`, 14, explanationY + 15);
       
       // Pie de página
-      const pageCount = doc.internal.getNumberOfPages();
+      const pageCount = (doc as any).internal.getNumberOfPages();
       doc.setFontSize(10);
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -131,6 +134,7 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       doc.text(`Propiedades incluidas: ${selectedPropertyId === 'all' ? 'Todas' : 'Seleccionada'}`, 14, 38);
       
       // Resumen consolidado
+      let finalY = 45;
       autoTable(doc, {
         startY: 45,
         head: [['Concepto', 'Importe (€)']],
@@ -142,6 +146,9 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
           ['Base imponible', fiscalData.taxableBase.toFixed(2)],
           ['Cuota IRPF estimada', fiscalData.irpfQuota.toFixed(2)]
         ],
+        didDrawPage: (data) => {
+          finalY = data.cursor?.y || finalY;
+        }
       });
       
       // Detalle por propiedades
@@ -155,14 +162,17 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       ]);
       
       autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 15,
+        startY: finalY + 15,
         head: [['Propiedad', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Reducción', 'Base Imponible (€)']],
         body: propertyRows,
         headStyles: { fillColor: [60, 60, 120] },
+        didDrawPage: (data) => {
+          finalY = data.cursor?.y || finalY;
+        }
       });
       
       // Notas fiscales
-      let notesY = doc.lastAutoTable.finalY + 15;
+      let notesY = finalY + 15;
       doc.setFontSize(11);
       doc.text('Notas importantes:', 14, notesY);
       notesY += 7;
@@ -172,7 +182,7 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       doc.text('- Se recomienda consultar con un asesor fiscal para la declaración final.', 14, notesY);
       
       // Pie de página
-      const pageCount = doc.internal.getNumberOfPages();
+      const pageCount = (doc as any).internal.getNumberOfPages();
       doc.setFontSize(10);
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -221,15 +231,19 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
         ];
       });
       
+      let finalY = 40;
       autoTable(doc, {
         startY: 40,
         head: [['Propiedad', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Rentabilidad', 'Meses ocupados']],
         body: comparativeData,
         headStyles: { fillColor: [60, 90, 100] },
+        didDrawPage: (data) => {
+          finalY = data.cursor?.y || finalY;
+        }
       });
       
       // Gráfico simplificado (texto simulando un gráfico)
-      let chartY = doc.lastAutoTable.finalY + 15;
+      let chartY = finalY + 15;
       doc.setFontSize(14);
       doc.text('Rendimiento por propiedad:', 14, chartY);
       chartY += 10;
@@ -243,7 +257,7 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
       });
       
       // Pie de página
-      const pageCount = doc.internal.getNumberOfPages();
+      const pageCount = (doc as any).internal.getNumberOfPages();
       doc.setFontSize(10);
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);

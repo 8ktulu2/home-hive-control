@@ -68,7 +68,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     return amount.toFixed(2);
   };
 
-  const isCalendarEnabled = selectedProperty && selectedYear;
+  const isCalendarEnabled = Boolean(selectedProperty && selectedYear);
 
   return (
     <div className="space-y-6">

@@ -22,6 +22,8 @@ export interface FiscalData {
   reductionPercentage: number;
   taxableBase: number;
   irpfQuota: number;
+  retentions: number;
+  finalLiquidity: number;
   propertyDetails: PropertyFiscalDetail[];
   filteredRecords: HistoricalRecord[];
 }
@@ -34,6 +36,8 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
     reductionPercentage: 0,
     taxableBase: 0,
     irpfQuota: 0,
+    retentions: 0,
+    finalLiquidity: 0,
     propertyDetails: [],
     filteredRecords: []
   });
@@ -113,6 +117,12 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
     const irpfRate = calculateEstimatedIRPFRate(totalTaxableBase);
     const irpfQuota = totalTaxableBase * (irpfRate / 100);
     
+    // Calculamos las retenciones estimadas (19% sobre ingresos brutos como estimación)
+    const retentions = totalGrossIncome * 0.19;
+    
+    // Calculamos la liquidez final (beneficio neto - cuota IRPF + retenciones)
+    const finalLiquidity = totalNetProfit - irpfQuota + retentions;
+    
     // Calculamos el porcentaje de reducción promedio ponderado
     const weightedReductionPercentage = totalNetProfit > 0 
       ? ((totalNetProfit - totalTaxableBase) / totalNetProfit) * 100 
@@ -126,6 +136,8 @@ export const useFiscalCalculations = (properties: Property[], selectedYear: numb
       reductionPercentage: Math.round(weightedReductionPercentage),
       taxableBase: totalTaxableBase,
       irpfQuota,
+      retentions,
+      finalLiquidity,
       propertyDetails,
       filteredRecords: allRecords
     });
