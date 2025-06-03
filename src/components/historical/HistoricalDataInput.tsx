@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Save, AlertCircle, Search, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Save, AlertCircle, Search, ChevronDown, ChevronUp, Trash2, Euro } from 'lucide-react';
 import { toast } from 'sonner';
 import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
 import { useDataSynchronization } from '@/hooks/useDataSynchronization';
@@ -70,12 +70,16 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
-  const categories = [
+  // Dividir categorías en dos columnas para mejor visualización
+  const categoriesColumn1 = [
     { key: 'alquiler', label: 'Alquiler', color: 'bg-green-100 text-green-800', icon: '🏠' },
     { key: 'hipoteca', label: 'Hipoteca', color: 'bg-red-100 text-red-800', icon: '🏦' },
     { key: 'comunidad', label: 'Comunidad', color: 'bg-blue-100 text-blue-800', icon: '🏢' },
     { key: 'ibi', label: 'IBI', color: 'bg-yellow-100 text-yellow-800', icon: '📄' },
-    { key: 'seguroVida', label: 'Seguro Vida', color: 'bg-purple-100 text-purple-800', icon: '💼' },
+    { key: 'seguroVida', label: 'Seguro Vida', color: 'bg-purple-100 text-purple-800', icon: '💼' }
+  ];
+
+  const categoriesColumn2 = [
     { key: 'seguroHogar', label: 'Seguro Hogar', color: 'bg-pink-100 text-pink-800', icon: '🛡️' },
     { key: 'compras', label: 'Compras', color: 'bg-orange-100 text-orange-800', icon: '🛒' },
     { key: 'averias', label: 'Averías', color: 'bg-red-100 text-red-800', icon: '🔧' },
@@ -131,7 +135,9 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
 
   const handleMonthClick = (monthIndex: number) => {
     if (!hasData()) {
-      toast.error('Introduce valores en las categorías antes de aplicar a un mes');
+      toast.error('Introduce valores en las categorías antes de aplicar a un mes', {
+        description: 'Rellena al menos una categoría con un valor mayor a 0'
+      });
       return;
     }
 
@@ -165,8 +171,12 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
         syncHistoricalToProperty(selectedProperty, year, month);
       }
       
-      toast.success(`Datos guardados para ${months[month]} ${year}`);
-      clearValues();
+      toast.success(`Datos guardados para ${months[month]} ${year}`, {
+        description: 'Los datos se han sincronizado correctamente'
+      });
+      
+      // Mantener los valores para permitir aplicar a múltiples meses
+      // clearValues(); - Comentado para mantener valores temporalmente
     } else {
       toast.error('Error al guardar los datos');
     }
@@ -220,10 +230,10 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
-      case 'complete': return 'bg-green-500 hover:bg-green-600 text-white';
-      case 'partial': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
-      case 'empty': return 'bg-gray-300 hover:bg-gray-400 text-gray-700';
-      default: return 'bg-blue-500 hover:bg-blue-600 text-white';
+      case 'complete': return 'bg-green-500 hover:bg-green-600 text-white shadow-lg';
+      case 'partial': return 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-md';
+      case 'empty': return 'bg-gray-300 hover:bg-gray-400 text-gray-700 shadow-sm';
+      default: return 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all';
     }
   };
 
@@ -231,41 +241,41 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
 
   return (
     <div className="space-y-6">
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Configuración de Datos Históricos</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Gestiona datos de años anteriores (2022 - {currentYear - 1})
+      {/* Filtros mejorados */}
+      <Card className="border-2 border-blue-100">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardTitle className="text-blue-800">⚙️ Configuración de Datos Históricos</CardTitle>
+          <p className="text-sm text-blue-600">
+            Gestiona datos de años anteriores ({historicalYears[historicalYears.length - 1]} - {historicalYears[0]})
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="property">Propiedad</Label>
+              <Label htmlFor="property" className="text-gray-700 font-medium">🏠 Propiedad</Label>
               <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-                <SelectTrigger>
+                <SelectTrigger className="border-2 hover:border-blue-300 transition-colors">
                   <SelectValue placeholder="Selecciona una propiedad" />
                 </SelectTrigger>
                 <SelectContent>
                   {properties.map((property) => (
                     <SelectItem key={property.id} value={property.id}>
-                      {property.name}
+                      🏠 {property.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="year">Año Histórico</Label>
+              <Label htmlFor="year" className="text-gray-700 font-medium">📅 Año Histórico</Label>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger>
+                <SelectTrigger className="border-2 hover:border-blue-300 transition-colors">
                   <SelectValue placeholder="Selecciona un año" />
                 </SelectTrigger>
                 <SelectContent>
                   {historicalYears.map((year) => (
                     <SelectItem key={year} value={year.toString()}>
-                      {year}
+                      📅 {year}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -275,63 +285,99 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
         </CardContent>
       </Card>
 
-      {/* Formulario de valores por categoría */}
+      {/* Formulario de valores por categoría mejorado con dos columnas */}
       {selectedProperty && selectedYear && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Valores por Categoría</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Introduce los valores y luego aplícalos a los meses deseados
+        <Card className="border-2 border-green-100">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+            <CardTitle className="text-green-800">💰 Valores por Categoría</CardTitle>
+            <p className="text-sm text-green-600">
+              Introduce los valores y luego aplícalos a los meses deseados haciendo clic en el calendario
             </p>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              {categories.map((category) => (
-                <div key={category.key} className="space-y-2">
-                  <Label htmlFor={category.key}>
-                    <Badge className={`mr-2 ${category.color}`}>
-                      {category.icon} {category.label}
-                    </Badge>
-                  </Label>
-                  <Input
-                    id={category.key}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={categoryValues[category.key as keyof CategoryValues] || ''}
-                    onChange={(e) => handleValueChange(category.key as keyof CategoryValues, e.target.value)}
-                  />
-                </div>
-              ))}
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+              {/* Columna 1: Ingresos y Gastos Principales */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-700 border-b pb-2">📊 Ingresos y Gastos Principales</h3>
+                {categoriesColumn1.map((category) => (
+                  <div key={category.key} className="space-y-2">
+                    <Label htmlFor={category.key} className="flex items-center gap-2">
+                      <Badge className={`${category.color} text-xs px-2 py-1`}>
+                        {category.icon} {category.label}
+                      </Badge>
+                    </Label>
+                    <div className="relative">
+                      <Euro className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id={category.key}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={categoryValues[category.key as keyof CategoryValues] || ''}
+                        onChange={(e) => handleValueChange(category.key as keyof CategoryValues, e.target.value)}
+                        className="pl-10 border-2 hover:border-green-300 focus:border-green-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Columna 2: Seguros y Otros Gastos */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-700 border-b pb-2">🛡️ Seguros y Otros Gastos</h3>
+                {categoriesColumn2.map((category) => (
+                  <div key={category.key} className="space-y-2">
+                    <Label htmlFor={category.key} className="flex items-center gap-2">
+                      <Badge className={`${category.color} text-xs px-2 py-1`}>
+                        {category.icon} {category.label}
+                      </Badge>
+                    </Label>
+                    <div className="relative">
+                      <Euro className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id={category.key}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={categoryValues[category.key as keyof CategoryValues] || ''}
+                        onChange={(e) => handleValueChange(category.key as keyof CategoryValues, e.target.value)}
+                        className="pl-10 border-2 hover:border-green-300 focus:border-green-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={clearValues}>
-                Limpiar Valores
+            <div className="flex gap-3 items-center p-4 bg-gray-50 rounded-lg">
+              <Button variant="outline" onClick={clearValues} className="hover:bg-red-50 hover:border-red-200">
+                🗑️ Limpiar Valores
               </Button>
-              <div className="text-sm text-muted-foreground flex items-center">
-                {hasData() ? 
-                  '✅ Valores listos para aplicar a los meses' : 
-                  '⚠️ Introduce valores para continuar'
-                }
+              <div className="text-sm flex items-center gap-2">
+                {hasData() ? (
+                  <span className="text-green-600 font-medium">✅ Valores listos para aplicar a los meses</span>
+                ) : (
+                  <span className="text-amber-600 font-medium">⚠️ Introduce valores para continuar</span>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Calendario de meses */}
+      {/* Calendario de meses mejorado */}
       {selectedProperty && selectedYear && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Calendario {selectedYear}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Haz clic en un mes para aplicar los valores introducidos
+        <Card className="border-2 border-purple-100">
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50">
+            <CardTitle className="text-purple-800">📅 Calendario {selectedYear}</CardTitle>
+            <p className="text-sm text-purple-600">
+              Haz clic en un mes para aplicar los valores introducidos. Los valores se mantienen para aplicar a múltiples meses.
             </p>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {months.map((monthName, index) => {
                 const record = monthlyRecords[index];
                 const hasRecord = !!record;
@@ -339,26 +385,31 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
                 const statusColor = getStatusColor(status);
 
                 return (
-                  <div key={index} className="space-y-1">
+                  <div key={index} className="space-y-2">
                     <Button
                       variant="outline"
                       onClick={() => handleMonthClick(index)}
                       disabled={!isCalendarEnabled}
-                      className={`h-auto p-3 flex flex-col items-center gap-2 w-full transition-all hover:scale-105 ${statusColor} border-none`}
+                      className={`h-auto p-4 flex flex-col items-center gap-3 w-full transition-all duration-200 hover:scale-105 ${statusColor} border-2`}
                     >
-                      <span className="font-medium text-sm">📆 {monthName}</span>
+                      <span className="font-bold text-base">📆 {monthName}</span>
                       {hasRecord ? (
-                        <div className="w-full space-y-1 text-xs">
-                          <div className="text-green-200">
-                            📈 +{formatCurrency(record.ingresos)}€
-                          </div>
-                          <div className="text-red-200">
-                            📉 -{formatCurrency(record.gastos)}€
+                        <div className="w-full space-y-2 text-xs">
+                          <div className="bg-white/20 rounded p-2">
+                            <div className="text-green-100 font-medium">
+                              💰 +{formatCurrency(record.ingresos)}€
+                            </div>
+                            <div className="text-red-100 font-medium">
+                              💸 -{formatCurrency(record.gastos)}€
+                            </div>
+                            <div className="text-white font-bold border-t border-white/30 pt-1 mt-1">
+                              💼 {formatCurrency(record.ingresos - record.gastos)}€
+                            </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="text-xs opacity-75 w-full text-center">
-                          {isCalendarEnabled ? 'Clic para guardar' : 'Introduce valores'}
+                        <div className="text-xs opacity-75 w-full text-center bg-white/20 rounded p-2">
+                          {isCalendarEnabled ? '👆 Clic para guardar' : '⚠️ Introduce valores'}
                         </div>
                       )}
                     </Button>
@@ -369,7 +420,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleExpandMonth(index)}
-                          className="flex-1 text-xs p-1 h-7"
+                          className="flex-1 text-xs p-2 h-8 hover:bg-blue-50"
                         >
                           <Search className="h-3 w-3 mr-1" />
                           {expandedMonth === index ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -378,7 +429,7 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteMonth(index)}
-                          className="text-xs p-1 h-7 text-red-600 hover:text-red-800"
+                          className="text-xs p-2 h-8 text-red-600 hover:text-red-800 hover:bg-red-50"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -386,28 +437,31 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
                     )}
 
                     {expandedMonth === index && hasRecord && (
-                      <div className="p-3 bg-gray-50 rounded-md space-y-2 text-xs border">
-                        <div className="font-medium text-gray-800 border-b pb-1">
-                          Detalle de {monthName} {selectedYear}
+                      <div className="p-4 bg-white border-2 border-blue-200 rounded-lg shadow-lg space-y-3 text-sm">
+                        <div className="font-bold text-blue-800 border-b border-blue-200 pb-2 text-center">
+                          📊 Detalle de {monthName} {selectedYear}
                         </div>
-                        {categories.map(category => {
-                          const value = record.categorias[category.key as keyof typeof record.categorias];
-                          if (value > 0) {
-                            return (
-                              <div key={category.key} className="flex justify-between items-center">
-                                <span className="flex items-center gap-1">
-                                  <span>{category.icon}</span>
-                                  <span>{category.label}:</span>
-                                </span>
-                                <span className="font-medium">{formatCurrency(value)}€</span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })}
-                        <div className="border-t pt-2 flex justify-between font-medium">
-                          <span>Balance:</span>
-                          <span className={record.ingresos - record.gastos >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        <div className="space-y-2">
+                          {[...categoriesColumn1, ...categoriesColumn2].map(category => {
+                            const value = record.categorias[category.key as keyof typeof record.categorias];
+                            if (value > 0) {
+                              return (
+                                <div key={category.key} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                  <span className="flex items-center gap-2">
+                                    <Badge className={`${category.color} text-xs px-2 py-1`}>
+                                      {category.icon} {category.label}
+                                    </Badge>
+                                  </span>
+                                  <span className="font-bold text-blue-600">{formatCurrency(value)}€</span>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                        <div className="border-t pt-3 flex justify-between items-center font-bold text-lg">
+                          <span>💰 Balance Final:</span>
+                          <span className={`${record.ingresos - record.gastos >= 0 ? 'text-green-600' : 'text-red-600'} text-xl`}>
                             {formatCurrency(record.ingresos - record.gastos)}€
                           </span>
                         </div>
@@ -418,47 +472,48 @@ const HistoricalDataInput: React.FC<HistoricalDataInputProps> = ({ properties })
               })}
             </div>
             
-            <div className="mt-6 flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
                 <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span>Completo (ingresos + gastos)</span>
+                <span className="font-medium text-green-800">Completo</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                 <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                <span>Parcial (solo ingresos o gastos)</span>
+                <span className="font-medium text-yellow-800">Parcial</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="w-4 h-4 bg-gray-300 rounded"></div>
-                <span>Vacío</span>
+                <span className="font-medium text-gray-600">Vacío</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                <span>Nuevo (sin datos)</span>
+                <span className="font-medium text-blue-800">Nuevo</span>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Diálogo de confirmación */}
+      {/* Diálogo de confirmación mejorado */}
       <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && onCancelOverwrite()}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertCircle className="h-5 w-5" />
               Confirmar Sobrescritura
             </DialogTitle>
-            <DialogDescription>
-              Ya existen datos para {confirmDialog.month >= 0 ? months[confirmDialog.month] : ''} de {selectedYear}. 
-              ¿Deseas sobrescribir los datos existentes?
+            <DialogDescription className="text-gray-600">
+              Ya existen datos para <strong>{confirmDialog.month >= 0 ? months[confirmDialog.month] : ''}</strong> de <strong>{selectedYear}</strong>. 
+              <br />
+              ¿Deseas sobrescribir los datos existentes con los nuevos valores?
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={onCancelOverwrite}>
-              Cancelar
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={onCancelOverwrite} className="hover:bg-gray-50">
+              ❌ Cancelar
             </Button>
-            <Button onClick={onConfirmOverwrite} className="bg-yellow-500 hover:bg-yellow-600">
-              Sobrescribir
+            <Button onClick={onConfirmOverwrite} className="bg-amber-500 hover:bg-amber-600 text-white">
+              ✅ Sobrescribir
             </Button>
           </div>
         </DialogContent>
