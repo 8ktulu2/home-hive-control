@@ -257,6 +257,13 @@ const ConsolidatedFiscalReport: React.FC<ConsolidatedFiscalReportProps> = ({
                   };
 
                   const categoryInfo = categoryLabels[category];
+                  
+                  // Skip if categoryInfo is undefined to prevent the error
+                  if (!categoryInfo) {
+                    console.warn(`Category info not found for category: ${category}`);
+                    return null;
+                  }
+
                   const percentage = ((amount / fiscalData.deductibleExpenses) * 100).toFixed(1);
 
                   return (
@@ -306,10 +313,12 @@ const ConsolidatedFiscalReport: React.FC<ConsolidatedFiscalReportProps> = ({
                       suministros: '⚡ Suministros'
                     };
 
+                    const categoryLabel = categoryLabels[category] || `📊 ${category}`;
+
                     return (
                       <div key={category} className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>{categoryLabels[category]}</span>
+                          <span>{categoryLabel}</span>
                           <span>{percentage.toFixed(1)}%</span>
                         </div>
                         {renderProgressBar(percentage, 100, "bg-gradient-to-r from-blue-400 to-blue-600")}
@@ -387,8 +396,7 @@ const ConsolidatedFiscalReport: React.FC<ConsolidatedFiscalReportProps> = ({
                   <h4 className="font-semibold text-gray-700 border-b pb-1">📅 Ocupación Anual</h4>
                   <div className="grid grid-cols-6 gap-1 text-xs">
                     {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'].map((month, monthIndex) => {
-                      // Aquí podrías integrar datos reales de ocupación por mes
-                      const isOccupied = property.occupancyMonths > monthIndex; // Simplificación
+                      const isOccupied = property.occupancyMonths > monthIndex;
                       return (
                         <div
                           key={month}
