@@ -4,6 +4,8 @@ import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import MainContent from './MainContent';
 import SecondaryContent from './SecondaryContent';
 import HistoricalSection from './historical/HistoricalSection';
+import HistoricalPropertyView from './historical/HistoricalPropertyView';
+import { useState } from 'react';
 
 interface PropertyDetailContentProps {
   property: Property;
@@ -32,8 +34,35 @@ const PropertyDetailContent = ({
   handleExpenseDelete,
   setProperty
 }: PropertyDetailContentProps) => {
+  const [selectedHistoricalYear, setSelectedHistoricalYear] = useState<number | null>(null);
+
+  const handleYearSelect = (year: number) => {
+    setSelectedHistoricalYear(year);
+  };
+
+  const handleBackToCurrentYear = () => {
+    setSelectedHistoricalYear(null);
+  };
+
+  // If historical year is selected, show historical view
+  if (selectedHistoricalYear) {
+    return (
+      <HistoricalPropertyView 
+        property={property}
+        year={selectedHistoricalYear}
+        onBack={handleBackToCurrentYear}
+      />
+    );
+  }
+
+  // Current year view
   return (
     <div className="space-y-6">
+      <HistoricalSection 
+        property={property} 
+        onYearSelect={handleYearSelect}
+      />
+
       <div className="pb-1">
         <MonthlyPaymentStatus 
           property={property}
@@ -41,8 +70,6 @@ const PropertyDetailContent = ({
           compact={true}
         />
       </div>
-
-      <HistoricalSection property={property} />
 
       <MainContent 
         property={property} 

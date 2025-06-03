@@ -1,19 +1,16 @@
 
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { History, Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { useHistoricalStorage } from '@/hooks/useHistoricalStorage';
-import HistoricalYearView from './HistoricalYearView';
 
 interface HistoricalSectionProps {
   property: Property;
+  onYearSelect: (year: number) => void;
 }
 
-const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property }) => {
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearSelect }) => {
   const { getAvailableYears } = useHistoricalStorage();
   
   const currentYear = new Date().getFullYear();
@@ -25,93 +22,49 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property }) => {
     (_, i) => currentYear - 1 - i
   );
 
-  const handleYearSelect = (year: number) => {
-    setSelectedYear(year);
-  };
-
-  const handleBackToYears = () => {
-    setSelectedYear(null);
-  };
-
   const handleAddYear = () => {
-    // For now, we'll show the most recent available year for editing
-    const yearToAdd = Math.max(...historicalYears);
-    setSelectedYear(yearToAdd);
+    // Add the most recent available year for editing
+    const yearToAdd = currentYear - 1;
+    onYearSelect(yearToAdd);
   };
-
-  if (selectedYear) {
-    return (
-      <HistoricalYearView 
-        property={property}
-        year={selectedYear}
-        onBack={handleBackToYears}
-      />
-    );
-  }
 
   return (
-    <Card className="w-full border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2 text-amber-800">
-          <History className="h-5 w-5" />
-          Histórico
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-amber-700">
-              Gestiona los datos históricos de esta propiedad por año
-            </p>
-            <Button 
-              onClick={handleAddYear}
-              size="sm" 
-              variant="outline"
-              className="flex items-center gap-1 border-amber-300 text-amber-700 hover:bg-amber-100"
-            >
-              <Plus className="h-4 w-4" />
-              Agregar Año
-            </Button>
-          </div>
-
-          {historicalYears.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {historicalYears.map((year) => {
-                const hasData = availableYears.includes(year);
-                return (
-                  <Button
-                    key={year}
-                    onClick={() => handleYearSelect(year)}
-                    variant="outline"
-                    className={`h-12 flex flex-col items-center justify-center space-y-1 ${
-                      hasData 
-                        ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' 
-                        : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Calendar className="h-4 w-4" />
-                    <span className="text-sm font-medium">{year}</span>
-                    {hasData && (
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-600">
-                        Con datos
-                      </Badge>
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <Calendar className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-gray-500 text-sm">No hay años históricos disponibles</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Los años históricos aparecerán cuando el año actual termine
-              </p>
-            </div>
-          )}
+    <div className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg mb-4">
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-medium text-gray-700">Histórico:</span>
+        <div className="flex items-center gap-2">
+          {historicalYears.map((year) => {
+            const hasData = availableYears.includes(year);
+            return (
+              <Button
+                key={year}
+                onClick={() => onYearSelect(year)}
+                variant="ghost"
+                size="sm"
+                className={`h-8 px-3 text-xs ${
+                  hasData 
+                    ? 'text-green-700 hover:bg-green-100' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {year}
+                {hasData && <span className="ml-1 w-2 h-2 bg-green-500 rounded-full"></span>}
+              </Button>
+            );
+          })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      
+      <Button 
+        onClick={handleAddYear}
+        variant="outline"
+        size="sm" 
+        className="flex items-center gap-1 h-8 px-3 text-xs"
+      >
+        <Plus className="h-3 w-3" />
+        Agregar Año
+      </Button>
+    </div>
   );
 };
 
