@@ -8,12 +8,19 @@ interface MonthlyPaymentStatusProps {
   property: Property;
   onPaymentUpdate?: (month: number, year: number, isPaid: boolean, notes?: string) => void;
   compact?: boolean;
+  historicalYear?: number; // Add this prop to support historical years
 }
 
-const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, onPaymentUpdate, compact = false }) => {
+const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ 
+  property, 
+  onPaymentUpdate, 
+  compact = false,
+  historicalYear 
+}) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
+  const displayYear = historicalYear || currentYear; // Use historical year if provided
   
   const [selectedPayment, setSelectedPayment] = useState<{ month: number; year: number; isPaid: boolean } | null>(null);
   const [paymentStatuses, setPaymentStatuses] = useState<{[key: string]: boolean}>({});
@@ -28,29 +35,31 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
     if (property && property.paymentHistory) {
       const statuses: {[key: string]: boolean} = {};
       
-      // First set default values for all months
+      // First set default values for all months of the display year
       for (let month = 0; month < 12; month++) {
-        const key = `${currentYear}-${month}`;
+        const key = `${displayYear}-${month}`;
         statuses[key] = false;
       }
       
-      // Then update with actual payment history
+      // Then update with actual payment history for the display year
       property.paymentHistory.forEach(payment => {
-        if (payment.year === currentYear) {
+        if (payment.year === displayYear) {
           const key = `${payment.year}-${payment.month}`;
           statuses[key] = payment.isPaid;
         }
       });
       
-      // Set current month status from property.rentPaid if no record exists
-      const currentMonthKey = `${currentYear}-${currentMonth}`;
-      if (statuses[currentMonthKey] === undefined) {
-        statuses[currentMonthKey] = property.rentPaid;
+      // Set current month status from property.rentPaid only for current year
+      if (!historicalYear) {
+        const currentMonthKey = `${currentYear}-${currentMonth}`;
+        if (statuses[currentMonthKey] === undefined) {
+          statuses[currentMonthKey] = property.rentPaid;
+        }
       }
       
       setPaymentStatuses(statuses);
     }
-  }, [property, property.paymentHistory, currentYear, currentMonth]);
+  }, [property, property.paymentHistory, displayYear, currentYear, currentMonth, historicalYear]);
   
   const getPaymentStatus = (month: number, year: number) => {
     const key = `${year}-${month}`;
@@ -68,8 +77,8 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
       }
     }
     
-    // For current month, fall back to property.rentPaid
-    if (month === currentMonth && year === currentYear) {
+    // For current month of current year, fall back to property.rentPaid
+    if (!historicalYear && month === currentMonth && year === currentYear) {
       return property.rentPaid;
     }
     
@@ -101,17 +110,18 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
 
   // Determine if selected month is in the future
   const isFutureMonth = (month: number, year: number) => {
+    if (historicalYear) return false; // Historical years are never in the future
     if (year > currentYear) return true;
     if (year === currentYear && month > currentMonth) return true;
     return false;
   };
 
-  // Generate all months of the current year
+  // Generate all months of the display year
   const generateMonths = () => {
     const result = [];
-    const year = currentYear;
+    const year = displayYear;
     
-    // Add all months of the current year (January to December)
+    // Add all months of the display year (January to December)
     for (let month = 0; month < 12; month++) {
       result.push({ month, year });
     }
@@ -128,7 +138,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, o
   return (
     <div className="rounded-lg border mb-4">
       <div className="p-3 bg-muted/50 flex items-center justify-between border-b">
-        <h3 className="text-sm font-medium">Estado de Pagos {currentYear}</h3>
+        <h3 className="text-sm font-medium">Estado de Pagos {displayYear}</h3>
       </div>
       <div className="p-3">
         <div className="flex flex-wrap gap-1">

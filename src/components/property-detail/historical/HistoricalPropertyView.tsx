@@ -129,29 +129,26 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
 
   return (
     <div className="min-h-screen" style={{ 
-      background: 'linear-gradient(to bottom, #f8f9fa, #e9ecef)',
+      background: 'linear-gradient(to bottom, #f5f5f0, #ebe8dc)',
     }}>
       <div className="max-w-7xl mx-auto p-4">
-        {/* Historical indicator and back button */}
-        <div className="flex items-center justify-between mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={onBack}
-              variant="outline"
-              size="sm"
-              className="border-amber-300 text-amber-700 hover:bg-amber-100"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Volver
-            </Button>
-            <div>
-              <h2 className="text-lg font-semibold text-amber-800">Modo Histórico - {year}</h2>
-              <p className="text-sm text-amber-600">Visualizando y editando datos del año {year}</p>
-            </div>
+        {/* Historical indicator and back button - single banner */}
+        <div className="flex items-center gap-3 mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            size="sm"
+            className="border-amber-300 text-amber-700 hover:bg-amber-100"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Volver
+          </Button>
+          <div>
+            <h2 className="text-lg font-semibold text-amber-800">Modo Histórico - {year}</h2>
           </div>
         </div>
 
-        {/* Use the exact same components as current year */}
+        {/* Use the exact same components as current year but with historical context */}
         <div className="space-y-2">
           <PropertyDetailHeader 
             property={historicalProperty}
@@ -170,6 +167,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             handleDocumentAdd={handleDocumentAdd}
             handleExpenseDelete={handleExpenseDelete}
             setProperty={setHistoricalProperty}
+            historicalYear={year}
           />
         </div>
       </div>

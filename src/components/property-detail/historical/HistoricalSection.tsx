@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useHistoricalStorage } from '@/hooks/useHistoricalStorage';
 
 interface HistoricalSectionProps {
@@ -48,7 +48,6 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
                 }`}
               >
                 {year}
-                {hasData && <span className="ml-1 w-2 h-2 bg-green-500 rounded-full"></span>}
               </Button>
             );
           })}

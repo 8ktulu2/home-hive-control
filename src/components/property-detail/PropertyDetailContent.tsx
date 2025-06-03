@@ -19,6 +19,7 @@ interface PropertyDetailContentProps {
   handleDocumentAdd: (document: any) => void;
   handleExpenseDelete?: (expenseId: string) => void;
   setProperty: (property: Property | null) => void;
+  historicalYear?: number; // Add this prop to pass historical context
 }
 
 const PropertyDetailContent = ({
@@ -32,7 +33,8 @@ const PropertyDetailContent = ({
   handleDocumentDelete,
   handleDocumentAdd,
   handleExpenseDelete,
-  setProperty
+  setProperty,
+  historicalYear
 }: PropertyDetailContentProps) => {
   const [selectedHistoricalYear, setSelectedHistoricalYear] = useState<number | null>(null);
 
@@ -58,16 +60,19 @@ const PropertyDetailContent = ({
   // Current year view
   return (
     <div className="space-y-6">
-      <HistoricalSection 
-        property={property} 
-        onYearSelect={handleYearSelect}
-      />
+      {!historicalYear && (
+        <HistoricalSection 
+          property={property} 
+          onYearSelect={handleYearSelect}
+        />
+      )}
 
       <div className="pb-1">
         <MonthlyPaymentStatus 
           property={property}
           onPaymentUpdate={onPaymentUpdate}
           compact={true}
+          historicalYear={historicalYear}
         />
       </div>
 
