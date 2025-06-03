@@ -102,14 +102,11 @@ export const useFiscalCalculations = (
   }, [properties, selectedYear, selectedPropertyId]);
 
   const calculateReductionForProperty = (property: Property, occupiedMonths: number): { percentage: number, reason: string } => {
-    // Solo aplica reducciones si tiene al menos 1 mes ocupado
     if (occupiedMonths < 1) {
       return { percentage: 0, reason: "Sin ocupación durante el año" };
     }
 
-    // Normativa española actualizada (Ley 12/2023 - vigente desde mayo 2023)
     if (property.taxInfo?.isPrimaryResidence) {
-      // 90% - Vivienda en zona tensionada con reducción del precio de alquiler
       if (property.taxInfo?.isTensionedArea && property.taxInfo?.rentReduction) {
         return { 
           percentage: 90, 
@@ -117,7 +114,6 @@ export const useFiscalCalculations = (
         };
       }
       
-      // 70% - Zona tensionada con inquilino joven o primer alquiler
       if (property.taxInfo?.isTensionedArea && property.taxInfo?.hasYoungTenant) {
         return { 
           percentage: 70, 
@@ -125,7 +121,6 @@ export const useFiscalCalculations = (
         };
       }
       
-      // 60% - Obras de rehabilitación previas al contrato
       if (property.taxInfo?.recentlyRenovated) {
         return { 
           percentage: 60, 
@@ -133,7 +128,6 @@ export const useFiscalCalculations = (
         };
       }
       
-      // 50% - Reducción general para vivienda habitual
       return { 
         percentage: 50, 
         reason: "Reducción general para arrendamiento de vivienda habitual" 
@@ -146,6 +140,55 @@ export const useFiscalCalculations = (
     };
   };
 
+  const getCurrentYearDataFromProperty = (property: Property): HistoricalRecord[] => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    // Generate current year data from property payment history
+    const currentYearRecords: HistoricalRecord[] = [];
+    
+    for (let month = 0; month <= currentMonth; month++) {
+      const paymentRecord = property.paymentHistory?.find(p => 
+        p.month === month && p.year === currentYear
+      );
+      
+      const monthlyMortgage = property.mortgage?.monthlyPayment || 0;
+      const monthlyIBI = (property.ibi || 0) / 12;
+      const monthlyCommunity = property.communityFee || 0;
+      const monthlyHomeInsurance = (property.homeInsurance?.cost || 0) / 12;
+      const monthlyLifeInsurance = (property.lifeInsurance?.cost || 0) / 12;
+      
+      const totalExpenses = monthlyMortgage + monthlyIBI + monthlyCommunity + 
+                           monthlyHomeInsurance + monthlyLifeInsurance;
+      
+      const record: HistoricalRecord = {
+        id: `current-${property.id}-${currentYear}-${month}`,
+        propiedadId: property.id,
+        año: currentYear,
+        mes: month + 1,
+        ingresos: paymentRecord?.isPaid ? property.rent : 0,
+        gastos: totalExpenses,
+        categorias: {
+          alquiler: paymentRecord?.isPaid ? property.rent : 0,
+          hipoteca: monthlyMortgage,
+          comunidad: monthlyCommunity,
+          ibi: monthlyIBI,
+          seguroVida: monthlyLifeInsurance,
+          seguroHogar: monthlyHomeInsurance,
+          compras: 0,
+          averias: 0,
+          suministros: 0
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      currentYearRecords.push(record);
+    }
+    
+    return currentYearRecords;
+  };
+
   const calculateFiscalData = () => {
     const years = Array.isArray(selectedYear) ? selectedYear : [selectedYear];
     const filteredProperties = selectedPropertyId === 'all' 
@@ -153,9 +196,20 @@ export const useFiscalCalculations = (
       : properties.filter(p => p.id === selectedPropertyId);
     
     let allRecords: HistoricalRecord[] = [];
+    const currentYear = new Date().getFullYear();
+    
     years.forEach(year => {
-      const yearRecords = getFilteredRecords(year, selectedPropertyId);
-      allRecords = [...allRecords, ...yearRecords];
+      if (year === currentYear) {
+        // Use current year data from properties
+        filteredProperties.forEach(property => {
+          const currentYearData = getCurrentYearDataFromProperty(property);
+          allRecords = [...allRecords, ...currentYearData];
+        });
+      } else {
+        // Use historical data
+        const yearRecords = getFilteredRecords(year, selectedPropertyId);
+        allRecords = [...allRecords, ...yearRecords];
+      }
     });
     
     let totalGrossIncome = 0;
@@ -236,27 +290,19 @@ export const useFiscalCalculations = (
       });
     });
     
-    // Cálculo de IRPF según tramos españoles 2024
     const irpfRate = calculateEstimatedIRPFRate(totalTaxableBase);
     const irpfQuota = totalTaxableBase * (irpfRate / 100);
-    
-    // Retenciones aplicadas (19% sobre ingresos brutos)
     const retentions = totalGrossIncome * 0.19;
-    
-    // Liquidez final (beneficio neto - IRPF + retenciones)
     const finalLiquidity = totalNetProfit - irpfQuota + retentions;
     
-    // Porcentaje de reducción promedio ponderado
     const weightedReductionPercentage = totalNetProfit > 0 
       ? ((totalNetProfit - totalTaxableBase) / totalNetProfit) * 100 
       : 0;
 
-    // Rango de años para mostrar
     const yearRange = years.length === 1 
       ? years[0].toString() 
       : `${Math.min(...years)}-${Math.max(...years)}`;
 
-    // Resumen consolidado
     const totalProperties = filteredProperties.length;
     const maxPossibleMonths = totalProperties * years.length * 12;
     const averageOccupancy = maxPossibleMonths > 0 ? (totalOccupiedMonths / maxPossibleMonths) * 100 : 0;
@@ -285,7 +331,6 @@ export const useFiscalCalculations = (
   };
   
   const calculateEstimatedIRPFRate = (taxableBase: number): number => {
-    // Tramos IRPF España 2024
     if (taxableBase <= 12450) return 19;
     if (taxableBase <= 20200) return 24;
     if (taxableBase <= 35200) return 30;
