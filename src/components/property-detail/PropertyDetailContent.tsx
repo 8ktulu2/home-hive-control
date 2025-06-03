@@ -3,6 +3,7 @@ import { Property } from '@/types/property';
 import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import MainContent from './MainContent';
 import SecondaryContent from './SecondaryContent';
+import HistoricalSection from './historical/HistoricalSection';
 
 interface PropertyDetailContentProps {
   property: Property;
@@ -32,7 +33,7 @@ const PropertyDetailContent = ({
   setProperty
 }: PropertyDetailContentProps) => {
   return (
-    <div className="space-y-2">
+    <div className="space-y-6">
       <div className="pb-1">
         <MonthlyPaymentStatus 
           property={property}
@@ -40,6 +41,8 @@ const PropertyDetailContent = ({
           compact={true}
         />
       </div>
+
+      <HistoricalSection property={property} />
 
       <MainContent 
         property={property} 

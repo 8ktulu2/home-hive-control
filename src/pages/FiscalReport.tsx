@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calculator, FileDown, Info, Building2, Calendar } from 'lucide-react';
+import { Calculator, FileDown, Info, Building2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFiscalCalculations } from '@/hooks/useFiscalCalculations';
 import ConsolidatedFiscalReport from '@/components/fiscal/ConsolidatedFiscalReport';
@@ -116,15 +116,15 @@ const FiscalReport = () => {
     <Layout>
       <div className="flex flex-col gap-6 min-h-screen pb-32">
         {/* Compact Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg shadow-lg">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Calculator className="h-6 w-6" />
-              <h1 className="text-2xl font-bold">Informe Fiscal IRPF</h1>
+              <h1 className="text-xl font-bold">Informe Fiscal IRPF</h1>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <Info className="h-4 w-4 text-blue-200 hover:text-white" />
+                    <Info className="h-4 w-4 text-blue-200 hover:text-white cursor-pointer" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-md">
                     <p>Genera informes detallados y precisos para tu declaración de la renta. 
@@ -138,10 +138,6 @@ const FiscalReport = () => {
                 <Building2 className="h-4 w-4" />
                 {properties.length} Propiedades
               </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                Desde {availableYears[availableYears.length - 1] || 'N/A'}
-              </span>
             </div>
           </div>
         </div>
@@ -150,28 +146,28 @@ const FiscalReport = () => {
           {!showReport ? (
             /* Compact Filter Panel */
             <Card className="shadow-lg">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-semibold text-gray-800">
-                  Configuración del Informe
+                  Filtros
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 
                 {/* Filters in compact grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
                   {/* Property Selection */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Label htmlFor="property" className="text-sm font-medium">
                       Propiedades
                     </Label>
                     <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
-                      <SelectTrigger className="h-10">
+                      <SelectTrigger className="h-9">
                         <SelectValue placeholder="Seleccionar propiedades" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">
-                          Todas las propiedades ({properties.length})
+                          Todas ({properties.length})
                         </SelectItem>
                         {properties.map((property) => (
                           <SelectItem key={property.id} value={property.id}>
@@ -183,11 +179,11 @@ const FiscalReport = () => {
                   </div>
 
                   {/* Year Selection */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Label className="text-sm font-medium">
-                      Período Fiscal
+                      Ejercicio Fiscal
                     </Label>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="multi-year" 
@@ -204,8 +200,8 @@ const FiscalReport = () => {
                           value={selectedYear?.toString() || ''} 
                           onValueChange={(value) => setSelectedYear(parseInt(value))}
                         >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder="Seleccionar año" />
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Año" />
                           </SelectTrigger>
                           <SelectContent>
                             {availableYears.map((year) => (
@@ -216,14 +212,14 @@ const FiscalReport = () => {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2">
                           <Select 
                             onValueChange={(value) => {
                               const endYear = yearRange.length > 0 ? yearRange[yearRange.length - 1] : parseInt(value);
                               handleYearRangeChange(value, endYear.toString());
                             }}
                           >
-                            <SelectTrigger className="h-10">
+                            <SelectTrigger className="h-9">
                               <SelectValue placeholder="Desde" />
                             </SelectTrigger>
                             <SelectContent>
@@ -240,7 +236,7 @@ const FiscalReport = () => {
                               handleYearRangeChange(startYear.toString(), value);
                             }}
                           >
-                            <SelectTrigger className="h-10">
+                            <SelectTrigger className="h-9">
                               <SelectValue placeholder="Hasta" />
                             </SelectTrigger>
                             <SelectContent>
