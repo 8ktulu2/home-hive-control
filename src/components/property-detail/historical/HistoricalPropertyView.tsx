@@ -5,7 +5,6 @@ import { ArrowLeft } from 'lucide-react';
 import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
 import { usePropertyManagement } from '@/hooks/usePropertyManagement';
 import { usePaymentManagement } from '@/hooks/usePaymentManagement';
-import PropertyDetailHeader from '../PropertyDetailHeader';
 import PropertyDetailContent from '../PropertyDetailContent';
 
 interface HistoricalPropertyViewProps {
@@ -66,9 +65,9 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     handleRentPaidChange 
   } = usePaymentManagement(historicalProperty, setHistoricalProperty);
 
-  // Override payment update to save to historical storage
+  // Override payment update to save to historical storage with complete isolation
   const handleHistoricalPaymentUpdate = (month: number, updateYear: number, isPaid: boolean, notes?: string) => {
-    // Get current categories or defaults
+    // Get current categories or use current year defaults as reference
     const currentRecord = getRecordsByPropertyYear(property.id, year).find(r => r.mes === month);
     const categorias = currentRecord?.categorias || {
       alquiler: property.rent || 0,
@@ -82,16 +81,17 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       suministros: 0
     };
 
-    // Update alquiler based on payment status
+    // Update alquiler based on payment status (this affects ONLY the historical year)
     if (isPaid) {
       categorias.alquiler = property.rent || 0;
     } else {
       categorias.alquiler = 0;
     }
 
+    // Save to historical storage (completely isolated from current year)
     saveRecord(property.id, year, month, categorias);
     
-    // Update local state
+    // Update local state for this historical view only
     if (historicalProperty) {
       const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
       const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
@@ -100,11 +100,12 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         updatedPaymentHistory[existingIndex] = {
           ...updatedPaymentHistory[existingIndex],
           isPaid,
-          notes
+          notes,
+          amount: isPaid ? property.rent || 0 : 0
         };
       } else {
         updatedPaymentHistory.push({
-          id: `payment-${Date.now()}`,
+          id: `hist-payment-${Date.now()}`,
           date: new Date(updateYear, month, 1).toISOString(),
           amount: isPaid ? property.rent || 0 : 0,
           type: 'rent',
@@ -128,33 +129,35 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   }
 
   return (
-    <div className="min-h-screen" style={{ 
-      background: 'linear-gradient(to bottom, #f5f5f0, #ebe8dc)',
-    }}>
+    <div 
+      className="min-h-screen font-serif" 
+      style={{ 
+        background: 'linear-gradient(to bottom, #fefce8, #fef3c7)',
+      }}
+    >
       <div className="max-w-7xl mx-auto p-4">
-        {/* Historical indicator and back button - single banner */}
-        <div className="flex items-center gap-3 mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+        {/* Slim historical header */}
+        <div className="flex items-center gap-3 mb-4 bg-yellow-100/50 border border-yellow-200 rounded-lg p-2">
           <Button
             onClick={onBack}
             variant="outline"
             size="sm"
-            className="border-amber-300 text-amber-700 hover:bg-amber-100"
+            className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver
           </Button>
-          <div>
-            <h2 className="text-lg font-semibold text-amber-800">Modo Histórico - {year}</h2>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-medium text-yellow-800">Histórico: {year}</span>
+            <span className="text-yellow-600">|</span>
+            <span className="font-medium text-yellow-800">{property.name}</span>
+            <span className="text-yellow-600">|</span>
+            <span className="text-yellow-700">{property.address}</span>
           </div>
         </div>
 
         {/* Use the exact same components as current year but with historical context */}
         <div className="space-y-2">
-          <PropertyDetailHeader 
-            property={historicalProperty}
-            onRentPaidChange={handleRentPaidChange}
-          />
-          
           <PropertyDetailContent
             property={historicalProperty}
             onRentPaidChange={handleRentPaidChange}

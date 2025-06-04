@@ -43,7 +43,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
                 size="sm"
                 className={`h-8 px-3 text-xs ${
                   hasData 
-                    ? 'text-green-700 hover:bg-green-100' 
+                    ? 'text-blue-700 hover:bg-blue-100 font-medium' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
