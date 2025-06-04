@@ -56,8 +56,8 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         type: item.type,
         condition: item.condition,
         notes: item.notes,
-        purchaseDate: item.purchaseDate,
-        cost: item.cost
+        acquisitionDate: item.acquisitionDate,
+        price: item.price
       })),
       // Use historical tasks instead of current
       tasks: historicalTasks.map(task => ({
@@ -160,8 +160,8 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
           type: newItem.type,
           condition: newItem.condition,
           notes: newItem.notes,
-          purchaseDate: newItem.purchaseDate,
-          cost: newItem.cost
+          acquisitionDate: newItem.acquisitionDate,
+          price: newItem.price
         }]
       });
     }
