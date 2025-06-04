@@ -1,7 +1,8 @@
 
-import { Property, Document } from '@/types/property';
+import React from 'react';
+import { Property } from '@/types/property';
+import PropertyInfo from './PropertyInfo';
 import PropertyTasks from './PropertyTasks';
-import PropertyDocuments from './PropertyDocuments';
 
 interface SecondaryContentProps {
   property: Property;
@@ -10,31 +11,43 @@ interface SecondaryContentProps {
   onTaskDelete: (taskId: string) => void;
   onTaskUpdate: (taskId: string, updates: any) => void;
   onDocumentDelete: (documentId: string) => void;
-  onDocumentAdd?: (document: Document) => void;
+  onDocumentAdd: (document: any) => void;
+  onInventoryAdd?: (item: any) => void;
+  onInventoryEdit?: (item: any) => void;
+  onInventoryDelete?: (itemId: string) => void;
+  historicalYear?: number;
 }
 
-const SecondaryContent = ({
+const SecondaryContent: React.FC<SecondaryContentProps> = ({
   property,
   onTaskToggle,
   onTaskAdd,
   onTaskDelete,
   onTaskUpdate,
   onDocumentDelete,
-  onDocumentAdd
-}: SecondaryContentProps) => {
+  onDocumentAdd,
+  onInventoryAdd,
+  onInventoryEdit,
+  onInventoryDelete,
+  historicalYear
+}) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <PropertyInfo 
+        property={property} 
+        setProperty={() => {}} // Not used for historical
+        onInventoryAdd={onInventoryAdd}
+        onInventoryEdit={onInventoryEdit}
+        onInventoryDelete={onInventoryDelete}
+        historicalYear={historicalYear}
+      />
+      
       <PropertyTasks
         tasks={property.tasks || []}
         onTaskToggle={onTaskToggle}
         onTaskAdd={onTaskAdd}
         onTaskDelete={onTaskDelete}
         onTaskUpdate={onTaskUpdate}
-      />
-      <PropertyDocuments
-        documents={property.documents || []}
-        onDocumentDelete={onDocumentDelete}
-        onDocumentAdd={onDocumentAdd}
       />
     </div>
   );

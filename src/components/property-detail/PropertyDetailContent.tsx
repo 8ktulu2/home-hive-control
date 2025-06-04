@@ -19,7 +19,10 @@ interface PropertyDetailContentProps {
   handleDocumentAdd: (document: any) => void;
   handleExpenseDelete?: (expenseId: string) => void;
   setProperty: (property: Property | null) => void;
-  historicalYear?: number; // Add this prop to pass historical context
+  historicalYear?: number;
+  onInventoryAdd?: (item: any) => void;
+  onInventoryEdit?: (item: any) => void;
+  onInventoryDelete?: (itemId: string) => void;
 }
 
 const PropertyDetailContent = ({
@@ -34,7 +37,10 @@ const PropertyDetailContent = ({
   handleDocumentAdd,
   handleExpenseDelete,
   setProperty,
-  historicalYear
+  historicalYear,
+  onInventoryAdd,
+  onInventoryEdit,
+  onInventoryDelete
 }: PropertyDetailContentProps) => {
   const [selectedHistoricalYear, setSelectedHistoricalYear] = useState<number | null>(null);
 
@@ -90,6 +96,10 @@ const PropertyDetailContent = ({
         onTaskUpdate={handleTaskUpdate}
         onDocumentDelete={handleDocumentDelete}
         onDocumentAdd={handleDocumentAdd}
+        onInventoryAdd={onInventoryAdd}
+        onInventoryEdit={onInventoryEdit}
+        onInventoryDelete={onInventoryDelete}
+        historicalYear={historicalYear}
       />
     </div>
   );

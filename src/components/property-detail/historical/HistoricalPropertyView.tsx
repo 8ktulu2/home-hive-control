@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
-import { usePropertyManagement } from '@/hooks/usePropertyManagement';
-import { usePaymentManagement } from '@/hooks/usePaymentManagement';
+import { useHistoricalDataIsolation } from '@/hooks/useHistoricalDataIsolation';
 import PropertyDetailContent from '../PropertyDetailContent';
 
 interface HistoricalPropertyViewProps {
@@ -20,10 +20,20 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
 }) => {
   const [historicalProperty, setHistoricalProperty] = useState<Property | null>(null);
   const { getRecordsByPropertyYear, saveRecord } = useHistoricalStorage();
+  const { 
+    getHistoricalInventory, 
+    addHistoricalInventoryItem, 
+    updateHistoricalInventoryItem, 
+    deleteHistoricalInventoryItem,
+    getHistoricalTasks,
+    saveHistoricalTasks
+  } = useHistoricalDataIsolation();
 
   // Create a historical version of the property
   useEffect(() => {
     const records = getRecordsByPropertyYear(property.id, year);
+    const historicalInventory = getHistoricalInventory(property.id, year);
+    const historicalTasks = getHistoricalTasks(property.id, year);
     
     // Create a copy of the property with historical data
     const histProperty: Property = {
@@ -39,6 +49,27 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         year: record.año,
         description: 'Alquiler'
       })),
+      // Use historical inventory instead of current
+      inventory: historicalInventory.map(item => ({
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        condition: item.condition,
+        notes: item.notes,
+        purchaseDate: item.purchaseDate,
+        cost: item.cost
+      })),
+      // Use historical tasks instead of current
+      tasks: historicalTasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        completed: task.completed,
+        dueDate: task.dueDate,
+        createdDate: task.createdDate,
+        completedDate: task.completedDate,
+        notification: task.notification
+      })),
       // Keep current structure but with historical context
       rent: records.length > 0 ? records[0].categorias.alquiler : property.rent,
       mortgage: {
@@ -48,25 +79,16 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     };
     
     setHistoricalProperty(histProperty);
-  }, [property, year, getRecordsByPropertyYear]);
+  }, [property, year, getRecordsByPropertyYear, getHistoricalInventory, getHistoricalTasks]);
 
-  const { 
-    handleTaskToggle,
-    handleTaskAdd,
-    handleTaskDelete,
-    handleTaskUpdate,
-    handleDocumentDelete,
-    handleDocumentAdd,
-    handleExpenseDelete
-  } = usePropertyManagement(historicalProperty);
-
-  const { 
-    handlePaymentUpdate, 
-    handleRentPaidChange 
-  } = usePaymentManagement(historicalProperty, setHistoricalProperty);
-
-  // Override payment update to save to historical storage with complete isolation
+  // Historical payment update - completely isolated
   const handleHistoricalPaymentUpdate = (month: number, updateYear: number, isPaid: boolean, notes?: string) => {
+    // Ensure we're only working with the historical year
+    if (updateYear !== year) {
+      console.warn(`Payment update attempted for year ${updateYear} but we're in historical year ${year}`);
+      return;
+    }
+
     // Get current categories or use current year defaults as reference
     const currentRecord = getRecordsByPropertyYear(property.id, year).find(r => r.mes === month);
     const categorias = currentRecord?.categorias || {
@@ -124,6 +146,144 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     }
   };
 
+  // Historical inventory management - completely isolated
+  const handleHistoricalInventoryAdd = (item: Omit<any, 'id'>) => {
+    const newItem = addHistoricalInventoryItem(property.id, year, item);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        inventory: [...(historicalProperty.inventory || []), {
+          id: newItem.id,
+          name: newItem.name,
+          type: newItem.type,
+          condition: newItem.condition,
+          notes: newItem.notes,
+          purchaseDate: newItem.purchaseDate,
+          cost: newItem.cost
+        }]
+      });
+    }
+  };
+
+  const handleHistoricalInventoryEdit = (item: any) => {
+    updateHistoricalInventoryItem(property.id, year, item.id, item);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        inventory: historicalProperty.inventory?.map(inv => 
+          inv.id === item.id ? item : inv
+        ) || []
+      });
+    }
+  };
+
+  const handleHistoricalInventoryDelete = (itemId: string) => {
+    deleteHistoricalInventoryItem(property.id, year, itemId);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        inventory: historicalProperty.inventory?.filter(inv => inv.id !== itemId) || []
+      });
+    }
+  };
+
+  // Historical task management - completely isolated
+  const handleHistoricalTaskAdd = (task: { title: string; description?: string }) => {
+    const newTask = {
+      id: `hist-task-${Date.now()}`,
+      title: task.title,
+      description: task.description,
+      completed: false,
+      createdDate: new Date().toISOString(),
+      year
+    };
+
+    const existingTasks = getHistoricalTasks(property.id, year);
+    saveHistoricalTasks(property.id, year, [...existingTasks, newTask]);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        tasks: [...(historicalProperty.tasks || []), newTask]
+      });
+    }
+  };
+
+  const handleHistoricalTaskToggle = (taskId: string, completed: boolean) => {
+    const existingTasks = getHistoricalTasks(property.id, year);
+    const updatedTasks = existingTasks.map(task => 
+      task.id === taskId ? { ...task, completed, completedDate: completed ? new Date().toISOString() : undefined } : task
+    );
+    saveHistoricalTasks(property.id, year, updatedTasks);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        tasks: historicalProperty.tasks?.map(task => 
+          task.id === taskId ? { ...task, completed, completedDate: completed ? new Date().toISOString() : undefined } : task
+        ) || []
+      });
+    }
+  };
+
+  const handleHistoricalTaskDelete = (taskId: string) => {
+    const existingTasks = getHistoricalTasks(property.id, year);
+    const updatedTasks = existingTasks.filter(task => task.id !== taskId);
+    saveHistoricalTasks(property.id, year, updatedTasks);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        tasks: historicalProperty.tasks?.filter(task => task.id !== taskId) || []
+      });
+    }
+  };
+
+  const handleHistoricalTaskUpdate = (taskId: string, updates: any) => {
+    const existingTasks = getHistoricalTasks(property.id, year);
+    const updatedTasks = existingTasks.map(task => 
+      task.id === taskId ? { ...task, ...updates } : task
+    );
+    saveHistoricalTasks(property.id, year, updatedTasks);
+    
+    // Update local state immediately
+    if (historicalProperty) {
+      setHistoricalProperty({
+        ...historicalProperty,
+        tasks: historicalProperty.tasks?.map(task => 
+          task.id === taskId ? { ...task, ...updates } : task
+        ) || []
+      });
+    }
+  };
+
+  // Dummy handlers for documents and expenses (not affecting current year)
+  const handleHistoricalDocumentAdd = (document: any) => {
+    console.log('Historical document add:', document);
+  };
+
+  const handleHistoricalDocumentDelete = (documentId: string) => {
+    console.log('Historical document delete:', documentId);
+  };
+
+  const handleHistoricalExpenseDelete = (expenseId: string) => {
+    console.log('Historical expense delete:', expenseId);
+  };
+
+  const handleRentPaidChange = (paid: boolean) => {
+    // This should not affect current year - it's for historical context only
+    console.log('Historical rent paid change:', paid);
+  };
+
   if (!historicalProperty) {
     return <div>Cargando datos históricos...</div>;
   }
@@ -136,7 +296,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        {/* Slim historical header */}
+        {/* Slim historical header with proper structure */}
         <div className="flex items-center gap-3 mb-4 bg-yellow-100/50 border border-yellow-200 rounded-lg p-2">
           <Button
             onClick={onBack}
@@ -162,15 +322,18 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             property={historicalProperty}
             onRentPaidChange={handleRentPaidChange}
             onPaymentUpdate={handleHistoricalPaymentUpdate}
-            handleTaskToggle={handleTaskToggle}
-            handleTaskAdd={handleTaskAdd}
-            handleTaskDelete={handleTaskDelete}
-            handleTaskUpdate={handleTaskUpdate}
-            handleDocumentDelete={handleDocumentDelete}
-            handleDocumentAdd={handleDocumentAdd}
-            handleExpenseDelete={handleExpenseDelete}
+            handleTaskToggle={handleHistoricalTaskToggle}
+            handleTaskAdd={handleHistoricalTaskAdd}
+            handleTaskDelete={handleHistoricalTaskDelete}
+            handleTaskUpdate={handleHistoricalTaskUpdate}
+            handleDocumentDelete={handleHistoricalDocumentDelete}
+            handleDocumentAdd={handleHistoricalDocumentAdd}
+            handleExpenseDelete={handleHistoricalExpenseDelete}
             setProperty={setHistoricalProperty}
             historicalYear={year}
+            onInventoryAdd={handleHistoricalInventoryAdd}
+            onInventoryEdit={handleHistoricalInventoryEdit}
+            onInventoryDelete={handleHistoricalInventoryDelete}
           />
         </div>
       </div>
