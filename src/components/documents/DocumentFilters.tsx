@@ -3,7 +3,6 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
-import { Property } from '@/types/property';
 
 interface DocumentFiltersProps {
   searchTerm: string;
@@ -14,7 +13,7 @@ interface DocumentFiltersProps {
   onDocumentTypeChange: (value: string) => void;
   selectedYear: string;
   onYearChange: (value: string) => void;
-  properties: Property[];
+  properties: Array<{ id: string; name: string }>;
   availableYears: number[];
 }
 
