@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
@@ -29,16 +28,45 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     saveHistoricalTasks
   } = useHistoricalDataIsolation();
 
-  // Create a historical version of the property
+  // Create a historical version of the property with COMPLETE isolation
   useEffect(() => {
     const records = getRecordsByPropertyYear(property.id, year);
     const historicalInventory = getHistoricalInventory(property.id, year);
     const historicalTasks = getHistoricalTasks(property.id, year);
     
-    // Create a copy of the property with historical data
+    // Create a completely isolated copy for historical year
     const histProperty: Property = {
-      ...property,
-      // Override with historical data if available
+      // Base property data (immutable reference data)
+      id: property.id,
+      name: property.name,
+      address: property.address,
+      image: property.image,
+      
+      // Historical financial data - COMPLETELY ISOLATED
+      rent: records.length > 0 ? records[0].categorias.alquiler : property.rent,
+      rentPaid: false, // Historical rent paid status should be separate
+      
+      // Historical mortgage data - ISOLATED
+      mortgage: records.length > 0 && records[0].categorias.hipoteca > 0 ? {
+        ...property.mortgage,
+        monthlyPayment: records[0].categorias.hipoteca
+      } : property.mortgage,
+      
+      // Historical utility costs - ISOLATED  
+      communityFee: records.length > 0 ? records[0].categorias.comunidad : property.communityFee,
+      ibi: records.length > 0 ? records[0].categorias.ibi * 12 : property.ibi,
+      
+      // Historical insurance - ISOLATED
+      lifeInsurance: records.length > 0 ? {
+        ...property.lifeInsurance,
+        cost: records[0].categorias.seguroVida * 12
+      } : property.lifeInsurance,
+      homeInsurance: records.length > 0 ? {
+        ...property.homeInsurance,
+        cost: records[0].categorias.seguroHogar * 12
+      } : property.homeInsurance,
+      
+      // Historical payment history - ISOLATED
       paymentHistory: records.map(record => ({
         id: record.id,
         date: new Date(year, record.mes, 1).toISOString(),
@@ -49,7 +77,8 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         year: record.año,
         description: 'Alquiler'
       })),
-      // Use historical inventory instead of current
+      
+      // Historical inventory - COMPLETELY ISOLATED
       inventory: historicalInventory.map(item => ({
         id: item.id,
         name: item.name,
@@ -59,7 +88,8 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         acquisitionDate: item.acquisitionDate,
         price: item.price
       })),
-      // Use historical tasks instead of current
+      
+      // Historical tasks - COMPLETELY ISOLATED
       tasks: historicalTasks.map(task => ({
         id: task.id,
         title: task.title,
@@ -70,26 +100,46 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         completedDate: task.completedDate,
         notification: task.notification
       })),
-      // Keep current structure but with historical context
-      rent: records.length > 0 ? records[0].categorias.alquiler : property.rent,
-      mortgage: {
-        ...property.mortgage,
-        monthlyPayment: records.length > 0 ? records[0].categorias.hipoteca : property.mortgage?.monthlyPayment || 0
-      }
+      
+      // Reference data (not year-specific)
+      tenants: property.tenants,
+      documents: property.documents,
+      expenses: 0, // Will be calculated from historical data
+      netIncome: 0, // Will be calculated from historical data
+      monthlyExpenses: [],
+      
+      // Contact and utility data (reference only)
+      communityManager: property.communityManager,
+      waterProvider: property.waterProvider,
+      electricityProvider: property.electricityProvider,
+      gasProvider: property.gasProvider,
+      internetProvider: property.internetProvider,
+      insuranceCompany: property.insuranceCompany,
+      
+      // Contact details (reference only)
+      communityManagerDetails: property.communityManagerDetails,
+      waterProviderDetails: property.waterProviderDetails,
+      electricityProviderDetails: property.electricityProviderDetails,
+      gasProviderDetails: property.gasProviderDetails,
+      internetProviderDetails: property.internetProviderDetails,
+      insuranceDetails: property.insuranceDetails,
+      
+      // Other utilities (reference only)
+      otherUtilities: property.otherUtilities
     };
     
     setHistoricalProperty(histProperty);
   }, [property, year, getRecordsByPropertyYear, getHistoricalInventory, getHistoricalTasks]);
 
-  // Historical payment update - completely isolated
+  // ISOLATED payment update - affects ONLY the historical year
   const handleHistoricalPaymentUpdate = (month: number, updateYear: number, isPaid: boolean, notes?: string) => {
-    // Ensure we're only working with the historical year
+    // CRITICAL: Ensure we're only working with the historical year
     if (updateYear !== year) {
       console.warn(`Payment update attempted for year ${updateYear} but we're in historical year ${year}`);
       return;
     }
 
-    // Get current categories or use current year defaults as reference
+    // Get current historical categories or use current year as reference ONLY
     const currentRecord = getRecordsByPropertyYear(property.id, year).find(r => r.mes === month);
     const categorias = currentRecord?.categorias || {
       alquiler: property.rent || 0,
@@ -103,17 +153,17 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       suministros: 0
     };
 
-    // Update alquiler based on payment status (this affects ONLY the historical year)
+    // Update alquiler based on payment status (ONLY affects historical year)
     if (isPaid) {
       categorias.alquiler = property.rent || 0;
     } else {
       categorias.alquiler = 0;
     }
 
-    // Save to historical storage (completely isolated from current year)
+    // Save ONLY to historical storage (NEVER affects current year)
     saveRecord(property.id, year, month, categorias);
     
-    // Update local state for this historical view only
+    // Update local state for this historical view ONLY
     if (historicalProperty) {
       const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
       const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
@@ -146,11 +196,11 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     }
   };
 
-  // Historical inventory management - completely isolated
+  // ISOLATED inventory management - affects ONLY the historical year
   const handleHistoricalInventoryAdd = (item: Omit<any, 'id'>) => {
     const newItem = addHistoricalInventoryItem(property.id, year, item);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -170,7 +220,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   const handleHistoricalInventoryEdit = (item: any) => {
     updateHistoricalInventoryItem(property.id, year, item.id, item);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -184,7 +234,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   const handleHistoricalInventoryDelete = (itemId: string) => {
     deleteHistoricalInventoryItem(property.id, year, itemId);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -193,7 +243,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     }
   };
 
-  // Historical task management - completely isolated
+  // ISOLATED task management - affects ONLY the historical year
   const handleHistoricalTaskAdd = (task: { title: string; description?: string }) => {
     const newTask = {
       id: `hist-task-${Date.now()}`,
@@ -207,7 +257,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     const existingTasks = getHistoricalTasks(property.id, year);
     saveHistoricalTasks(property.id, year, [...existingTasks, newTask]);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -223,7 +273,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     );
     saveHistoricalTasks(property.id, year, updatedTasks);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -239,7 +289,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     const updatedTasks = existingTasks.filter(task => task.id !== taskId);
     saveHistoricalTasks(property.id, year, updatedTasks);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -255,7 +305,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     );
     saveHistoricalTasks(property.id, year, updatedTasks);
     
-    // Update local state immediately
+    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -266,22 +316,22 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     }
   };
 
-  // Dummy handlers for documents and expenses (not affecting current year)
+  // Document and expense handlers - should not affect current year
   const handleHistoricalDocumentAdd = (document: any) => {
-    console.log('Historical document add:', document);
+    console.log('Historical document add (isolated):', document);
   };
 
   const handleHistoricalDocumentDelete = (documentId: string) => {
-    console.log('Historical document delete:', documentId);
+    console.log('Historical document delete (isolated):', documentId);
   };
 
   const handleHistoricalExpenseDelete = (expenseId: string) => {
-    console.log('Historical expense delete:', expenseId);
+    console.log('Historical expense delete (isolated):', expenseId);
   };
 
   const handleRentPaidChange = (paid: boolean) => {
-    // This should not affect current year - it's for historical context only
-    console.log('Historical rent paid change:', paid);
+    // This should NEVER affect current year - it's for historical context only
+    console.log('Historical rent paid change (no effect on current year):', paid);
   };
 
   if (!historicalProperty) {
@@ -296,27 +346,32 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        {/* Slim historical header with proper structure */}
-        <div className="flex items-center gap-3 mb-4 bg-yellow-100/50 border border-yellow-200 rounded-lg p-2">
+        {/* CLEAR historical header with yellow background - CRITICAL for user orientation */}
+        <div className="flex items-center gap-3 mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
           <Button
             onClick={onBack}
             variant="outline"
             size="sm"
-            className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
+            className="border-yellow-400 text-yellow-800 hover:bg-yellow-200 font-medium"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver
+            Volver al Año Actual
           </Button>
           <div className="flex items-center gap-2 text-sm">
-            <span className="font-medium text-yellow-800">Histórico: {year}</span>
-            <span className="text-yellow-600">|</span>
+            <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded">
+              MODO HISTÓRICO: {year}
+            </span>
+            <span className="text-yellow-700">|</span>
             <span className="font-medium text-yellow-800">{property.name}</span>
-            <span className="text-yellow-600">|</span>
+            <span className="text-yellow-700">|</span>
             <span className="text-yellow-700">{property.address}</span>
+          </div>
+          <div className="ml-auto bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
+            Los cambios NO afectan al año actual
           </div>
         </div>
 
-        {/* Use the exact same components as current year but with historical context */}
+        {/* Use the same components as current year but with COMPLETE historical isolation */}
         <div className="space-y-2">
           <PropertyDetailContent
             property={historicalProperty}

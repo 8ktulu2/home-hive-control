@@ -63,9 +63,10 @@ const PropertyDetailContent = ({
     );
   }
 
-  // Current year view
+  // Current year view or nested historical view
   return (
     <div className="space-y-6">
+      {/* Only show historical section if we're NOT already in a historical year */}
       {!historicalYear && (
         <HistoricalSection 
           property={property} 

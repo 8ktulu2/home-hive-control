@@ -3,6 +3,7 @@ import React from 'react';
 import { Property } from '@/types/property';
 import PropertyInfo from './PropertyInfo';
 import PropertyTasks from './PropertyTasks';
+import VideoUpload from '../videos/VideoUpload';
 
 interface SecondaryContentProps {
   property: Property;
@@ -33,14 +34,23 @@ const SecondaryContent: React.FC<SecondaryContentProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <PropertyInfo 
-        property={property} 
-        setProperty={() => {}} // Not used for historical
-        onInventoryAdd={onInventoryAdd}
-        onInventoryEdit={onInventoryEdit}
-        onInventoryDelete={onInventoryDelete}
-        historicalYear={historicalYear}
-      />
+      {/* SINGLE PropertyInfo component - NO DUPLICATION */}
+      <div className="space-y-6">
+        <PropertyInfo 
+          property={property} 
+          setProperty={() => {}} // Not used for historical - handled by parent
+          onInventoryAdd={onInventoryAdd}
+          onInventoryEdit={onInventoryEdit}
+          onInventoryDelete={onInventoryDelete}
+          historicalYear={historicalYear}
+        />
+        
+        {/* Video section with historical support */}
+        <VideoUpload 
+          propertyId={property.id} 
+          historicalYear={historicalYear}
+        />
+      </div>
       
       <PropertyTasks
         tasks={property.tasks || []}

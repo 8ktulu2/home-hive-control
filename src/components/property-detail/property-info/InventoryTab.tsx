@@ -3,19 +3,22 @@ import { Property, InventoryItem } from '@/types/property';
 import { Plus, Sofa, Refrigerator, Home, Pencil, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface InventoryTabProps {
   property: Property;
   onAddInventoryClick: () => void;
   onEditInventoryItem: (item: InventoryItem) => void;
   onDeleteInventoryItem: (itemId: string) => void;
+  historicalYear?: number;
 }
 
 const InventoryTab = ({ 
   property, 
   onAddInventoryClick, 
   onEditInventoryItem, 
-  onDeleteInventoryItem 
+  onDeleteInventoryItem,
+  historicalYear 
 }: InventoryTabProps) => {
   const getInventoryIcon = (type: string) => {
     switch(type) {
@@ -44,14 +47,26 @@ const InventoryTab = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${historicalYear ? 'bg-yellow-50 border border-yellow-200 rounded-lg p-4' : ''}`}>
+      {historicalYear && (
+        <Alert className="bg-yellow-100 border-yellow-300">
+          <AlertDescription className="text-yellow-800 text-sm">
+            <strong>Inventario Histórico {historicalYear}</strong> - Los elementos añadidos aquí pertenecen únicamente a este año.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Muebles y Electrodomésticos</h3>
+        <h3 className={`text-sm font-medium ${historicalYear ? 'text-yellow-900' : ''}`}>
+          Muebles y Electrodomésticos {historicalYear ? `(${historicalYear})` : ''}
+        </h3>
         <Button
           size="sm"
           variant="outline"
           onClick={onAddInventoryClick}
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${
+            historicalYear ? 'border-yellow-400 text-yellow-800 hover:bg-yellow-100' : ''
+          }`}
         >
           <Plus className="h-3 w-3" /> Añadir
         </Button>
@@ -60,11 +75,15 @@ const InventoryTab = ({
       {property.inventory && property.inventory.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {property.inventory.map(item => (
-            <div key={item.id} className="border p-3 rounded-md">
+            <div key={item.id} className={`border p-3 rounded-md ${
+              historicalYear ? 'border-yellow-300 bg-yellow-50' : ''
+            }`}>
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                   {getInventoryIcon(item.type)}
-                  <span className="font-medium text-sm">{item.name}</span>
+                  <span className={`font-medium text-sm ${historicalYear ? 'text-yellow-900' : ''}`}>
+                    {item.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Badge className={getConditionColor(item.condition)}>
@@ -90,14 +109,30 @@ const InventoryTab = ({
                   </Button>
                 </div>
               </div>
-              {item.notes && <p className="text-xs text-muted-foreground">{item.notes}</p>}
+              {item.notes && (
+                <p className={`text-xs ${historicalYear ? 'text-yellow-700' : 'text-muted-foreground'}`}>
+                  {item.notes}
+                </p>
+              )}
+              {item.price && (
+                <p className={`text-xs font-medium ${historicalYear ? 'text-yellow-800' : 'text-green-600'}`}>
+                  Precio: {item.price}€
+                </p>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center p-6 border rounded-md text-muted-foreground">
-          <p>No hay elementos en el inventario</p>
-          <p className="text-xs mt-1">Haz clic en "Añadir" para registrar muebles o electrodomésticos</p>
+        <div className={`text-center p-6 border rounded-md ${
+          historicalYear 
+            ? 'border-yellow-300 bg-yellow-50 text-yellow-700' 
+            : 'text-muted-foreground'
+        }`}>
+          <p>No hay elementos en el inventario{historicalYear ? ` para ${historicalYear}` : ''}</p>
+          <p className="text-xs mt-1">
+            Haz clic en "Añadir" para registrar muebles o electrodomésticos
+            {historicalYear ? ` para el año ${historicalYear}` : ''}
+          </p>
         </div>
       )}
     </div>
