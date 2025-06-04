@@ -23,11 +23,6 @@ export const DocumentsControls = () => {
 
   return (
     <div className="flex flex-col gap-3 mb-4 max-w-full">
-      <DocumentSearchBar 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-      />
-      
       <DocumentFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -39,6 +34,7 @@ export const DocumentsControls = () => {
         onYearChange={() => {}} // TODO: Implement year filter logic
         properties={properties}
         availableYears={availableYears}
+        onUploadClick={handleUploadClick}
       />
     </div>
   );

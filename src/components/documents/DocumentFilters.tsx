@@ -15,6 +15,14 @@ interface DocumentFiltersProps {
   onYearChange: (value: string) => void;
   properties: Array<{ id: string; name: string }>;
   availableYears: number[];
+  // Additional props for full functionality
+  propertyFilter?: string;
+  typeFilter?: string;
+  onPropertyFilterChange?: (filter: string) => void;
+  onTypeFilterChange?: (filter: string) => void;
+  onUploadClick?: () => void;
+  uniqueTypes?: string[];
+  isUploading?: boolean;
 }
 
 const DocumentFilters: React.FC<DocumentFiltersProps> = ({
@@ -27,7 +35,8 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
   selectedYear,
   onYearChange,
   properties,
-  availableYears
+  availableYears,
+  onUploadClick
 }) => {
   const documentTypes = [
     { value: 'all', label: 'Todos los tipos' },
@@ -56,21 +65,31 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
         </div>
       </div>
 
-      {/* Row 2: Property filter (full width) */}
-      <div className="w-full">
-        <Select value={selectedProperty} onValueChange={onPropertyChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Filtrar por propiedad" />
-          </SelectTrigger>
-          <SelectContent className="bg-white z-50">
-            <SelectItem value="all">Todas las propiedades</SelectItem>
-            {properties.map((property) => (
-              <SelectItem key={property.id} value={property.id}>
-                {property.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Row 2: Property filter (left) + Upload button (right) */}
+      <div className="flex gap-4 items-center">
+        <div className="flex-1">
+          <Select value={selectedProperty} onValueChange={onPropertyChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filtrar por propiedad" />
+            </SelectTrigger>
+            <SelectContent className="bg-white z-50">
+              <SelectItem value="all">Todas las propiedades</SelectItem>
+              {properties.map((property) => (
+                <SelectItem key={property.id} value={property.id}>
+                  {property.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {onUploadClick && (
+          <button
+            onClick={onUploadClick}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            Subir Documento
+          </button>
+        )}
       </div>
 
       {/* Row 3: Document type (left) and Year (right) */}

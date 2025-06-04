@@ -28,13 +28,13 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     saveHistoricalTasks
   } = useHistoricalDataIsolation();
 
-  // Create a historical version of the property with COMPLETE isolation
+  // Create a COMPLETELY ISOLATED historical version of the property
   useEffect(() => {
     const records = getRecordsByPropertyYear(property.id, year);
     const historicalInventory = getHistoricalInventory(property.id, year);
     const historicalTasks = getHistoricalTasks(property.id, year);
     
-    // Create a completely isolated copy for historical year
+    // Create COMPLETELY ISOLATED copy for historical year
     const histProperty: Property = {
       // Base property data (immutable reference data)
       id: property.id,
@@ -44,7 +44,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       
       // Historical financial data - COMPLETELY ISOLATED
       rent: records.length > 0 ? records[0].categorias.alquiler : property.rent,
-      rentPaid: false, // Historical rent paid status should be separate
+      rentPaid: false, // Historical rent paid status is separate
       
       // Historical mortgage data - ISOLATED
       mortgage: records.length > 0 && records[0].categorias.hipoteca > 0 ? {
@@ -346,7 +346,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        {/* CLEAR historical header with yellow background - CRITICAL for user orientation */}
+        {/* SHORTER historical header - NO contradictory text */}
         <div className="flex items-center gap-3 mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
           <Button
             onClick={onBack}
@@ -355,19 +355,14 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             className="border-yellow-400 text-yellow-800 hover:bg-yellow-200 font-medium"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver al Año Actual
+            Volver al Actual
           </Button>
           <div className="flex items-center gap-2 text-sm">
             <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded">
-              MODO HISTÓRICO: {year}
+              Histórico: {year}
             </span>
             <span className="text-yellow-700">|</span>
             <span className="font-medium text-yellow-800">{property.name}</span>
-            <span className="text-yellow-700">|</span>
-            <span className="text-yellow-700">{property.address}</span>
-          </div>
-          <div className="ml-auto bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
-            Los cambios NO afectan al año actual
           </div>
         </div>
 

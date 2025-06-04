@@ -43,24 +43,39 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     loadVideos();
   }, [propertyId, historicalYear]);
 
-  // Save videos to localStorage with improved error handling
+  // Save videos to localStorage with improved error handling and PERSISTENT storage
   const saveVideos = (videosToSave: VideoFile[]) => {
     try {
       const dataToSave = JSON.stringify(videosToSave);
       
-      // Check localStorage space before saving
-      const estimatedSize = new Blob([dataToSave]).size;
-      if (estimatedSize > 5 * 1024 * 1024) { // 5MB limit warning
-        toast.warning('Los videos ocupan mucho espacio. Considera comprimir los archivos.');
-      }
+      // Enhanced persistence - save with timestamp and backup
+      const persistentData = {
+        videos: videosToSave,
+        lastSaved: new Date().toISOString(),
+        propertyId,
+        year: historicalYear
+      };
       
-      localStorage.setItem(getStorageKey(), dataToSave);
+      // Primary storage
+      localStorage.setItem(getStorageKey(), JSON.stringify(videosToSave));
+      
+      // Backup storage for persistence
+      localStorage.setItem(`${getStorageKey()}_backup`, JSON.stringify(persistentData));
+      
+      // Global videos index for better persistence
+      const globalIndex = JSON.parse(localStorage.getItem('videosGlobalIndex') || '{}');
+      if (!globalIndex[propertyId]) {
+        globalIndex[propertyId] = {};
+      }
+      globalIndex[propertyId][historicalYear || 'current'] = videosToSave.length;
+      localStorage.setItem('videosGlobalIndex', JSON.stringify(globalIndex));
+      
       setVideos(videosToSave);
       return true;
     } catch (error) {
       console.error('Error saving videos:', error);
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        toast.error('Espacio de almacenamiento agotado. Elimina algunos videos antiguos.');
+        toast.error('Espacio de almacenamiento agotado. Videos muy grandes.');
       } else {
         toast.error('Error al guardar los vídeos');
       }
@@ -159,12 +174,33 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     toast.success(`Iniciando descarga de ${videos.length} videos...`);
   };
 
+  // Recovery function for lost videos
+  const recoverVideos = () => {
+    try {
+      const backupData = localStorage.getItem(`${getStorageKey()}_backup`);
+      if (backupData) {
+        const backup = JSON.parse(backupData);
+        if (backup.videos) {
+          setVideos(backup.videos);
+          localStorage.setItem(getStorageKey(), JSON.stringify(backup.videos));
+          toast.success('Videos recuperados del backup');
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error recovering videos:', error);
+      return false;
+    }
+  };
+
   return {
     videos,
     loadVideos,
     addVideo,
     deleteVideo,
     downloadVideo,
-    downloadAllVideos
+    downloadAllVideos,
+    recoverVideos
   };
 };
