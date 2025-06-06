@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Property, Tenant, ContactDetails, Utility } from '@/types/property';

@@ -5,10 +5,17 @@ import { useNavigate } from 'react-router-dom';
 
 interface PropertyFormActionsProps {
   isNewProperty: boolean;
+  historicalYear?: number;
 }
 
-const PropertyFormActions = ({ isNewProperty }: PropertyFormActionsProps) => {
+const PropertyFormActions = ({ isNewProperty, historicalYear }: PropertyFormActionsProps) => {
   const navigate = useNavigate();
+  
+  const getButtonText = () => {
+    if (isNewProperty) return 'Crear Propiedad';
+    if (historicalYear) return `Guardar Cambios (${historicalYear})`;
+    return 'Guardar Cambios';
+  };
   
   return (
     <div className="flex justify-end gap-2">
@@ -16,11 +23,10 @@ const PropertyFormActions = ({ isNewProperty }: PropertyFormActionsProps) => {
         Cancelar
       </Button>
       <Button type="submit">
-        {isNewProperty ? 'Crear Propiedad' : 'Guardar Cambios'}
+        {getButtonText()}
       </Button>
     </div>
   );
 };
 
 export default PropertyFormActions;
-
