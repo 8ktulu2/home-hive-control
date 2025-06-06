@@ -68,6 +68,15 @@ const InventoryTab = ({
     }, 0) || 0;
   };
 
+  const calculateTotalInventoryValue = () => {
+    return property.inventory?.reduce((total, item) => {
+      if (item.price) {
+        return total + item.price;
+      }
+      return total;
+    }, 0) || 0;
+  };
+
   return (
     <div className={`space-y-4 ${historicalYear ? 'bg-yellow-50 border border-yellow-200 rounded-lg p-4' : ''}`}>
       {historicalYear && (
@@ -94,12 +103,17 @@ const InventoryTab = ({
         </Button>
       </div>
 
-      {/* Show total deductible amount */}
-      {historicalYear && deductibleItems.size > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+      {/* Totals section for historical years */}
+      {historicalYear && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
           <p className="text-sm font-medium text-green-800">
-            Total gastos deducibles: {calculateTotalDeductible().toFixed(2)}€
+            Total inventario: {calculateTotalInventoryValue().toFixed(2)}€
           </p>
+          {deductibleItems.size > 0 && (
+            <p className="text-sm font-medium text-green-800">
+              Total gastos deducibles: {calculateTotalDeductible().toFixed(2)}€
+            </p>
+          )}
         </div>
       )}
       
@@ -130,6 +144,7 @@ const InventoryTab = ({
                       size="sm"
                       className="h-7 w-7 p-0"
                       onClick={() => toggleDeductible(item.id)}
+                      title={deductibleItems.has(item.id) ? "Marcado como deducible" : "Marcar como deducible"}
                     >
                       <CheckCircle 
                         className={`h-4 w-4 ${

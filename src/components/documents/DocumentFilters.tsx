@@ -15,13 +15,15 @@ interface DocumentFiltersProps {
   onYearChange: (value: string) => void;
   properties: Array<{ id: string; name: string }>;
   availableYears: number[];
-  // Additional props for full functionality
+  onUploadClick?: () => void;
   propertyFilter?: string;
   typeFilter?: string;
+  yearFilter?: string;
   onPropertyFilterChange?: (filter: string) => void;
   onTypeFilterChange?: (filter: string) => void;
-  onUploadClick?: () => void;
+  onYearFilterChange?: (year: string) => void;
   uniqueTypes?: string[];
+  uniqueYears?: string[];
   isUploading?: boolean;
 }
 

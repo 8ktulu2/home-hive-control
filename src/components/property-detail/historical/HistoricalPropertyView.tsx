@@ -104,8 +104,8 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       // Reference data (not year-specific)
       tenants: property.tenants,
       documents: property.documents,
-      expenses: 0, // Will be calculated from historical data
-      netIncome: 0, // Will be calculated from historical data
+      expenses: 0,
+      netIncome: 0,
       monthlyExpenses: [],
       
       // Contact and utility data (reference only)
@@ -133,13 +133,11 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
 
   // ISOLATED payment update - affects ONLY the historical year
   const handleHistoricalPaymentUpdate = (month: number, updateYear: number, isPaid: boolean, notes?: string) => {
-    // CRITICAL: Ensure we're only working with the historical year
     if (updateYear !== year) {
       console.warn(`Payment update attempted for year ${updateYear} but we're in historical year ${year}`);
       return;
     }
 
-    // Get current historical categories or use current year as reference ONLY
     const currentRecord = getRecordsByPropertyYear(property.id, year).find(r => r.mes === month);
     const categorias = currentRecord?.categorias || {
       alquiler: property.rent || 0,
@@ -153,17 +151,14 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       suministros: 0
     };
 
-    // Update alquiler based on payment status (ONLY affects historical year)
     if (isPaid) {
       categorias.alquiler = property.rent || 0;
     } else {
       categorias.alquiler = 0;
     }
 
-    // Save ONLY to historical storage (NEVER affects current year)
     saveRecord(property.id, year, month, categorias);
     
-    // Update local state for this historical view ONLY
     if (historicalProperty) {
       const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
       const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
@@ -200,7 +195,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   const handleHistoricalInventoryAdd = (item: Omit<any, 'id'>) => {
     const newItem = addHistoricalInventoryItem(property.id, year, item);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -220,7 +214,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   const handleHistoricalInventoryEdit = (item: any) => {
     updateHistoricalInventoryItem(property.id, year, item.id, item);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -234,7 +227,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   const handleHistoricalInventoryDelete = (itemId: string) => {
     deleteHistoricalInventoryItem(property.id, year, itemId);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -257,7 +249,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     const existingTasks = getHistoricalTasks(property.id, year);
     saveHistoricalTasks(property.id, year, [...existingTasks, newTask]);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -273,7 +264,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     );
     saveHistoricalTasks(property.id, year, updatedTasks);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -289,7 +279,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     const updatedTasks = existingTasks.filter(task => task.id !== taskId);
     saveHistoricalTasks(property.id, year, updatedTasks);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -305,7 +294,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
     );
     saveHistoricalTasks(property.id, year, updatedTasks);
     
-    // Update local state immediately for historical view ONLY
     if (historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
@@ -330,7 +318,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
   };
 
   const handleRentPaidChange = (paid: boolean) => {
-    // This should NEVER affect current year - it's for historical context only
     console.log('Historical rent paid change (no effect on current year):', paid);
   };
 
@@ -346,7 +333,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        {/* SHORTER historical header - NO contradictory text */}
+        {/* SHORTER historical header */}
         <div className="flex items-center gap-3 mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
           <Button
             onClick={onBack}
@@ -357,16 +344,15 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             <ArrowLeft className="h-4 w-4 mr-1" />
             Volver al Actual
           </Button>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded">
+          <div className="flex items-center gap-2 text-sm overflow-hidden">
+            <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded whitespace-nowrap">
               Histórico: {year}
             </span>
             <span className="text-yellow-700">|</span>
-            <span className="font-medium text-yellow-800">{property.name}</span>
+            <span className="font-medium text-yellow-800 truncate">{property.name}</span>
           </div>
         </div>
 
-        {/* Use the same components as current year but with COMPLETE historical isolation */}
         <div className="space-y-2">
           <PropertyDetailContent
             property={historicalProperty}
