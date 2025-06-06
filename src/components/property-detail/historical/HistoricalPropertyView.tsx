@@ -334,7 +334,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        {/* SHORTER and more concise historical header */}
+        {/* CONCISE historical header */}
         <div className="flex items-center gap-3 mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-2 shadow-md">
           <Button
             onClick={onBack}
@@ -347,7 +347,7 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
           </Button>
           <div className="flex items-center gap-2 text-sm overflow-hidden">
             <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded whitespace-nowrap">
-              {year}
+              Histórico: {year}
             </span>
             <span className="text-yellow-700">|</span>
             <span className="font-medium text-yellow-800 truncate">{property.name}</span>

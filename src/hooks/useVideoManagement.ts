@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -22,49 +21,39 @@ export interface ImageFile {
   year?: number;
 }
 
-// Enhanced persistence with multiple backup strategies
+// FIXED persistence system with robust backup strategies
 const STORAGE_KEYS = {
-  videos: {
-    primary: (propertyId: string, year?: number) => 
-      year ? `propertyVideos_${propertyId}_${year}` : `propertyVideos_${propertyId}`,
-    backup: (propertyId: string, year?: number) => 
-      year ? `propertyVideos_backup_${propertyId}_${year}` : `propertyVideos_backup_${propertyId}`,
-    index: 'videosGlobalIndex',
-    metadata: (propertyId: string, year?: number) => 
-      year ? `videosMeta_${propertyId}_${year}` : `videosMeta_${propertyId}`
-  },
-  images: {
-    primary: (propertyId: string, year?: number) => 
-      year ? `propertyImages_${propertyId}_${year}` : `propertyImages_${propertyId}`,
-    backup: (propertyId: string, year?: number) => 
-      year ? `propertyImages_backup_${propertyId}_${year}` : `propertyImages_backup_${propertyId}`,
-    index: 'imagesGlobalIndex',
-    metadata: (propertyId: string, year?: number) => 
-      year ? `imagesMeta_${propertyId}_${year}` : `imagesMeta_${propertyId}`
-  }
+  videos: (propertyId: string, year?: number) => 
+    year ? `propertyVideos_${propertyId}_${year}` : `propertyVideos_${propertyId}`,
+  images: (propertyId: string, year?: number) => 
+    year ? `propertyImages_${propertyId}_${year}` : `propertyImages_${propertyId}`,
+  backup_videos: (propertyId: string, year?: number) => 
+    year ? `propertyVideos_backup_${propertyId}_${year}` : `propertyVideos_backup_${propertyId}`,
+  backup_images: (propertyId: string, year?: number) => 
+    year ? `propertyImages_backup_${propertyId}_${year}` : `propertyImages_backup_${propertyId}`,
 };
 
 export const useVideoManagement = (propertyId: string, historicalYear?: number) => {
   const [videos, setVideos] = useState<VideoFile[]>([]);
   const [images, setImages] = useState<ImageFile[]>([]);
 
-  // Enhanced storage operations with multiple persistence layers
+  // ROBUST storage operations with verification
   const saveToStorage = (key: string, data: any): boolean => {
     try {
       const serialized = JSON.stringify(data);
       localStorage.setItem(key, serialized);
       
-      // Verify write was successful
+      // VERIFY write was successful
       const verification = localStorage.getItem(key);
       if (verification === serialized) {
-        console.log(`Successfully saved to ${key}`);
+        console.log(`✅ Successfully saved to ${key}`);
         return true;
       } else {
-        console.error(`Verification failed for ${key}`);
+        console.error(`❌ Verification failed for ${key}`);
         return false;
       }
     } catch (error) {
-      console.error(`Failed to save to ${key}:`, error);
+      console.error(`❌ Failed to save to ${key}:`, error);
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
         toast.error('Espacio de almacenamiento agotado. Archivo muy grande.');
       }
@@ -82,19 +71,19 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     }
   };
 
-  // Load videos and images with enhanced recovery mechanism
+  // Load files with backup recovery
   const loadFiles = () => {
     try {
       // Load videos
-      const videoPrimaryKey = STORAGE_KEYS.videos.primary(propertyId, historicalYear);
-      const videoBackupKey = STORAGE_KEYS.videos.backup(propertyId, historicalYear);
+      const videoPrimaryKey = STORAGE_KEYS.videos(propertyId, historicalYear);
+      const videoBackupKey = STORAGE_KEYS.backup_videos(propertyId, historicalYear);
       
       let savedVideos = loadFromStorage(videoPrimaryKey);
-      if (!savedVideos) {
+      if (!savedVideos && videoBackupKey) {
         savedVideos = loadFromStorage(videoBackupKey);
         if (savedVideos) {
           saveToStorage(videoPrimaryKey, savedVideos);
-          console.log('Restored videos from backup storage');
+          console.log('🔄 Restored videos from backup storage');
         }
       }
       
@@ -105,15 +94,15 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
       }
 
       // Load images
-      const imagePrimaryKey = STORAGE_KEYS.images.primary(propertyId, historicalYear);
-      const imageBackupKey = STORAGE_KEYS.images.backup(propertyId, historicalYear);
+      const imagePrimaryKey = STORAGE_KEYS.images(propertyId, historicalYear);
+      const imageBackupKey = STORAGE_KEYS.backup_images(propertyId, historicalYear);
       
       let savedImages = loadFromStorage(imagePrimaryKey);
-      if (!savedImages) {
+      if (!savedImages && imageBackupKey) {
         savedImages = loadFromStorage(imageBackupKey);
         if (savedImages) {
           saveToStorage(imagePrimaryKey, savedImages);
-          console.log('Restored images from backup storage');
+          console.log('🔄 Restored images from backup storage');
         }
       }
       
@@ -129,37 +118,22 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     }
   };
 
-  // Enhanced save with multiple persistence layers
+  // ROBUST save with dual persistence
   const saveFiles = (filesToSave: VideoFile[] | ImageFile[], type: 'videos' | 'images'): boolean => {
     try {
-      const storageKeys = STORAGE_KEYS[type];
-      const primaryKey = storageKeys.primary(propertyId, historicalYear);
-      const backupKey = storageKeys.backup(propertyId, historicalYear);
-      const metaKey = storageKeys.metadata(propertyId, historicalYear);
+      const primaryKey = type === 'videos' 
+        ? STORAGE_KEYS.videos(propertyId, historicalYear)
+        : STORAGE_KEYS.images(propertyId, historicalYear);
+      
+      const backupKey = type === 'videos' 
+        ? STORAGE_KEYS.backup_videos(propertyId, historicalYear)
+        : STORAGE_KEYS.backup_images(propertyId, historicalYear);
       
       // Save to primary storage
       const primarySuccess = saveToStorage(primaryKey, filesToSave);
       
       // Save to backup storage
       const backupSuccess = saveToStorage(backupKey, filesToSave);
-      
-      // Save metadata
-      const metadata = {
-        count: filesToSave.length,
-        lastUpdated: new Date().toISOString(),
-        propertyId,
-        year: historicalYear,
-        totalSize: filesToSave.reduce((sum, f) => sum + f.size, 0)
-      };
-      saveToStorage(metaKey, metadata);
-      
-      // Update global index
-      const globalIndex = loadFromStorage(storageKeys.index) || {};
-      if (!globalIndex[propertyId]) {
-        globalIndex[propertyId] = {};
-      }
-      globalIndex[propertyId][historicalYear || 'current'] = filesToSave.length;
-      saveToStorage(storageKeys.index, globalIndex);
       
       if (primarySuccess || backupSuccess) {
         if (type === 'videos') {
@@ -183,7 +157,7 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     loadFiles();
   }, [propertyId, historicalYear]);
 
-  // Enhanced add video with better validation and compression
+  // Add video with validation
   const addVideo = (file: File): Promise<VideoFile> => {
     return new Promise((resolve, reject) => {
       // Validate file size (max 100MB)
@@ -240,7 +214,7 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     });
   };
 
-  // Add image
+  // Add image with validation
   const addImage = (file: File): Promise<ImageFile> => {
     return new Promise((resolve, reject) => {
       // Validate file size (max 10MB)
@@ -317,7 +291,6 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
     }
   };
 
-  // Download video
   const downloadVideo = (video: VideoFile) => {
     try {
       const link = document.createElement('a');
@@ -347,6 +320,21 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
       console.error('Error downloading image:', error);
       toast.error('Error al descargar la imagen');
     }
+  };
+
+  const downloadAllVideos = () => {
+    if (videos.length === 0) {
+      toast.info('No hay videos para descargar');
+      return;
+    }
+
+    videos.forEach((video, index) => {
+      setTimeout(() => {
+        downloadVideo(video);
+      }, index * 1000);
+    });
+    
+    toast.success(`Iniciando descarga de ${videos.length} videos...`);
   };
 
   // Download all images in ZIP format
@@ -391,22 +379,6 @@ export const useVideoManagement = (propertyId: string, historicalYear?: number) 
       console.error('Error creating ZIP:', error);
       toast.error('Error al crear el archivo ZIP');
     }
-  };
-
-  // Download all videos
-  const downloadAllVideos = () => {
-    if (videos.length === 0) {
-      toast.info('No hay videos para descargar');
-      return;
-    }
-
-    videos.forEach((video, index) => {
-      setTimeout(() => {
-        downloadVideo(video);
-      }, index * 1000);
-    });
-    
-    toast.success(`Iniciando descarga de ${videos.length} videos...`);
   };
 
   return {
