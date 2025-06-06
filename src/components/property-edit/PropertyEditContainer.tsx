@@ -40,7 +40,7 @@ const PropertyEditContainer = () => {
     updatePropertyImage
   );
 
-  const { handleSubmit } = usePropertyForm(property, calculatePropertyExpenses, historicalYear);
+  const { handleSubmit } = usePropertyForm(property, calculatePropertyExpenses);
 
   const {
     addTenant,
