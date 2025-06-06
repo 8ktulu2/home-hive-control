@@ -77,12 +77,21 @@ const InventoryTab = ({
     }, 0) || 0;
   };
 
+  const calculateNonDeductibleValue = () => {
+    return property.inventory?.reduce((total, item) => {
+      if (!deductibleItems.has(item.id) && item.price) {
+        return total + item.price;
+      }
+      return total;
+    }, 0) || 0;
+  };
+
   return (
     <div className={`space-y-4 ${historicalYear ? 'bg-yellow-50 border border-yellow-200 rounded-lg p-4' : ''}`}>
       {historicalYear && (
         <Alert className="bg-yellow-100 border-yellow-300">
           <AlertDescription className="text-yellow-800 text-sm">
-            <strong>Inventario Histórico {historicalYear}</strong> - Elementos específicos de este año
+            <strong>Inventario Histórico {historicalYear}</strong> - Datos específicos del año {historicalYear}
           </AlertDescription>
         </Alert>
       )}
@@ -109,11 +118,12 @@ const InventoryTab = ({
           <p className="text-sm font-medium text-green-800">
             Total inventario: {calculateTotalInventoryValue().toFixed(2)}€
           </p>
-          {deductibleItems.size > 0 && (
-            <p className="text-sm font-medium text-green-800">
-              Total gastos deducibles: {calculateTotalDeductible().toFixed(2)}€
-            </p>
-          )}
+          <p className="text-sm font-medium text-blue-800">
+            Gastos deducibles: {calculateTotalDeductible().toFixed(2)}€
+          </p>
+          <p className="text-sm font-medium text-gray-700">
+            No deducibles: {calculateNonDeductibleValue().toFixed(2)}€
+          </p>
         </div>
       )}
       
@@ -184,8 +194,12 @@ const InventoryTab = ({
                   <p className={`text-xs font-medium ${historicalYear ? 'text-yellow-800' : 'text-green-600'}`}>
                     Precio: {item.price}€
                   </p>
-                  {historicalYear && deductibleItems.has(item.id) && (
-                    <span className="text-xs text-green-600 font-medium">✓ Deducible</span>
+                  {historicalYear && (
+                    <span className={`text-xs font-medium ${
+                      deductibleItems.has(item.id) ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                      {deductibleItems.has(item.id) ? '✓ Deducible' : '✗ No deducible'}
+                    </span>
                   )}
                 </div>
               )}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
@@ -333,8 +334,8 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        {/* SHORTER historical header */}
-        <div className="flex items-center gap-3 mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
+        {/* SHORTER and more concise historical header */}
+        <div className="flex items-center gap-3 mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-2 shadow-md">
           <Button
             onClick={onBack}
             variant="outline"
@@ -342,11 +343,11 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             className="border-yellow-400 text-yellow-800 hover:bg-yellow-200 font-medium"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver al Actual
+            Actual
           </Button>
           <div className="flex items-center gap-2 text-sm overflow-hidden">
             <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded whitespace-nowrap">
-              Histórico: {year}
+              {year}
             </span>
             <span className="text-yellow-700">|</span>
             <span className="font-medium text-yellow-800 truncate">{property.name}</span>
