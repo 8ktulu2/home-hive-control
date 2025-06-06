@@ -12,6 +12,8 @@ import PropertyEdit from "./pages/PropertyEdit";
 import Documents from "./pages/Documents";
 import Tasks from "./pages/Tasks";
 import FiscalReport from "./pages/FiscalReport";
+import Historicos from "./pages/Historicos";
+import HistoricalPropertyView from "./pages/HistoricalPropertyView";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => {
             <Route path="/property/:id" element={<PropertyDetail />} />
             <Route path="/property/edit/:id" element={<PropertyEdit />} />
             <Route path="/property/:id/edit" element={<PropertyEdit />} />
+            <Route path="/historicos" element={<Historicos />} />
+            <Route path="/historicos/property/:propertyId/:year" element={<HistoricalPropertyView />} />
             <Route path="/finances" element={<Finances />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/tasks" element={<Tasks />} />

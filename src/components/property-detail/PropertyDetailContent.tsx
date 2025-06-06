@@ -3,9 +3,6 @@ import { Property } from '@/types/property';
 import MonthlyPaymentStatus from '@/components/properties/MonthlyPaymentStatus';
 import MainContent from './MainContent';
 import SecondaryContent from './SecondaryContent';
-import HistoricalSection from './historical/HistoricalSection';
-import HistoricalPropertyView from './historical/HistoricalPropertyView';
-import { useState } from 'react';
 
 interface PropertyDetailContentProps {
   property: Property;
@@ -19,7 +16,6 @@ interface PropertyDetailContentProps {
   handleDocumentAdd: (document: any) => void;
   handleExpenseDelete?: (expenseId: string) => void;
   setProperty: (property: Property | null) => void;
-  historicalYear?: number;
   onInventoryAdd?: (item: any) => void;
   onInventoryEdit?: (item: any) => void;
   onInventoryDelete?: (itemId: string) => void;
@@ -37,49 +33,17 @@ const PropertyDetailContent = ({
   handleDocumentAdd,
   handleExpenseDelete,
   setProperty,
-  historicalYear,
   onInventoryAdd,
   onInventoryEdit,
   onInventoryDelete
 }: PropertyDetailContentProps) => {
-  const [selectedHistoricalYear, setSelectedHistoricalYear] = useState<number | null>(null);
-
-  const handleYearSelect = (year: number) => {
-    setSelectedHistoricalYear(year);
-  };
-
-  const handleBackToCurrentYear = () => {
-    setSelectedHistoricalYear(null);
-  };
-
-  // If historical year is selected, show historical view
-  if (selectedHistoricalYear) {
-    return (
-      <HistoricalPropertyView 
-        property={property}
-        year={selectedHistoricalYear}
-        onBack={handleBackToCurrentYear}
-      />
-    );
-  }
-
-  // Current year view or nested historical view
   return (
     <div className="space-y-6">
-      {/* Only show historical section if we're NOT already in a historical year */}
-      {!historicalYear && (
-        <HistoricalSection 
-          property={property} 
-          onYearSelect={handleYearSelect}
-        />
-      )}
-
       <div className="pb-1">
         <MonthlyPaymentStatus 
           property={property}
           onPaymentUpdate={onPaymentUpdate}
           compact={true}
-          historicalYear={historicalYear}
         />
       </div>
 
@@ -100,7 +64,6 @@ const PropertyDetailContent = ({
         onInventoryAdd={onInventoryAdd}
         onInventoryEdit={onInventoryEdit}
         onInventoryDelete={onInventoryDelete}
-        historicalYear={historicalYear}
       />
     </div>
   );

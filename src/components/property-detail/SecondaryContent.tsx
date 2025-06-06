@@ -16,7 +16,6 @@ interface SecondaryContentProps {
   onInventoryAdd?: (item: any) => void;
   onInventoryEdit?: (item: any) => void;
   onInventoryDelete?: (itemId: string) => void;
-  historicalYear?: number;
 }
 
 const SecondaryContent: React.FC<SecondaryContentProps> = ({
@@ -29,27 +28,20 @@ const SecondaryContent: React.FC<SecondaryContentProps> = ({
   onDocumentAdd,
   onInventoryAdd,
   onInventoryEdit,
-  onInventoryDelete,
-  historicalYear
+  onInventoryDelete
 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* SINGLE PropertyInfo component - NO DUPLICATION */}
       <div className="space-y-6">
         <PropertyInfo 
           property={property} 
-          setProperty={() => {}} // Not used for historical - handled by parent
+          setProperty={() => {}}
           onInventoryAdd={onInventoryAdd}
           onInventoryEdit={onInventoryEdit}
           onInventoryDelete={onInventoryDelete}
-          historicalYear={historicalYear}
         />
         
-        {/* Video section with historical support */}
-        <VideoUpload 
-          propertyId={property.id} 
-          historicalYear={historicalYear}
-        />
+        <VideoUpload propertyId={property.id} />
       </div>
       
       <PropertyTasks

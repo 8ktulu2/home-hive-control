@@ -23,7 +23,6 @@ interface PropertyFormTabsProps {
   updateContactDetails: (type: 'communityManager' | 'waterProvider' | 'electricityProvider' | 'insuranceCompany' | 'gasProvider' | 'internetProvider', field: string, value: string) => void;
   updateInsuranceCompany: (value: string) => void;
   addOtherUtility?: () => void;
-  historicalYear?: number;
 }
 
 const PropertyFormTabs = ({
@@ -40,8 +39,7 @@ const PropertyFormTabs = ({
   removeTenant,
   updateContactDetails,
   updateInsuranceCompany,
-  addOtherUtility,
-  historicalYear
+  addOtherUtility
 }: PropertyFormTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
