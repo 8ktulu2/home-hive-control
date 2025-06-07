@@ -3,6 +3,7 @@ import React from 'react';
 import { Property } from '@/types/property';
 import PropertyDetailContent from '../PropertyDetailContent';
 import HistoricalHeader from './HistoricalHeader';
+import PropertyDetailHeader from '../PropertyDetailHeader';
 import { useHistoricalPropertyState } from './hooks/useHistoricalPropertyState';
 import { useHistoricalHandlers } from './hooks/useHistoricalHandlers';
 
@@ -53,6 +54,12 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
         />
 
         <div className="space-y-2">
+          <PropertyDetailHeader 
+            property={historicalProperty}
+            onRentPaidChange={handleRentPaidChange}
+            historicalYear={year}
+          />
+          
           <PropertyDetailContent
             property={historicalProperty}
             onRentPaidChange={handleRentPaidChange}

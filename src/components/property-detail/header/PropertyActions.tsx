@@ -2,17 +2,33 @@
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface PropertyActionsProps {
   propertyId: string;
+  historicalYear?: number;
 }
 
-const PropertyActions = ({ propertyId }: PropertyActionsProps) => {
+const PropertyActions = ({ propertyId, historicalYear }: PropertyActionsProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleEdit = () => {
-    navigate(`/property/edit/${propertyId}`);
+    if (historicalYear) {
+      // Navegación para edición histórica - contexto preservado
+      navigate(`/historicos/property/${propertyId}/${historicalYear}/edit`);
+    } else {
+      // Navegación normal para año actual
+      navigate(`/property/edit/${propertyId}`);
+    }
+  };
+
+  const handleDuplicate = () => {
+    if (historicalYear) {
+      // No permitir duplicación desde contexto histórico
+      return;
+    }
+    navigate(`/property/${propertyId}/duplicate`);
   };
 
   return (
@@ -37,9 +53,11 @@ const PropertyActions = ({ propertyId }: PropertyActionsProps) => {
           <DropdownMenuItem onClick={handleEdit}>
             Editar propiedad
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate(`/property/${propertyId}/duplicate`)}>
-            Duplicar propiedad
-          </DropdownMenuItem>
+          {!historicalYear && (
+            <DropdownMenuItem onClick={handleDuplicate}>
+              Duplicar propiedad
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

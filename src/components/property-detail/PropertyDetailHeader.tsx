@@ -5,9 +5,10 @@ import PropertyActions from './header/PropertyActions';
 interface PropertyDetailHeaderProps {
   property: Property;
   onRentPaidChange: (paid: boolean) => void;
+  historicalYear?: number;
 }
 
-const PropertyDetailHeader = ({ property }: PropertyDetailHeaderProps) => {
+const PropertyDetailHeader = ({ property, historicalYear }: PropertyDetailHeaderProps) => {
   return (
     <div className="flex justify-between items-start space-y-0 pb-2">
       <div className="flex flex-row gap-4 items-center">
@@ -27,7 +28,10 @@ const PropertyDetailHeader = ({ property }: PropertyDetailHeaderProps) => {
           </p>
         </div>
         
-        <PropertyActions propertyId={property.id} />
+        <PropertyActions 
+          propertyId={property.id} 
+          historicalYear={historicalYear}
+        />
       </div>
     </div>
   );

@@ -1,46 +1,32 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import PropertyList from './pages/PropertyList';
+import PropertyDetail from './pages/PropertyDetail';
+import PropertyEdit from './pages/PropertyEdit';
+import DuplicateProperty from './pages/DuplicateProperty';
+import Historicos from './pages/Historicos';
+import HistoricalPropertyView from './pages/HistoricalPropertyView';
+import { Toaster } from 'sonner';
+import { QueryClient } from 'react-query';
+import HistoricalPropertyEdit from './pages/HistoricalPropertyEdit';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import PropertyDetail from "./pages/PropertyDetail";
-import NotFound from "./pages/NotFound";
-import Finances from "./pages/Finances";
-import PropertyEdit from "./pages/PropertyEdit";
-import Documents from "./pages/Documents";
-import Tasks from "./pages/Tasks";
-import FiscalReport from "./pages/FiscalReport";
-import Historicos from "./pages/Historicos";
-import HistoricalPropertyView from "./pages/HistoricalPropertyView";
-
-const queryClient = new QueryClient();
-
-const App = () => {
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/property/:id" element={<PropertyDetail />} />
-            <Route path="/property/edit/:id" element={<PropertyEdit />} />
-            <Route path="/property/:id/edit" element={<PropertyEdit />} />
-            <Route path="/historicos" element={<Historicos />} />
-            <Route path="/historicos/property/:propertyId/:year" element={<HistoricalPropertyView />} />
-            <Route path="/finances" element={<Finances />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/fiscal-report" element={<FiscalReport />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <Router>
+      <QueryClient>
+        <Routes>
+          <Route path="/" element={<PropertyList />} />
+          <Route path="/property/:id" element={<PropertyDetail />} />
+          <Route path="/property/edit/:id" element={<PropertyEdit />} />
+          <Route path="/property/:id/duplicate" element={<DuplicateProperty />} />
+          <Route path="/historicos" element={<Historicos />} />
+          <Route path="/historicos/property/:propertyId/:year" element={<HistoricalPropertyView />} />
+          <Route path="/historicos/property/:id/:year/edit" element={<HistoricalPropertyEdit />} />
+        </Routes>
+        <Toaster />
+      </QueryClient>
+    </Router>
   );
-};
+}
 
 export default App;
