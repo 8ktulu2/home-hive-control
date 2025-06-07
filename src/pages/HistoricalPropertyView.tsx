@@ -92,26 +92,24 @@ const HistoricalPropertyView = () => {
           </Alert>
         </div>
 
-        {/* Header de la propiedad con contexto histórico */}
+        {/* Header de la propiedad */}
         <PropertyDetailHeader 
           property={property}
-          onRentPaidChange={() => {}} // No aplicable en modo histórico
-          historicalYear={parseInt(year!)}
+          onRentPaidChange={() => {}}
         />
 
-        {/* Contenido principal con todas las funcionalidades pero en contexto histórico */}
+        {/* Contenido principal */}
         <PropertyDetailContent
           property={property}
-          onRentPaidChange={() => {}} // No aplicable en modo histórico
-          onPaymentUpdate={() => {}} // Los pagos históricos no se modifican
-          handleTaskToggle={() => {}} // Las tareas históricas son de solo lectura
-          handleTaskAdd={() => {}} // No se añaden tareas en histórico
-          handleTaskDelete={() => {}} // No se eliminan tareas en histórico
-          handleTaskUpdate={() => {}} // No se actualizan tareas en histórico
-          handleDocumentDelete={() => {}} // Los documentos históricos son de solo lectura
-          handleDocumentAdd={() => {}} // No se añaden documentos en histórico
+          onRentPaidChange={() => {}}
+          onPaymentUpdate={() => {}}
+          handleTaskToggle={() => {}}
+          handleTaskAdd={() => {}}
+          handleTaskDelete={() => {}}
+          handleTaskUpdate={() => {}}
+          handleDocumentDelete={() => {}}
+          handleDocumentAdd={() => {}}
           setProperty={handlePropertyUpdate}
-          historicalYear={parseInt(year!)}
         />
       </div>
     </Layout>

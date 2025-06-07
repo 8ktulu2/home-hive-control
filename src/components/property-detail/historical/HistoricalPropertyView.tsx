@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
@@ -367,7 +366,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             handleDocumentAdd={handleHistoricalDocumentAdd}
             handleExpenseDelete={handleHistoricalExpenseDelete}
             setProperty={setHistoricalProperty}
-            historicalYear={year}
             onInventoryAdd={handleHistoricalInventoryAdd}
             onInventoryEdit={handleHistoricalInventoryEdit}
             onInventoryDelete={handleHistoricalInventoryDelete}
