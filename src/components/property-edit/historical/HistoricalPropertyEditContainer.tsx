@@ -22,22 +22,22 @@ const HistoricalPropertyEditContainer = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   
   const { property: baseProperty, loading, isNewProperty } = usePropertyLoader(id);
-  const { property, setProperty } = useHistoricalPropertyState(baseProperty, historicalYear);
+  const { historicalProperty, setHistoricalProperty } = useHistoricalPropertyState(baseProperty, historicalYear);
 
-  const { updatePropertyImage } = usePropertyManagement(property);
+  const { updatePropertyImage } = usePropertyManagement(historicalProperty);
   
   const calculatePropertyExpenses = () => {
-    if (!property) return 0;
-    return calculateTotalExpenses(property);
+    if (!historicalProperty) return 0;
+    return calculateTotalExpenses(historicalProperty);
   };
 
   const { handleImageUpload, handleImageChange } = usePropertyImage(
-    property,
+    historicalProperty,
     imageInputRef,
     updatePropertyImage
   );
 
-  const { handleSubmit } = usePropertyForm(property, calculatePropertyExpenses, historicalYear);
+  const { handleSubmit } = usePropertyForm(historicalProperty, calculatePropertyExpenses, historicalYear);
 
   const {
     addTenant,
@@ -46,10 +46,10 @@ const HistoricalPropertyEditContainer = () => {
     updateInsuranceCompany,
     addOtherUtility,
     updateContactDetails
-  } = usePropertyHandlers(property, setProperty);
+  } = usePropertyHandlers(historicalProperty, setHistoricalProperty);
 
   if (loading) return <PropertyEditLoading />;
-  if (!property) return <PropertyEditError />;
+  if (!historicalProperty) return <PropertyEditError />;
 
   return (
     <div 
@@ -65,19 +65,19 @@ const HistoricalPropertyEditContainer = () => {
               EDITANDO HISTÓRICO: {historicalYear}
             </span>
             <span className="text-yellow-700">|</span>
-            <span className="font-medium text-yellow-800">{property.name}</span>
+            <span className="font-medium text-yellow-800">{historicalProperty.name}</span>
           </div>
         </div>
 
         <PropertyFormHeader 
           isNewProperty={false} 
-          propertyName={`${property.name} (Histórico ${historicalYear})`}
+          propertyName={`${historicalProperty.name} (Histórico ${historicalYear})`}
         />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <PropertyFormTabs
-            property={property}
-            setProperty={setProperty}
+            property={historicalProperty}
+            setProperty={setHistoricalProperty}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             imageInputRef={imageInputRef}
@@ -94,7 +94,7 @@ const HistoricalPropertyEditContainer = () => {
 
           <HistoricalPropertyFormActions 
             historicalYear={historicalYear}
-            propertyId={property.id}
+            propertyId={historicalProperty.id}
           />
         </form>
       </div>
