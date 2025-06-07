@@ -13,10 +13,12 @@ import PropertyFormTabs from '../form/PropertyFormTabs';
 import HistoricalPropertyFormActions from './HistoricalPropertyFormActions';
 import { useHistoricalPropertyState } from '@/components/property-detail/historical/hooks/useHistoricalPropertyState';
 import { usePropertyHandlers } from '../hooks/usePropertyHandlers';
+import { useYear } from '@/contexts/YearContext';
 
 const HistoricalPropertyEditContainer = () => {
   const { id, year } = useParams();
   const historicalYear = year ? parseInt(year) : new Date().getFullYear();
+  const { selectedYear, isHistoricalMode } = useYear();
   
   const [activeTab, setActiveTab] = useState('basic');
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -55,23 +57,31 @@ const HistoricalPropertyEditContainer = () => {
     <div 
       className="max-w-full overflow-hidden min-h-screen"
       style={{ 
-        background: 'linear-gradient(to bottom, #fefce8, #fef3c7)',
+        background: isHistoricalMode 
+          ? 'linear-gradient(to bottom, #fefce8, #fef3c7)' 
+          : 'linear-gradient(to bottom, #f8fafc, #e2e8f0)',
       }}
     >
       <div className="max-w-7xl mx-auto p-4">
-        <div className="mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded">
-              EDITANDO HISTÓRICO: {historicalYear}
-            </span>
-            <span className="text-yellow-700">|</span>
-            <span className="font-medium text-yellow-800">{historicalProperty.name}</span>
+        {isHistoricalMode && (
+          <div className="mb-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg p-3 shadow-md">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-bold text-yellow-900 bg-yellow-200 px-2 py-1 rounded">
+                ⚠️ EDITANDO HISTÓRICO: {selectedYear}
+              </span>
+              <span className="text-yellow-700">|</span>
+              <span className="font-medium text-yellow-800">{historicalProperty.name}</span>
+              <span className="text-yellow-700">|</span>
+              <span className="text-xs text-yellow-600">
+                Los cambios NO afectarán el año actual
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         <PropertyFormHeader 
           isNewProperty={false} 
-          propertyName={`${historicalProperty.name} (Histórico ${historicalYear})`}
+          propertyName={`${historicalProperty.name} ${isHistoricalMode ? `(Histórico ${selectedYear})` : ''}`}
         />
 
         <form onSubmit={handleSubmit} className="space-y-6">

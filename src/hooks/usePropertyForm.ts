@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Property } from '@/types/property';
 import { toast } from 'sonner';
 import { useHistoricalStorage } from './useHistoricalStorage';
+import { temporalDataService } from '@/services/temporalDataService';
+import { useYear } from '@/contexts/YearContext';
 
 export const usePropertyForm = (
   property: Property | null, 
@@ -12,6 +14,7 @@ export const usePropertyForm = (
 ) => {
   const navigate = useNavigate();
   const { saveRecord } = useHistoricalStorage();
+  const { selectedYear, isHistoricalMode } = useYear();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -22,18 +25,24 @@ export const usePropertyForm = (
     }
 
     try {
-      if (historicalYear) {
-        // Guardar cambios históricos - PRESERVAR CONTEXTO
-        const success = saveHistoricalPropertyData(property, historicalYear);
+      const activeYear = historicalYear || selectedYear;
+      
+      if (isHistoricalMode || historicalYear) {
+        // MODO HISTÓRICO - Guardar en almacenamiento temporal aislado
+        const success = temporalDataService.saveHistoricalProperty(
+          property.id, 
+          activeYear, 
+          property
+        );
         
         if (success) {
-          toast.success(`Datos históricos de ${historicalYear} guardados correctamente`);
-          navigate(`/historicos/property/${property.id}/${historicalYear}`);
+          toast.success(`Datos históricos de ${activeYear} guardados correctamente`);
+          navigate(`/historicos/property/${property.id}/${activeYear}`);
         } else {
           toast.error('Error al guardar los datos históricos');
         }
       } else {
-        // Guardar cambios del año actual
+        // MODO ACTUAL - Guardar en almacenamiento principal
         const updatedProperty = {
           ...property,
           expenses: calculateTotalExpenses(),
@@ -63,46 +72,6 @@ export const usePropertyForm = (
     } catch (error) {
       console.error('Error saving property:', error);
       toast.error('Error al guardar la propiedad');
-    }
-  };
-
-  const saveHistoricalPropertyData = (property: Property, year: number): boolean => {
-    try {
-      // Guardar datos históricos de forma aislada
-      const historicalKey = `historicalProperty_${property.id}_${year}`;
-      const historicalData = {
-        ...property,
-        year,
-        savedAt: new Date().toISOString()
-      };
-      
-      localStorage.setItem(historicalKey, JSON.stringify(historicalData));
-      
-      // También actualizar registros de categorías si existen
-      if (property.paymentHistory) {
-        property.paymentHistory.forEach(payment => {
-          if (payment.year === year) {
-            const categorias = {
-              alquiler: payment.isPaid ? (property.rent || 0) : 0,
-              hipoteca: property.mortgage?.monthlyPayment || 0,
-              comunidad: property.communityFee || 0,
-              ibi: (property.ibi || 0) / 12,
-              seguroVida: (property.lifeInsurance?.cost || 0) / 12,
-              seguroHogar: (property.homeInsurance?.cost || 0) / 12,
-              compras: 0,
-              averias: 0,
-              suministros: 0
-            };
-            
-            saveRecord(property.id, year, payment.month, categorias);
-          }
-        });
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error saving historical property data:', error);
-      return false;
     }
   };
 
