@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, Check, Calendar, Euro } from 'lucide-react';
 import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
-import { useHistoricalHandlers } from './hooks/useHistoricalHandlers';
+import { useHistoricalPayments } from './hooks/useHistoricalPayments';
 import { toast } from 'sonner';
 
 interface HistoricalYearViewProps {
@@ -50,12 +50,17 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
     Array(12).fill(null)
   );
   
+  const [historicalProperty, setHistoricalProperty] = useState<Property>(property);
+  
   const { getRecord, saveRecord, getRecordsByPropertyYear } = useHistoricalStorage();
   
-  // Use historical handlers for proper state management
-  const {
-    handleHistoricalPaymentUpdate
-  } = useHistoricalHandlers(property, year, property, () => {});
+  // Use the actual historical payments hook
+  const { handleHistoricalPaymentUpdate } = useHistoricalPayments(
+    property, 
+    year, 
+    historicalProperty, 
+    setHistoricalProperty
+  );
 
   const months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -108,10 +113,11 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
   };
 
   const handlePaymentToggle = (monthIndex: number) => {
+    console.log('Toggling payment for month:', monthIndex, 'year:', year);
     const record = monthlyRecords[monthIndex];
     const isPaid = record?.ingresos > 0;
     
-    // Toggle payment status using historical handler
+    // Use the historical payment handler
     handleHistoricalPaymentUpdate(monthIndex, year, !isPaid);
     
     // Reload data to reflect changes

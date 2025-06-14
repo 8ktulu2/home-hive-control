@@ -22,7 +22,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
   const currentYear = new Date().getFullYear();
   const availableYears = getAvailableYears().filter(year => year < currentYear);
   
-  // Generate years from 2020 to previous year
+  // Generate years from 2020 to previous year, mark which ones have data
   const historicalYears = Array.from(
     { length: currentYear - 2020 }, 
     (_, i) => currentYear - 1 - i
@@ -46,7 +46,9 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
       return;
     }
     
-    // Create initial record for the year to make it available
+    console.log(`Adding historical year ${yearNumber} for property ${property.id}`);
+    
+    // Create initial records for all 12 months to make the year available
     const defaultCategories = {
       alquiler: property.rent || 0,
       hipoteca: property.mortgage?.monthlyPayment || 0,
@@ -59,17 +61,30 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
       suministros: 0
     };
     
-    // Save a record for January to initialize the year
-    const success = saveRecord(property.id, yearNumber, 0, defaultCategories);
+    // Save records for all 12 months to initialize the year properly
+    let allSuccess = true;
+    for (let month = 0; month < 12; month++) {
+      const success = saveRecord(property.id, yearNumber, month, defaultCategories);
+      if (!success) {
+        allSuccess = false;
+        break;
+      }
+    }
     
-    if (success) {
+    if (allSuccess) {
       setIsAddYearDialogOpen(false);
       setNewYear('');
+      toast.success(`Año ${yearNumber} añadido al histórico con datos iniciales`);
+      // Navigate to the new year immediately
       onYearSelect(yearNumber);
-      toast.success(`Año ${yearNumber} añadido al histórico`);
     } else {
       toast.error('Error al añadir el año histórico');
     }
+  };
+
+  const handleYearClick = (year: number) => {
+    console.log(`Selecting historical year: ${year}`);
+    onYearSelect(year);
   };
 
   return (
@@ -82,7 +97,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
             return (
               <Button
                 key={year}
-                onClick={() => onYearSelect(year)}
+                onClick={() => handleYearClick(year)}
                 variant="ghost"
                 size="sm"
                 className={`h-8 px-3 text-xs ${
@@ -92,6 +107,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
                 }`}
               >
                 {year}
+                {hasData && <span className="ml-1 text-xs">●</span>}
               </Button>
             );
           })}
@@ -113,7 +129,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
           <DialogHeader>
             <DialogTitle>Agregar Año Histórico</DialogTitle>
             <DialogDescription>
-              Introduce el año que deseas añadir al histórico de la propiedad.
+              Introduce el año que deseas añadir al histórico de la propiedad. Se crearán datos iniciales para todos los meses.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">

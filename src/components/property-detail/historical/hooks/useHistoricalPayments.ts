@@ -29,45 +29,51 @@ export const useHistoricalPayments = (
       suministros: 0
     };
 
-    // Update rent payment
+    // Update rent payment based on isPaid status
     categorias.alquiler = isPaid ? (property.rent || 0) : 0;
 
+    console.log('Saving historical record with categories:', categorias);
     const success = saveRecord(property.id, updateYear, month, categorias);
     
-    if (success && historicalProperty) {
-      // Update historical property payment history
-      const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
-      const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
+    if (success) {
+      console.log('Historical payment record saved successfully');
       
-      if (existingIndex >= 0) {
-        updatedPaymentHistory[existingIndex] = {
-          ...updatedPaymentHistory[existingIndex],
-          isPaid,
-          notes,
-          amount: isPaid ? property.rent || 0 : 0
-        };
-      } else {
-        updatedPaymentHistory.push({
-          id: `hist-payment-${Date.now()}`,
-          date: new Date(updateYear, month, 1).toISOString(),
-          amount: isPaid ? property.rent || 0 : 0,
-          type: 'rent',
-          isPaid,
-          month,
-          year: updateYear,
-          description: 'Alquiler',
-          notes
+      // Update historical property payment history if it exists
+      if (historicalProperty) {
+        const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
+        const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
+        
+        if (existingIndex >= 0) {
+          updatedPaymentHistory[existingIndex] = {
+            ...updatedPaymentHistory[existingIndex],
+            isPaid,
+            notes,
+            amount: isPaid ? property.rent || 0 : 0
+          };
+        } else {
+          updatedPaymentHistory.push({
+            id: `hist-payment-${Date.now()}`,
+            date: new Date(updateYear, month, 1).toISOString(),
+            amount: isPaid ? property.rent || 0 : 0,
+            type: 'rent',
+            isPaid,
+            month,
+            year: updateYear,
+            description: 'Alquiler',
+            notes
+          });
+        }
+        
+        setHistoricalProperty({
+          ...historicalProperty,
+          paymentHistory: updatedPaymentHistory,
+          rentPaid: isPaid && month === new Date().getMonth() && updateYear === new Date().getFullYear()
         });
       }
-      
-      setHistoricalProperty({
-        ...historicalProperty,
-        paymentHistory: updatedPaymentHistory,
-        rentPaid: isPaid && month === new Date().getMonth()
-      });
 
       toast.success(`Pago histórico ${isPaid ? 'confirmado' : 'cancelado'} para ${month + 1}/${updateYear}`);
     } else {
+      console.error('Failed to save historical payment record');
       toast.error('Error al actualizar el pago histórico');
     }
   };
