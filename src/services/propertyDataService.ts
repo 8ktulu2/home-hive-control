@@ -86,26 +86,26 @@ class PropertyDataService {
         tenants: (property.tenants || []).map(tenant => ({
           name: tenant.name,
           startMonth: `${currentYear}-01`, // Default start month
-          endMonth: tenant.endMonth,
+          endMonth: undefined, // Tenant type doesn't have endMonth, so we set undefined
           email: tenant.email,
           phone: tenant.phone
         })),
         payments: (property.paymentHistory || []).map(payment => ({
-          month: payment.month || `${currentYear}-01`,
+          month: typeof payment.month === 'string' ? payment.month : `${currentYear}-01`,
           amount: payment.amount,
-          createdAt: payment.createdAt || new Date().toISOString(),
-          immutable: payment.immutable,
-          isPaid: payment.isPaid,
-          notes: payment.notes
+          createdAt: new Date().toISOString(), // PaymentRecord doesn't have createdAt, so we create new
+          immutable: false, // PaymentRecord doesn't have immutable, default to false
+          isPaid: payment.isPaid || false,
+          notes: payment.notes || ''
         })),
         expenses: Array.isArray(property.monthlyExpenses) ? property.monthlyExpenses.map(expense => ({
-          concept: expense.concept || 'Gasto',
+          concept: expense.description || expense.name || 'Gasto', // MonthlyExpense might have description or name
           amount: expense.amount || 0,
-          deductible: expense.deductible || false,
-          category: expense.category,
+          deductible: false, // MonthlyExpense doesn't have deductible, default to false
+          category: expense.category || 'General',
           date: expense.date || new Date().toISOString()
         })) : [],
-        notes: property.taxInfo?.notes || '',
+        notes: '', // TaxInfo doesn't have notes, so we set empty string
         rent: property.rent,
         rentPaid: property.rentPaid
       };
