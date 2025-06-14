@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Property } from '@/types/property';
 import { useHistoricalStorage } from '@/hooks/useHistoricalStorage';
 import { useHistoricalDataIsolation } from '@/hooks/useHistoricalDataIsolation';
@@ -12,6 +12,22 @@ export const useHistoricalPropertyState = (property: Property | null, year: numb
     getHistoricalTasks
   } = useHistoricalDataIsolation();
 
+  // Memoizar las funciones para evitar recreación en cada render
+  const getRecordsByPropertyYearMemo = useCallback(
+    (propId: string, yearVal: number) => getRecordsByPropertyYear(propId, yearVal),
+    [getRecordsByPropertyYear]
+  );
+
+  const getHistoricalInventoryMemo = useCallback(
+    (propId: string, yearVal: number) => getHistoricalInventory(propId, yearVal),
+    [getHistoricalInventory]
+  );
+
+  const getHistoricalTasksMemo = useCallback(
+    (propId: string, yearVal: number) => getHistoricalTasks(propId, yearVal),
+    [getHistoricalTasks]
+  );
+
   useEffect(() => {
     // Early return if property is null
     if (!property) {
@@ -19,9 +35,11 @@ export const useHistoricalPropertyState = (property: Property | null, year: numb
       return;
     }
 
-    const records = getRecordsByPropertyYear(property.id, year);
-    const historicalInventory = getHistoricalInventory(property.id, year);
-    const historicalTasks = getHistoricalTasks(property.id, year);
+    console.log('Creating historical property for year:', year, 'property:', property.id);
+
+    const records = getRecordsByPropertyYearMemo(property.id, year);
+    const historicalInventory = getHistoricalInventoryMemo(property.id, year);
+    const historicalTasks = getHistoricalTasksMemo(property.id, year);
     
     // Create COMPLETELY ISOLATED copy for historical year
     const histProperty: Property = {
@@ -117,7 +135,7 @@ export const useHistoricalPropertyState = (property: Property | null, year: numb
     };
     
     setHistoricalProperty(histProperty);
-  }, [property, year, getRecordsByPropertyYear, getHistoricalInventory, getHistoricalTasks]);
+  }, [property?.id, year, getRecordsByPropertyYearMemo, getHistoricalInventoryMemo, getHistoricalTasksMemo]);
 
   return { historicalProperty, setHistoricalProperty };
 };

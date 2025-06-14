@@ -73,7 +73,9 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
   }, [property.id, year]);
 
   const loadMonthlyData = () => {
+    console.log('Loading monthly data for property:', property.id, 'year:', year);
     const records = getRecordsByPropertyYear(property.id, year);
+    console.log('Found records:', records);
     const newMonthlyRecords = Array(12).fill(null).map((_, index) => {
       return records.find(r => r.mes === index) || null;
     });
@@ -89,6 +91,7 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
   };
 
   const handleMonthClick = (monthIndex: number) => {
+    console.log('Saving record for month:', monthIndex, 'with values:', categoryValues);
     const success = saveRecord(property.id, year, monthIndex, categoryValues);
     if (success) {
       loadMonthlyData();
