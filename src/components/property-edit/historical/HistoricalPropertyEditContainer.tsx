@@ -13,12 +13,12 @@ import PropertyFormTabs from '../form/PropertyFormTabs';
 import HistoricalPropertyFormActions from './HistoricalPropertyFormActions';
 import { useHistoricalPropertyState } from '@/components/property-detail/historical/hooks/useHistoricalPropertyState';
 import { usePropertyHandlers } from '../hooks/usePropertyHandlers';
-import { useYear } from '@/contexts/YearContext';
+import { useYearMode } from '@/contexts/YearModeContext';
 
 const HistoricalPropertyEditContainer = () => {
   const { id, year } = useParams();
   const historicalYear = year ? parseInt(year) : new Date().getFullYear();
-  const { selectedYear, isHistoricalMode } = useYear();
+  const { selectedYear, isHistoricalMode } = useYearMode();
   
   const [activeTab, setActiveTab] = useState('basic');
   const imageInputRef = useRef<HTMLInputElement>(null);
