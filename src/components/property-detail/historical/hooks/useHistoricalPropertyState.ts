@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Property } from '@/types/property';
 import { useHistoricalStorage } from '@/hooks/useHistoricalStorage';
 import { useHistoricalDataIsolation } from '@/hooks/useHistoricalDataIsolation';
 
-export const useHistoricalPropertyState = (property: Property, year: number) => {
+export const useHistoricalPropertyState = (property: Property | null, year: number) => {
   const [historicalProperty, setHistoricalProperty] = useState<Property | null>(null);
   const { getRecordsByPropertyYear } = useHistoricalStorage();
   const { 
@@ -12,6 +13,12 @@ export const useHistoricalPropertyState = (property: Property, year: number) => 
   } = useHistoricalDataIsolation();
 
   useEffect(() => {
+    // Early return if property is null
+    if (!property) {
+      setHistoricalProperty(null);
+      return;
+    }
+
     const records = getRecordsByPropertyYear(property.id, year);
     const historicalInventory = getHistoricalInventory(property.id, year);
     const historicalTasks = getHistoricalTasks(property.id, year);
