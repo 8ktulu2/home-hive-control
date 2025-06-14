@@ -3,64 +3,79 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Property } from '@/types/property';
-import { useHistoricalMigration } from '@/hooks/useHistoricalMigration';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Calendar, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, AlertTriangle, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PropertyDetailHeader from '@/components/property-detail/PropertyDetailHeader';
 import PropertyDetailContent from '@/components/property-detail/PropertyDetailContent';
 import { toast } from 'sonner';
+import { usePropertyYearData } from '@/hooks/usePropertyYearData';
 
 const HistoricalPropertyView = () => {
   const { propertyId, year } = useParams();
   const navigate = useNavigate();
-  const [property, setProperty] = useState<Property | null>(null);
+  const [baseProperty, setBaseProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const { getPropertyHistoricalData, updateHistoricalData } = useHistoricalMigration();
+  
+  const yearNumber = year ? parseInt(year) : new Date().getFullYear();
+  const isHistoricalYear = yearNumber < new Date().getFullYear();
+
+  // Usar el hook de datos por año
+  const {
+    yearData,
+    saveYearData,
+    loading: yearDataLoading,
+    selectedYear,
+    isHistoricalMode
+  } = usePropertyYearData(propertyId || '', baseProperty);
 
   useEffect(() => {
-    if (propertyId && year) {
-      const historicalProperty = getPropertyHistoricalData(propertyId, parseInt(year));
-      if (historicalProperty) {
-        setProperty(historicalProperty);
-      } else {
-        toast.error('No se encontraron datos históricos para esta propiedad y año');
-        navigate('/historicos');
+    if (propertyId) {
+      // Cargar la propiedad base para referencia
+      const savedProperties = localStorage.getItem('properties');
+      if (savedProperties) {
+        const properties = JSON.parse(savedProperties);
+        const property = properties.find((p: Property) => p.id === propertyId);
+        if (property) {
+          setBaseProperty(property);
+        } else {
+          toast.error('No se encontró la propiedad');
+          navigate('/historicos');
+        }
       }
     }
     setLoading(false);
-  }, [propertyId, year, getPropertyHistoricalData, navigate]);
+  }, [propertyId, navigate]);
 
-  const handlePropertyUpdate = (updatedProperty: Property) => {
-    if (propertyId && year && updatedProperty) {
-      const success = updateHistoricalData(propertyId, parseInt(year), updatedProperty);
+  const handleYearDataUpdate = (updatedData: any) => {
+    if (yearData) {
+      const success = saveYearData(updatedData);
       if (success) {
-        setProperty(updatedProperty);
-        toast.success('Datos históricos actualizados');
+        toast.success(`Datos del año ${yearNumber} actualizados correctamente`);
       } else {
-        toast.error('Error al actualizar los datos históricos');
+        toast.error('Error al actualizar los datos del año');
       }
     }
   };
 
-  if (loading) {
+  if (loading || yearDataLoading) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>Cargando datos históricos...</p>
+            <p>Cargando datos del año {yearNumber}...</p>
           </div>
         </div>
       </Layout>
     );
   }
 
-  if (!property) {
+  if (!baseProperty || !yearData) {
     return (
       <Layout>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Datos históricos no encontrados</h2>
+          <h2 className="text-2xl font-bold mb-4">No se pudieron cargar los datos</h2>
           <Button onClick={() => navigate('/historicos')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver a Históricos
@@ -69,6 +84,33 @@ const HistoricalPropertyView = () => {
       </Layout>
     );
   }
+
+  // Crear una propiedad virtual para el año específico
+  const historicalProperty: Property = {
+    ...baseProperty,
+    rent: yearData.rent || 0,
+    rentPaid: yearData.rentPaid || false,
+    paymentHistory: yearData.payments.map(payment => ({
+      id: `${yearNumber}-${payment.month}`,
+      date: payment.createdAt,
+      amount: payment.amount,
+      type: 'rent' as const,
+      isPaid: payment.isPaid || false,
+      month: payment.month,
+      year: yearNumber,
+      description: payment.notes || 'Alquiler'
+    })),
+    monthlyExpenses: yearData.expenses.map(expense => ({
+      id: `${yearNumber}-${expense.concept}`,
+      name: expense.concept,
+      amount: expense.amount,
+      category: expense.category || 'General',
+      date: expense.date
+    })),
+    tasks: baseProperty.tasks || [],
+    documents: baseProperty.documents || [],
+    inventory: baseProperty.inventory || []
+  };
 
   return (
     <Layout>
@@ -84,33 +126,89 @@ const HistoricalPropertyView = () => {
             Volver a Históricos
           </Button>
 
-          <Alert className="bg-blue-50 border-blue-200">
-            <Calendar className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800 text-sm">
-              <strong>Modo Histórico - Año {year}</strong> - Todos los datos mostrados corresponden exclusivamente al año {year}. Las modificaciones solo afectarán este año histórico.
+          <Alert className={isHistoricalYear ? "bg-yellow-50 border-yellow-200" : "bg-blue-50 border-blue-200"}>
+            <Calendar className={`h-4 w-4 ${isHistoricalYear ? "text-yellow-600" : "text-blue-600"}`} />
+            <AlertDescription className={`${isHistoricalYear ? "text-yellow-800" : "text-blue-800"} text-sm`}>
+              <strong>
+                {isHistoricalYear ? `Modo Histórico - Año ${yearNumber}` : `Año Actual - ${yearNumber}`}
+              </strong> - 
+              Todos los datos mostrados y modificaciones corresponden exclusivamente al año {yearNumber}.
+              {isHistoricalYear && " Los cambios NO afectarán el año actual ni otros años históricos."}
             </AlertDescription>
           </Alert>
+
+          {isHistoricalYear && (
+            <Alert className="bg-orange-50 border-orange-200">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800 text-sm">
+                <strong>Importante:</strong> Estás viendo y editando datos históricos del año {yearNumber}. 
+                Estos cambios están completamente aislados y no afectarán otros años.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         {/* Header de la propiedad */}
         <PropertyDetailHeader 
-          property={property}
-          onRentPaidChange={() => {}}
+          property={historicalProperty}
+          onRentPaidChange={(paid) => {
+            const updatedYearData = {
+              ...yearData,
+              rentPaid: paid
+            };
+            handleYearDataUpdate(updatedYearData);
+          }}
+          historicalYear={yearNumber}
         />
 
         {/* Contenido principal */}
         <PropertyDetailContent
-          property={property}
-          onRentPaidChange={() => {}}
-          onPaymentUpdate={() => {}}
+          property={historicalProperty}
+          onRentPaidChange={(paid) => {
+            const updatedYearData = {
+              ...yearData,
+              rentPaid: paid
+            };
+            handleYearDataUpdate(updatedYearData);
+          }}
+          onPaymentUpdate={() => {
+            // Los pagos se manejan a través del yearData
+            console.log('Payment updated for year', yearNumber);
+          }}
           handleTaskToggle={() => {}}
           handleTaskAdd={() => {}}
           handleTaskDelete={() => {}}
           handleTaskUpdate={() => {}}
           handleDocumentDelete={() => {}}
           handleDocumentAdd={() => {}}
-          setProperty={handlePropertyUpdate}
+          setProperty={(updatedProperty) => {
+            // Convertir cambios de la propiedad de vuelta a yearData
+            const updatedYearData = {
+              ...yearData,
+              rent: updatedProperty.rent || 0,
+              rentPaid: updatedProperty.rentPaid || false,
+              expenses: updatedProperty.monthlyExpenses?.map(expense => ({
+                concept: expense.name,
+                amount: expense.amount,
+                deductible: false,
+                category: expense.category,
+                date: expense.date
+              })) || []
+            };
+            handleYearDataUpdate(updatedYearData);
+          }}
         />
+
+        {/* Botón de edición específico para el año */}
+        <div className="flex justify-end mt-6">
+          <Button 
+            onClick={() => navigate(`/historicos/property/${propertyId}/${yearNumber}/edit`)}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Editar Datos del Año {yearNumber}
+          </Button>
+        </div>
       </div>
     </Layout>
   );

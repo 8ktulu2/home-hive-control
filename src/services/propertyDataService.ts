@@ -24,7 +24,7 @@ class PropertyDataService {
     }
   }
 
-  // Guardar datos de una propiedad para un año específico
+  // Guardar datos de una propiedad para un año específico - COMPLETAMENTE AISLADO
   savePropertyYearData(propertyId: string, year: number, data: PropertyYearData): boolean {
     try {
       const key = this.getStorageKey(propertyId);
@@ -44,10 +44,10 @@ class PropertyDataService {
         };
       }
 
-      // Actualizar datos del año específico
+      // AISLAMIENTO TOTAL: Solo actualizar el año específico sin tocar otros años
       propertyData.years[year] = {
         ...data,
-        // Marcar pagos históricos como inmutables
+        // Marcar pagos históricos como inmutables solo si no es el año actual
         payments: data.payments.map(payment => ({
           ...payment,
           immutable: year < new Date().getFullYear()
@@ -55,12 +55,33 @@ class PropertyDataService {
       };
 
       localStorage.setItem(key, JSON.stringify(propertyData));
+      console.log(`Datos guardados para año ${year}, propiedad ${propertyId}:`, propertyData.years[year]);
       return true;
     } catch (error) {
       console.error('Error saving property year data:', error);
       toast.error('Error al guardar los datos');
       return false;
     }
+  }
+
+  // Crear datos vacíos para un año específico
+  createEmptyYearData(propertyId: string, year: number, baseProperty?: Property): PropertyYearData {
+    const emptyData: PropertyYearData = {
+      tenants: [],
+      payments: [],
+      expenses: [],
+      notes: '',
+      rent: baseProperty?.rent || 0,
+      rentPaid: false
+    };
+
+    // Si tenemos una propiedad base y es el primer año, inicializar con algunos datos básicos
+    if (baseProperty && year === new Date().getFullYear()) {
+      emptyData.rent = baseProperty.rent || 0;
+      emptyData.rentPaid = baseProperty.rentPaid || false;
+    }
+
+    return emptyData;
   }
 
   // Obtener todos los años disponibles para una propiedad
@@ -79,33 +100,70 @@ class PropertyDataService {
     }
   }
 
-  // Migrar propiedad existente al nuevo formato
+  // Verificar si un año es modificable
+  isYearEditable(year: number): boolean {
+    const currentYear = new Date().getFullYear();
+    // Solo el año actual es editable sin restricciones
+    // Los años históricos también son editables pero con advertencias
+    return true;
+  }
+
+  // Verificar si estamos en modo histórico
+  isHistoricalMode(year: number): boolean {
+    return year < new Date().getFullYear();
+  }
+
+  // Limpiar datos de una propiedad específica
+  clearPropertyData(propertyId: string): void {
+    const key = this.getStorageKey(propertyId);
+    localStorage.removeItem(key);
+  }
+
+  // Limpiar datos de un año específico solamente
+  clearYearData(propertyId: string, year: number): void {
+    try {
+      const key = this.getStorageKey(propertyId);
+      const existingData = localStorage.getItem(key);
+      
+      if (existingData) {
+        const propertyData: PropertyWithYearData = JSON.parse(existingData);
+        delete propertyData.years[year];
+        localStorage.setItem(key, JSON.stringify(propertyData));
+        console.log(`Datos del año ${year} eliminados para propiedad ${propertyId}`);
+      }
+    } catch (error) {
+      console.error('Error clearing year data:', error);
+    }
+  }
+
+  // Migrar propiedad existente al nuevo formato SOLO para el año actual
   migratePropertyToYearStructure(property: Property, currentYear: number): boolean {
     try {
+      // Solo migrar al año actual, no crear datos históricos automáticamente
       const yearData: PropertyYearData = {
         tenants: (property.tenants || []).map(tenant => ({
           name: tenant.name,
-          startMonth: `${currentYear}-01`, // Default start month
-          endMonth: undefined, // Tenant type doesn't have endMonth, so we set undefined
+          startMonth: `${currentYear}-01`,
+          endMonth: undefined,
           email: tenant.email,
           phone: tenant.phone
         })),
         payments: (property.paymentHistory || []).map(payment => ({
           month: typeof payment.month === 'string' ? payment.month : `${currentYear}-01`,
           amount: payment.amount,
-          createdAt: new Date().toISOString(), // PaymentRecord doesn't have createdAt, so we create new
-          immutable: false, // PaymentRecord doesn't have immutable, default to false
+          createdAt: new Date().toISOString(),
+          immutable: false,
           isPaid: payment.isPaid || false,
           notes: payment.notes || ''
         })),
         expenses: Array.isArray(property.monthlyExpenses) ? property.monthlyExpenses.map(expense => ({
-          concept: expense.name || 'Gasto', // MonthlyExpense has name property instead of description
+          concept: expense.name || 'Gasto',
           amount: expense.amount || 0,
-          deductible: false, // MonthlyExpense doesn't have deductible, default to false
+          deductible: false,
           category: expense.category || 'General',
           date: expense.date || new Date().toISOString()
         })) : [],
-        notes: '', // TaxInfo doesn't have notes, so we set empty string
+        notes: '',
         rent: property.rent,
         rentPaid: property.rentPaid
       };
@@ -115,18 +173,6 @@ class PropertyDataService {
       console.error('Error migrating property:', error);
       return false;
     }
-  }
-
-  // Verificar si un año es modificable
-  isYearEditable(year: number): boolean {
-    const currentYear = new Date().getFullYear();
-    return year === currentYear;
-  }
-
-  // Limpiar datos de una propiedad
-  clearPropertyData(propertyId: string): void {
-    const key = this.getStorageKey(propertyId);
-    localStorage.removeItem(key);
   }
 }
 

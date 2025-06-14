@@ -15,32 +15,35 @@ export const usePropertyYearData = (propertyId: string, baseProperty?: Property)
       setLoading(true);
       
       try {
+        console.log(`Cargando datos para año ${selectedYear}, propiedad ${propertyId}`);
+        
         let data = propertyDataService.getPropertyYearData(propertyId, selectedYear);
         
-        // Si no hay datos para el año y tenemos la propiedad base, migrar
-        if (!data && baseProperty && selectedYear === new Date().getFullYear()) {
-          const migrated = propertyDataService.migratePropertyToYearStructure(
-            baseProperty, 
-            selectedYear
-          );
+        // Si no hay datos para el año específico
+        if (!data) {
+          console.log(`No hay datos para el año ${selectedYear}, creando estructura vacía`);
           
-          if (migrated) {
-            data = propertyDataService.getPropertyYearData(propertyId, selectedYear);
+          // Si es el año actual y tenemos propiedad base, migrar
+          if (!isHistoricalMode && baseProperty && selectedYear === new Date().getFullYear()) {
+            console.log('Migrando datos de la propiedad base al año actual');
+            const migrated = propertyDataService.migratePropertyToYearStructure(
+              baseProperty, 
+              selectedYear
+            );
+            
+            if (migrated) {
+              data = propertyDataService.getPropertyYearData(propertyId, selectedYear);
+            }
+          }
+          
+          // Si aún no hay datos, crear estructura vacía para este año específico
+          if (!data) {
+            console.log(`Creando estructura vacía para año ${selectedYear}`);
+            data = propertyDataService.createEmptyYearData(propertyId, selectedYear, baseProperty);
           }
         }
         
-        // Si aún no hay datos, crear estructura vacía para el año actual
-        if (!data && selectedYear === new Date().getFullYear()) {
-          data = {
-            tenants: [],
-            payments: [],
-            expenses: [],
-            notes: '',
-            rent: baseProperty?.rent || 0,
-            rentPaid: baseProperty?.rentPaid || false
-          };
-        }
-        
+        console.log(`Datos cargados para año ${selectedYear}:`, data);
         setYearData(data);
       } catch (error) {
         console.error('Error loading year data:', error);
@@ -53,12 +56,17 @@ export const usePropertyYearData = (propertyId: string, baseProperty?: Property)
     if (propertyId) {
       loadYearData();
     }
-  }, [propertyId, selectedYear, baseProperty]);
+  }, [propertyId, selectedYear, baseProperty, isHistoricalMode]);
 
   const saveYearData = (data: PropertyYearData): boolean => {
+    console.log(`Guardando datos para año ${selectedYear}, propiedad ${propertyId}:`, data);
+    
     const success = propertyDataService.savePropertyYearData(propertyId, selectedYear, data);
     if (success) {
       setYearData(data);
+      console.log(`Datos guardados exitosamente para año ${selectedYear}`);
+    } else {
+      console.error(`Error al guardar datos para año ${selectedYear}`);
     }
     return success;
   };
@@ -67,10 +75,17 @@ export const usePropertyYearData = (propertyId: string, baseProperty?: Property)
     return propertyDataService.getAvailableYears(propertyId);
   };
 
+  const clearCurrentYearData = (): void => {
+    propertyDataService.clearYearData(propertyId, selectedYear);
+    const emptyData = propertyDataService.createEmptyYearData(propertyId, selectedYear, baseProperty);
+    setYearData(emptyData);
+  };
+
   return {
     yearData,
     setYearData,
     saveYearData,
+    clearCurrentYearData,
     loading,
     selectedYear,
     isHistoricalMode,
