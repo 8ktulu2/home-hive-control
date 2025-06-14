@@ -90,22 +90,30 @@ const HistoricalPropertyView = () => {
     ...baseProperty,
     rent: yearData.rent || 0,
     rentPaid: yearData.rentPaid || false,
-    paymentHistory: yearData.payments.map(payment => ({
-      id: `${yearNumber}-${payment.month}`,
+    paymentHistory: yearData.payments.map((payment, index) => ({
+      id: `${yearNumber}-${payment.month}-${index}`,
       date: payment.createdAt,
       amount: payment.amount,
       type: 'rent' as const,
       isPaid: payment.isPaid || false,
-      month: payment.month,
+      month: parseInt(payment.month.split('-')[1]) || 1, // Convertir "2024-01" a 1
       year: yearNumber,
       description: payment.notes || 'Alquiler'
     })),
-    monthlyExpenses: yearData.expenses.map(expense => ({
-      id: `${yearNumber}-${expense.concept}`,
+    monthlyExpenses: yearData.expenses.map((expense, index) => ({
+      id: `${yearNumber}-${expense.concept}-${index}`,
       name: expense.concept,
       amount: expense.amount,
-      category: expense.category || 'General',
-      date: expense.date
+      category: expense.category || 'otros',
+      date: expense.date,
+      isPaid: false, // Valor por defecto requerido
+      dueDate: undefined,
+      paymentDate: undefined,
+      recurring: false,
+      notes: undefined,
+      propertyId: propertyId,
+      month: new Date(expense.date).getMonth() + 1,
+      year: yearNumber
     })),
     tasks: baseProperty.tasks || [],
     documents: baseProperty.documents || [],
