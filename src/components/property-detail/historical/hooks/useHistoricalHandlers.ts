@@ -2,6 +2,7 @@
 import { Property } from '@/types/property';
 import { useHistoricalStorage } from '@/hooks/useHistoricalStorage';
 import { useHistoricalDataIsolation } from '@/hooks/useHistoricalDataIsolation';
+import { toast } from 'sonner';
 
 export const useHistoricalHandlers = (
   property: Property, 
@@ -25,6 +26,8 @@ export const useHistoricalHandlers = (
       return;
     }
 
+    console.log(`Updating historical payment: ${month}/${updateYear} - isPaid: ${isPaid}`);
+
     const currentRecord = getRecordsByPropertyYear(property.id, year).find(r => r.mes === month);
     const categorias = currentRecord?.categorias || {
       alquiler: property.rent || 0,
@@ -44,9 +47,9 @@ export const useHistoricalHandlers = (
       categorias.alquiler = 0;
     }
 
-    saveRecord(property.id, year, month, categorias);
+    const saved = saveRecord(property.id, year, month, categorias);
     
-    if (historicalProperty) {
+    if (saved && historicalProperty) {
       const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
       const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
       
@@ -75,7 +78,17 @@ export const useHistoricalHandlers = (
         ...historicalProperty,
         paymentHistory: updatedPaymentHistory
       });
+
+      toast.success(`Pago histórico ${isPaid ? 'confirmado' : 'cancelado'} para ${month + 1}/${updateYear}`);
+    } else {
+      toast.error('Error al actualizar el pago histórico');
     }
+  };
+
+  // Handle rent paid change for historical property
+  const handleRentPaidChange = (paid: boolean) => {
+    const currentMonth = new Date().getMonth();
+    handleHistoricalPaymentUpdate(currentMonth, year, paid);
   };
 
   // ISOLATED inventory management - affects ONLY the historical year
@@ -95,30 +108,33 @@ export const useHistoricalHandlers = (
           price: newItem.price
         }]
       });
+      toast.success('Elemento añadido al inventario histórico');
     }
   };
 
   const handleHistoricalInventoryEdit = (item: any) => {
-    updateHistoricalInventoryItem(property.id, year, item.id, item);
+    const updated = updateHistoricalInventoryItem(property.id, year, item.id, item);
     
-    if (historicalProperty) {
+    if (updated && historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
         inventory: historicalProperty.inventory?.map(inv => 
           inv.id === item.id ? item : inv
         ) || []
       });
+      toast.success('Elemento del inventario histórico actualizado');
     }
   };
 
   const handleHistoricalInventoryDelete = (itemId: string) => {
-    deleteHistoricalInventoryItem(property.id, year, itemId);
+    const deleted = deleteHistoricalInventoryItem(property.id, year, itemId);
     
-    if (historicalProperty) {
+    if (deleted && historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
         inventory: historicalProperty.inventory?.filter(inv => inv.id !== itemId) || []
       });
+      toast.success('Elemento eliminado del inventario histórico');
     }
   };
 
@@ -134,13 +150,14 @@ export const useHistoricalHandlers = (
     };
 
     const existingTasks = getHistoricalTasks(property.id, year);
-    saveHistoricalTasks(property.id, year, [...existingTasks, newTask]);
+    const saved = saveHistoricalTasks(property.id, year, [...existingTasks, newTask]);
     
-    if (historicalProperty) {
+    if (saved && historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
         tasks: [...(historicalProperty.tasks || []), newTask]
       });
+      toast.success('Tarea añadida al histórico');
     }
   };
 
@@ -149,28 +166,30 @@ export const useHistoricalHandlers = (
     const updatedTasks = existingTasks.map(task => 
       task.id === taskId ? { ...task, completed, completedDate: completed ? new Date().toISOString() : undefined } : task
     );
-    saveHistoricalTasks(property.id, year, updatedTasks);
+    const saved = saveHistoricalTasks(property.id, year, updatedTasks);
     
-    if (historicalProperty) {
+    if (saved && historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
         tasks: historicalProperty.tasks?.map(task => 
           task.id === taskId ? { ...task, completed, completedDate: completed ? new Date().toISOString() : undefined } : task
         ) || []
       });
+      toast.success('Estado de tarea actualizado');
     }
   };
 
   const handleHistoricalTaskDelete = (taskId: string) => {
     const existingTasks = getHistoricalTasks(property.id, year);
     const updatedTasks = existingTasks.filter(task => task.id !== taskId);
-    saveHistoricalTasks(property.id, year, updatedTasks);
+    const saved = saveHistoricalTasks(property.id, year, updatedTasks);
     
-    if (historicalProperty) {
+    if (saved && historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
         tasks: historicalProperty.tasks?.filter(task => task.id !== taskId) || []
       });
+      toast.success('Tarea eliminada del histórico');
     }
   };
 
@@ -179,33 +198,33 @@ export const useHistoricalHandlers = (
     const updatedTasks = existingTasks.map(task => 
       task.id === taskId ? { ...task, ...updates } : task
     );
-    saveHistoricalTasks(property.id, year, updatedTasks);
+    const saved = saveHistoricalTasks(property.id, year, updatedTasks);
     
-    if (historicalProperty) {
+    if (saved && historicalProperty) {
       setHistoricalProperty({
         ...historicalProperty,
         tasks: historicalProperty.tasks?.map(task => 
           task.id === taskId ? { ...task, ...updates } : task
         ) || []
       });
+      toast.success('Tarea actualizada');
     }
   };
 
-  // Document and expense handlers - should not affect current year
+  // Document handlers - placeholder for now
   const handleHistoricalDocumentAdd = (document: any) => {
-    console.log('Historical document add (isolated):', document);
+    console.log('Historical document add (not fully implemented):', document);
+    toast.info('Funcionalidad de documentos en desarrollo');
   };
 
   const handleHistoricalDocumentDelete = (documentId: string) => {
-    console.log('Historical document delete (isolated):', documentId);
+    console.log('Historical document delete (not fully implemented):', documentId);
+    toast.info('Funcionalidad de documentos en desarrollo');
   };
 
   const handleHistoricalExpenseDelete = (expenseId: string) => {
-    console.log('Historical expense delete (isolated):', expenseId);
-  };
-
-  const handleRentPaidChange = (paid: boolean) => {
-    console.log('Historical rent paid change (no effect on current year):', paid);
+    console.log('Historical expense delete (not fully implemented):', expenseId);
+    toast.info('Funcionalidad de gastos en desarrollo');
   };
 
   return {
