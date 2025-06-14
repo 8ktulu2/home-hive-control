@@ -1,11 +1,10 @@
-
 import { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Property } from '@/types/property';
 import { toast } from 'sonner';
 import { useHistoricalStorage } from './useHistoricalStorage';
 import { temporalDataService } from '@/services/temporalDataService';
-import { useYear } from '@/contexts/YearContext';
+import { useYearMode } from '@/contexts/YearModeContext';
 
 export const usePropertyForm = (
   property: Property | null, 
@@ -14,7 +13,7 @@ export const usePropertyForm = (
 ) => {
   const navigate = useNavigate();
   const { saveRecord } = useHistoricalStorage();
-  const { selectedYear, isHistoricalMode } = useYear();
+  const { selectedYear, isHistoricalMode } = useYearMode();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
