@@ -83,10 +83,29 @@ class PropertyDataService {
   migratePropertyToYearStructure(property: Property, currentYear: number): boolean {
     try {
       const yearData: PropertyYearData = {
-        tenants: property.tenants || [],
-        payments: property.paymentHistory || [],
-        expenses: property.expenses || [],
-        notes: property.notes || '',
+        tenants: (property.tenants || []).map(tenant => ({
+          name: tenant.name,
+          startMonth: `${currentYear}-01`, // Default start month
+          endMonth: tenant.endMonth,
+          email: tenant.email,
+          phone: tenant.phone
+        })),
+        payments: (property.paymentHistory || []).map(payment => ({
+          month: payment.month || `${currentYear}-01`,
+          amount: payment.amount,
+          createdAt: payment.createdAt || new Date().toISOString(),
+          immutable: payment.immutable,
+          isPaid: payment.isPaid,
+          notes: payment.notes
+        })),
+        expenses: Array.isArray(property.monthlyExpenses) ? property.monthlyExpenses.map(expense => ({
+          concept: expense.concept || 'Gasto',
+          amount: expense.amount || 0,
+          deductible: expense.deductible || false,
+          category: expense.category,
+          date: expense.date || new Date().toISOString()
+        })) : [],
+        notes: property.taxInfo?.notes || '',
         rent: property.rent,
         rentPaid: property.rentPaid
       };
