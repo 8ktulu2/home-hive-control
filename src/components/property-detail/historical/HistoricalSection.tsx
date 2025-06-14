@@ -50,7 +50,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
     
     // Create initial records for all 12 months to make the year available
     const defaultCategories = {
-      alquiler: property.rent || 0,
+      alquiler: 0, // Start with 0 for all months
       hipoteca: property.mortgage?.monthlyPayment || 0,
       comunidad: property.communityFee || 0,
       ibi: (property.ibi || 0) / 12,
@@ -62,23 +62,23 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
     };
     
     // Save records for all 12 months to initialize the year properly
-    let allSuccess = true;
+    let successCount = 0;
     for (let month = 0; month < 12; month++) {
       const success = saveRecord(property.id, yearNumber, month, defaultCategories);
-      if (!success) {
-        allSuccess = false;
-        break;
+      if (success) {
+        successCount++;
       }
     }
     
-    if (allSuccess) {
+    if (successCount === 12) {
       setIsAddYearDialogOpen(false);
       setNewYear('');
-      toast.success(`Año ${yearNumber} añadido al histórico con datos iniciales`);
+      toast.success(`Año ${yearNumber} añadido al histórico correctamente`);
+      console.log(`Year ${yearNumber} successfully added with ${successCount} months`);
       // Navigate to the new year immediately
       onYearSelect(yearNumber);
     } else {
-      toast.error('Error al añadir el año histórico');
+      toast.error(`Error al añadir el año histórico (${successCount}/12 meses guardados)`);
     }
   };
 

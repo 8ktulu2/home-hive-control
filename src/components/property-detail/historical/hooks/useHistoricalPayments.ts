@@ -9,16 +9,16 @@ export const useHistoricalPayments = (
   historicalProperty: Property | null,
   setHistoricalProperty: (property: Property) => void
 ) => {
-  const { getRecord, saveRecord, getRecordsByPropertyYear } = useHistoricalStorage();
+  const { getRecord, saveRecord } = useHistoricalStorage();
 
-  // ISOLATED payment update - affects ONLY the historical year
+  // Handle historical payment update with proper isolation
   const handleHistoricalPaymentUpdate = (month: number, updateYear: number, isPaid: boolean, notes?: string) => {
     console.log(`Updating historical payment: ${month}/${updateYear} - isPaid: ${isPaid}`);
 
     // Get current record or create default categories
     const currentRecord = getRecord(property.id, updateYear, month);
     const categorias = currentRecord?.categorias || {
-      alquiler: isPaid ? (property.rent || 0) : 0,
+      alquiler: 0,
       hipoteca: property.mortgage?.monthlyPayment || 0,
       comunidad: property.communityFee || 0,
       ibi: (property.ibi || 0) / 12,
@@ -38,7 +38,7 @@ export const useHistoricalPayments = (
     if (success) {
       console.log('Historical payment record saved successfully');
       
-      // Update historical property payment history if it exists
+      // Update historical property if it exists
       if (historicalProperty) {
         const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
         const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
@@ -72,16 +72,18 @@ export const useHistoricalPayments = (
       }
 
       toast.success(`Pago histórico ${isPaid ? 'confirmado' : 'cancelado'} para ${month + 1}/${updateYear}`);
+      return true;
     } else {
       console.error('Failed to save historical payment record');
       toast.error('Error al actualizar el pago histórico');
+      return false;
     }
   };
 
   // Handle rent paid change for historical property
   const handleRentPaidChange = (paid: boolean) => {
     const currentMonth = new Date().getMonth();
-    handleHistoricalPaymentUpdate(currentMonth, year, paid);
+    return handleHistoricalPaymentUpdate(currentMonth, year, paid);
   };
 
   return {

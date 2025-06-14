@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, Check, Calendar, Euro } from 'lucide-react';
 import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
-import { useHistoricalPayments } from './hooks/useHistoricalPayments';
 import { toast } from 'sonner';
 
 interface HistoricalYearViewProps {
@@ -50,17 +49,7 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
     Array(12).fill(null)
   );
   
-  const [historicalProperty, setHistoricalProperty] = useState<Property>(property);
-  
   const { getRecord, saveRecord, getRecordsByPropertyYear } = useHistoricalStorage();
-  
-  // Use the actual historical payments hook
-  const { handleHistoricalPaymentUpdate } = useHistoricalPayments(
-    property, 
-    year, 
-    historicalProperty, 
-    setHistoricalProperty
-  );
 
   const months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -101,7 +90,7 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
     }));
   };
 
-  const handleMonthClick = (monthIndex: number) => {
+  const handleMonthSave = (monthIndex: number) => {
     console.log('Saving record for month:', monthIndex, 'with values:', categoryValues);
     const success = saveRecord(property.id, year, monthIndex, categoryValues);
     if (success) {
@@ -115,15 +104,28 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
   const handlePaymentToggle = (monthIndex: number) => {
     console.log('Toggling payment for month:', monthIndex, 'year:', year);
     const record = monthlyRecords[monthIndex];
-    const isPaid = record?.ingresos > 0;
+    const currentlyPaid = record?.ingresos > 0;
+    const newPaidStatus = !currentlyPaid;
     
-    // Use the historical payment handler
-    handleHistoricalPaymentUpdate(monthIndex, year, !isPaid);
+    // Get current record or use default values
+    const currentRecord = getRecord(property.id, year, monthIndex);
+    const categorias = currentRecord?.categorias || categoryValues;
     
-    // Reload data to reflect changes
-    setTimeout(() => {
+    // Update rent payment based on new status
+    const updatedCategorias = {
+      ...categorias,
+      alquiler: newPaidStatus ? (property.rent || 0) : 0
+    };
+    
+    console.log('Updating payment status to:', newPaidStatus, 'with categories:', updatedCategorias);
+    const success = saveRecord(property.id, year, monthIndex, updatedCategorias);
+    
+    if (success) {
       loadMonthlyData();
-    }, 100);
+      toast.success(`Pago ${newPaidStatus ? 'confirmado' : 'cancelado'} para ${months[monthIndex]} ${year}`);
+    } else {
+      toast.error('Error al actualizar el pago');
+    }
   };
 
   const usePresetValues = (category: keyof CategoryValues) => {
@@ -214,12 +216,12 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
                 {months.map((month, index) => {
                   const record = monthlyRecords[index];
                   const hasData = record !== null;
-                  const hasIncome = record?.ingresos > 0;
+                  const isPaid = record?.ingresos > 0;
                   
                   return (
                     <div key={month} className="space-y-2">
                       <Button
-                        onClick={() => handleMonthClick(index)}
+                        onClick={() => handleMonthSave(index)}
                         variant="outline"
                         className={`w-full h-16 flex flex-col items-center justify-center space-y-1 transition-all ${
                           hasData 
@@ -228,34 +230,23 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
                         }`}
                       >
                         <span className="text-sm font-medium">{month}</span>
-                        {hasData && (
-                          <div className="text-xs space-y-1">
-                            <div className="text-xs opacity-75">
-                              Guardado
-                            </div>
-                          </div>
-                        )}
-                        {!hasData && (
-                          <div className="text-xs text-gray-400">
-                            Clic para guardar
-                          </div>
-                        )}
+                        <div className="text-xs">
+                          {hasData ? 'Guardado' : 'Guardar'}
+                        </div>
                       </Button>
                       
-                      {hasData && (
-                        <Button
-                          onClick={() => handlePaymentToggle(index)}
-                          size="sm"
-                          variant={hasIncome ? "default" : "outline"}
-                          className={`w-full text-xs ${
-                            hasIncome 
-                              ? 'bg-green-600 hover:bg-green-700 text-white' 
-                              : 'border-green-300 text-green-600 hover:bg-green-50'
-                          }`}
-                        >
-                          {hasIncome ? 'Pagado' : 'No Pagado'}
-                        </Button>
-                      )}
+                      <Button
+                        onClick={() => handlePaymentToggle(index)}
+                        size="sm"
+                        variant={isPaid ? "default" : "outline"}
+                        className={`w-full text-xs ${
+                          isPaid 
+                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                            : 'border-green-300 text-green-600 hover:bg-green-50'
+                        }`}
+                      >
+                        {isPaid ? 'Pagado' : 'No Pagado'}
+                      </Button>
                     </div>
                   );
                 })}
