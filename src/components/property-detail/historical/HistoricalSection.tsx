@@ -15,16 +15,16 @@ interface HistoricalSectionProps {
 }
 
 const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearSelect }) => {
-  const { getAvailableYears } = useHistoricalStorage();
+  const { getAvailableYears, saveRecord } = useHistoricalStorage();
   const [isAddYearDialogOpen, setIsAddYearDialogOpen] = useState(false);
   const [newYear, setNewYear] = useState('');
   
   const currentYear = new Date().getFullYear();
   const availableYears = getAvailableYears().filter(year => year < currentYear);
   
-  // Generate years from 2022 to previous year
+  // Generate years from 2020 to previous year
   const historicalYears = Array.from(
-    { length: currentYear - 2022 }, 
+    { length: currentYear - 2020 }, 
     (_, i) => currentYear - 1 - i
   );
 
@@ -41,16 +41,35 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
       return;
     }
     
-    if (yearNumber < 1900) {
+    if (yearNumber < 2000) {
       toast.error('Por favor, introduce un año más reciente');
       return;
     }
     
-    // Close dialog and select the new year
-    setIsAddYearDialogOpen(false);
-    setNewYear('');
-    onYearSelect(yearNumber);
-    toast.success(`Año ${yearNumber} añadido al histórico`);
+    // Create initial record for the year to make it available
+    const defaultCategories = {
+      alquiler: property.rent || 0,
+      hipoteca: property.mortgage?.monthlyPayment || 0,
+      comunidad: property.communityFee || 0,
+      ibi: (property.ibi || 0) / 12,
+      seguroVida: (property.lifeInsurance?.cost || 0) / 12,
+      seguroHogar: (property.homeInsurance?.cost || 0) / 12,
+      compras: 0,
+      averias: 0,
+      suministros: 0
+    };
+    
+    // Save a record for January to initialize the year
+    const success = saveRecord(property.id, yearNumber, 0, defaultCategories);
+    
+    if (success) {
+      setIsAddYearDialogOpen(false);
+      setNewYear('');
+      onYearSelect(yearNumber);
+      toast.success(`Año ${yearNumber} añadido al histórico`);
+    } else {
+      toast.error('Error al añadir el año histórico');
+    }
   };
 
   return (
@@ -109,7 +128,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
                 value={newYear}
                 onChange={(e) => setNewYear(e.target.value)}
                 className="col-span-3"
-                min="1900"
+                min="2000"
                 max={currentYear - 1}
               />
             </div>

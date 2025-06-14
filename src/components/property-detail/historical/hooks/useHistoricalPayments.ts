@@ -9,20 +9,16 @@ export const useHistoricalPayments = (
   historicalProperty: Property | null,
   setHistoricalProperty: (property: Property) => void
 ) => {
-  const { getRecordsByPropertyYear, saveRecord } = useHistoricalStorage();
+  const { getRecord, saveRecord, getRecordsByPropertyYear } = useHistoricalStorage();
 
   // ISOLATED payment update - affects ONLY the historical year
   const handleHistoricalPaymentUpdate = (month: number, updateYear: number, isPaid: boolean, notes?: string) => {
-    if (updateYear !== year) {
-      console.warn(`Payment update attempted for year ${updateYear} but we're in historical year ${year}`);
-      return;
-    }
-
     console.log(`Updating historical payment: ${month}/${updateYear} - isPaid: ${isPaid}`);
 
-    const currentRecord = getRecordsByPropertyYear(property.id, year).find(r => r.mes === month);
+    // Get current record or create default categories
+    const currentRecord = getRecord(property.id, updateYear, month);
     const categorias = currentRecord?.categorias || {
-      alquiler: property.rent || 0,
+      alquiler: isPaid ? (property.rent || 0) : 0,
       hipoteca: property.mortgage?.monthlyPayment || 0,
       comunidad: property.communityFee || 0,
       ibi: (property.ibi || 0) / 12,
@@ -33,15 +29,13 @@ export const useHistoricalPayments = (
       suministros: 0
     };
 
-    if (isPaid) {
-      categorias.alquiler = property.rent || 0;
-    } else {
-      categorias.alquiler = 0;
-    }
+    // Update rent payment
+    categorias.alquiler = isPaid ? (property.rent || 0) : 0;
 
-    const saved = saveRecord(property.id, year, month, categorias);
+    const success = saveRecord(property.id, updateYear, month, categorias);
     
-    if (saved && historicalProperty) {
+    if (success && historicalProperty) {
+      // Update historical property payment history
       const updatedPaymentHistory = [...(historicalProperty.paymentHistory || [])];
       const existingIndex = updatedPaymentHistory.findIndex(p => p.month === month && p.year === updateYear);
       
@@ -68,7 +62,8 @@ export const useHistoricalPayments = (
       
       setHistoricalProperty({
         ...historicalProperty,
-        paymentHistory: updatedPaymentHistory
+        paymentHistory: updatedPaymentHistory,
+        rentPaid: isPaid && month === new Date().getMonth()
       });
 
       toast.success(`Pago histórico ${isPaid ? 'confirmado' : 'cancelado'} para ${month + 1}/${updateYear}`);

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, Check, Calendar, Euro } from 'lucide-react';
 import { useHistoricalStorage, HistoricalRecord } from '@/hooks/useHistoricalStorage';
+import { useHistoricalHandlers } from './hooks/useHistoricalHandlers';
 import { toast } from 'sonner';
 
 interface HistoricalYearViewProps {
@@ -50,6 +51,11 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
   );
   
   const { getRecord, saveRecord, getRecordsByPropertyYear } = useHistoricalStorage();
+  
+  // Use historical handlers for proper state management
+  const {
+    handleHistoricalPaymentUpdate
+  } = useHistoricalHandlers(property, year, property, () => {});
 
   const months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -101,8 +107,20 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
     }
   };
 
+  const handlePaymentToggle = (monthIndex: number) => {
+    const record = monthlyRecords[monthIndex];
+    const isPaid = record?.ingresos > 0;
+    
+    // Toggle payment status using historical handler
+    handleHistoricalPaymentUpdate(monthIndex, year, !isPaid);
+    
+    // Reload data to reflect changes
+    setTimeout(() => {
+      loadMonthlyData();
+    }, 100);
+  };
+
   const usePresetValues = (category: keyof CategoryValues) => {
-    // This would copy the preset value - for now, it's already set
     toast.info(`Valor predeterminado aplicado para ${categories.find(c => c.key === category)?.label}`);
   };
 
@@ -193,40 +211,46 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
                   const hasIncome = record?.ingresos > 0;
                   
                   return (
-                    <Button
-                      key={month}
-                      onClick={() => handleMonthClick(index)}
-                      variant="outline"
-                      className={`h-20 flex flex-col items-center justify-center space-y-1 transition-all ${
-                        hasData 
-                          ? hasIncome
-                            ? 'border-green-400 bg-green-50 text-green-700 hover:bg-green-100'
-                            : 'border-orange-400 bg-orange-50 text-orange-700 hover:bg-orange-100'
-                          : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{month}</span>
-                      {hasData && (
-                        <div className="text-xs space-y-1">
-                          {record.ingresos > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Euro className="h-3 w-3" />
-                              <span>{record.ingresos.toFixed(0)}</span>
-                            </div>
-                          )}
-                          {record.gastos > 0 && (
+                    <div key={month} className="space-y-2">
+                      <Button
+                        onClick={() => handleMonthClick(index)}
+                        variant="outline"
+                        className={`w-full h-16 flex flex-col items-center justify-center space-y-1 transition-all ${
+                          hasData 
+                            ? 'border-blue-400 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                            : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className="text-sm font-medium">{month}</span>
+                        {hasData && (
+                          <div className="text-xs space-y-1">
                             <div className="text-xs opacity-75">
-                              G: {record.gastos.toFixed(0)}
+                              Guardado
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
+                        {!hasData && (
+                          <div className="text-xs text-gray-400">
+                            Clic para guardar
+                          </div>
+                        )}
+                      </Button>
+                      
+                      {hasData && (
+                        <Button
+                          onClick={() => handlePaymentToggle(index)}
+                          size="sm"
+                          variant={hasIncome ? "default" : "outline"}
+                          className={`w-full text-xs ${
+                            hasIncome 
+                              ? 'bg-green-600 hover:bg-green-700 text-white' 
+                              : 'border-green-300 text-green-600 hover:bg-green-50'
+                          }`}
+                        >
+                          {hasIncome ? 'Pagado' : 'No Pagado'}
+                        </Button>
                       )}
-                      {!hasData && (
-                        <div className="text-xs text-gray-400">
-                          Clic para guardar
-                        </div>
-                      )}
-                    </Button>
+                    </div>
                   );
                 })}
               </div>
