@@ -99,7 +99,7 @@ class PropertyDataService {
           notes: payment.notes || ''
         })),
         expenses: Array.isArray(property.monthlyExpenses) ? property.monthlyExpenses.map(expense => ({
-          concept: expense.description || expense.name || 'Gasto', // MonthlyExpense might have description or name
+          concept: expense.name || 'Gasto', // MonthlyExpense has name property instead of description
           amount: expense.amount || 0,
           deductible: false, // MonthlyExpense doesn't have deductible, default to false
           category: expense.category || 'General',
