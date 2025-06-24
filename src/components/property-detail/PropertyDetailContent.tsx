@@ -19,7 +19,6 @@ interface PropertyDetailContentProps {
   onInventoryAdd?: (item: any) => void;
   onInventoryEdit?: (item: any) => void;
   onInventoryDelete?: (itemId: string) => void;
-  historicalYear?: number;
 }
 
 const PropertyDetailContent = ({
@@ -36,8 +35,7 @@ const PropertyDetailContent = ({
   setProperty,
   onInventoryAdd,
   onInventoryEdit,
-  onInventoryDelete,
-  historicalYear
+  onInventoryDelete
 }: PropertyDetailContentProps) => {
   return (
     <div className="space-y-6">
@@ -46,7 +44,6 @@ const PropertyDetailContent = ({
           property={property}
           onPaymentUpdate={onPaymentUpdate}
           compact={true}
-          historicalYear={historicalYear}
         />
       </div>
 

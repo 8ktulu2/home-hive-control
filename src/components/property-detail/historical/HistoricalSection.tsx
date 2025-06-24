@@ -15,16 +15,16 @@ interface HistoricalSectionProps {
 }
 
 const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearSelect }) => {
-  const { getAvailableYears, saveRecord } = useHistoricalStorage();
+  const { getAvailableYears } = useHistoricalStorage();
   const [isAddYearDialogOpen, setIsAddYearDialogOpen] = useState(false);
   const [newYear, setNewYear] = useState('');
   
   const currentYear = new Date().getFullYear();
   const availableYears = getAvailableYears().filter(year => year < currentYear);
   
-  // Generate years from 2020 to previous year, mark which ones have data
+  // Generate years from 2022 to previous year
   const historicalYears = Array.from(
-    { length: currentYear - 2020 }, 
+    { length: currentYear - 2022 }, 
     (_, i) => currentYear - 1 - i
   );
 
@@ -41,50 +41,16 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
       return;
     }
     
-    if (yearNumber < 2000) {
+    if (yearNumber < 1900) {
       toast.error('Por favor, introduce un año más reciente');
       return;
     }
     
-    console.log(`Adding historical year ${yearNumber} for property ${property.id}`);
-    
-    // Create initial records for all 12 months to make the year available
-    const defaultCategories = {
-      alquiler: 0, // Start with 0 for all months
-      hipoteca: property.mortgage?.monthlyPayment || 0,
-      comunidad: property.communityFee || 0,
-      ibi: (property.ibi || 0) / 12,
-      seguroVida: (property.lifeInsurance?.cost || 0) / 12,
-      seguroHogar: (property.homeInsurance?.cost || 0) / 12,
-      compras: 0,
-      averias: 0,
-      suministros: 0
-    };
-    
-    // Save records for all 12 months to initialize the year properly
-    let successCount = 0;
-    for (let month = 0; month < 12; month++) {
-      const success = saveRecord(property.id, yearNumber, month, defaultCategories);
-      if (success) {
-        successCount++;
-      }
-    }
-    
-    if (successCount === 12) {
-      setIsAddYearDialogOpen(false);
-      setNewYear('');
-      toast.success(`Año ${yearNumber} añadido al histórico correctamente`);
-      console.log(`Year ${yearNumber} successfully added with ${successCount} months`);
-      // Navigate to the new year immediately
-      onYearSelect(yearNumber);
-    } else {
-      toast.error(`Error al añadir el año histórico (${successCount}/12 meses guardados)`);
-    }
-  };
-
-  const handleYearClick = (year: number) => {
-    console.log(`Selecting historical year: ${year}`);
-    onYearSelect(year);
+    // Close dialog and select the new year
+    setIsAddYearDialogOpen(false);
+    setNewYear('');
+    onYearSelect(yearNumber);
+    toast.success(`Año ${yearNumber} añadido al histórico`);
   };
 
   return (
@@ -97,7 +63,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
             return (
               <Button
                 key={year}
-                onClick={() => handleYearClick(year)}
+                onClick={() => onYearSelect(year)}
                 variant="ghost"
                 size="sm"
                 className={`h-8 px-3 text-xs ${
@@ -107,7 +73,6 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
                 }`}
               >
                 {year}
-                {hasData && <span className="ml-1 text-xs">●</span>}
               </Button>
             );
           })}
@@ -129,7 +94,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
           <DialogHeader>
             <DialogTitle>Agregar Año Histórico</DialogTitle>
             <DialogDescription>
-              Introduce el año que deseas añadir al histórico de la propiedad. Se crearán datos iniciales para todos los meses.
+              Introduce el año que deseas añadir al histórico de la propiedad.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -144,7 +109,7 @@ const HistoricalSection: React.FC<HistoricalSectionProps> = ({ property, onYearS
                 value={newYear}
                 onChange={(e) => setNewYear(e.target.value)}
                 className="col-span-3"
-                min="2000"
+                min="1900"
                 max={currentYear - 1}
               />
             </div>

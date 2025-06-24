@@ -12,36 +12,19 @@ import PropertyEditError from '../PropertyEditError';
 import PropertyFormTabs from '../form/PropertyFormTabs';
 import HistoricalPropertyFormActions from './HistoricalPropertyFormActions';
 import { useHistoricalPropertyState } from '@/components/property-detail/historical/hooks/useHistoricalPropertyState';
-import { useHistoricalHandlers } from '@/components/property-detail/historical/hooks/useHistoricalHandlers';
 import { usePropertyHandlers } from '../hooks/usePropertyHandlers';
-import { useYearMode } from '@/contexts/YearModeContext';
+import { useYear } from '@/contexts/YearContext';
 
 const HistoricalPropertyEditContainer = () => {
   const { id, year } = useParams();
   const historicalYear = year ? parseInt(year) : new Date().getFullYear();
-  const { selectedYear, isHistoricalMode } = useYearMode();
+  const { selectedYear, isHistoricalMode } = useYear();
   
   const [activeTab, setActiveTab] = useState('basic');
   const imageInputRef = useRef<HTMLInputElement>(null);
   
   const { property: baseProperty, loading, isNewProperty } = usePropertyLoader(id);
   const { historicalProperty, setHistoricalProperty } = useHistoricalPropertyState(baseProperty, historicalYear);
-
-  // Use historical handlers for isolated data management
-  const {
-    handleHistoricalPaymentUpdate,
-    handleHistoricalInventoryAdd,
-    handleHistoricalInventoryEdit,
-    handleHistoricalInventoryDelete,
-    handleHistoricalTaskAdd,
-    handleHistoricalTaskToggle,
-    handleHistoricalTaskDelete,
-    handleHistoricalTaskUpdate,
-    handleHistoricalDocumentAdd,
-    handleHistoricalDocumentDelete,
-    handleHistoricalExpenseDelete,
-    handleRentPaidChange
-  } = useHistoricalHandlers(baseProperty, historicalYear, historicalProperty, setHistoricalProperty);
 
   const { updatePropertyImage } = usePropertyManagement(historicalProperty);
   

@@ -75,7 +75,6 @@ const HistoricalPropertyView: React.FC<HistoricalPropertyViewProps> = ({
             onInventoryAdd={handleHistoricalInventoryAdd}
             onInventoryEdit={handleHistoricalInventoryEdit}
             onInventoryDelete={handleHistoricalInventoryDelete}
-            historicalYear={year}
           />
         </div>
       </div>

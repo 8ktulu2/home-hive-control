@@ -73,9 +73,7 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
   }, [property.id, year]);
 
   const loadMonthlyData = () => {
-    console.log('Loading monthly data for property:', property.id, 'year:', year);
     const records = getRecordsByPropertyYear(property.id, year);
-    console.log('Found records:', records);
     const newMonthlyRecords = Array(12).fill(null).map((_, index) => {
       return records.find(r => r.mes === index) || null;
     });
@@ -90,8 +88,7 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
     }));
   };
 
-  const handleMonthSave = (monthIndex: number) => {
-    console.log('Saving record for month:', monthIndex, 'with values:', categoryValues);
+  const handleMonthClick = (monthIndex: number) => {
     const success = saveRecord(property.id, year, monthIndex, categoryValues);
     if (success) {
       loadMonthlyData();
@@ -101,34 +98,8 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
     }
   };
 
-  const handlePaymentToggle = (monthIndex: number) => {
-    console.log('Toggling payment for month:', monthIndex, 'year:', year);
-    const record = monthlyRecords[monthIndex];
-    const currentlyPaid = record?.ingresos > 0;
-    const newPaidStatus = !currentlyPaid;
-    
-    // Get current record or use default values
-    const currentRecord = getRecord(property.id, year, monthIndex);
-    const categorias = currentRecord?.categorias || categoryValues;
-    
-    // Update rent payment based on new status
-    const updatedCategorias = {
-      ...categorias,
-      alquiler: newPaidStatus ? (property.rent || 0) : 0
-    };
-    
-    console.log('Updating payment status to:', newPaidStatus, 'with categories:', updatedCategorias);
-    const success = saveRecord(property.id, year, monthIndex, updatedCategorias);
-    
-    if (success) {
-      loadMonthlyData();
-      toast.success(`Pago ${newPaidStatus ? 'confirmado' : 'cancelado'} para ${months[monthIndex]} ${year}`);
-    } else {
-      toast.error('Error al actualizar el pago');
-    }
-  };
-
   const usePresetValues = (category: keyof CategoryValues) => {
+    // This would copy the preset value - for now, it's already set
     toast.info(`Valor predeterminado aplicado para ${categories.find(c => c.key === category)?.label}`);
   };
 
@@ -216,38 +187,43 @@ const HistoricalYearView: React.FC<HistoricalYearViewProps> = ({
                 {months.map((month, index) => {
                   const record = monthlyRecords[index];
                   const hasData = record !== null;
-                  const isPaid = record?.ingresos > 0;
+                  const hasIncome = record?.ingresos > 0;
                   
                   return (
-                    <div key={month} className="space-y-2">
-                      <Button
-                        onClick={() => handleMonthSave(index)}
-                        variant="outline"
-                        className={`w-full h-16 flex flex-col items-center justify-center space-y-1 transition-all ${
-                          hasData 
-                            ? 'border-blue-400 bg-blue-50 text-blue-700 hover:bg-blue-100'
-                            : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        <span className="text-sm font-medium">{month}</span>
-                        <div className="text-xs">
-                          {hasData ? 'Guardado' : 'Guardar'}
+                    <Button
+                      key={month}
+                      onClick={() => handleMonthClick(index)}
+                      variant="outline"
+                      className={`h-20 flex flex-col items-center justify-center space-y-1 transition-all ${
+                        hasData 
+                          ? hasIncome
+                            ? 'border-green-400 bg-green-50 text-green-700 hover:bg-green-100'
+                            : 'border-orange-400 bg-orange-50 text-orange-700 hover:bg-orange-100'
+                          : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="text-sm font-medium">{month}</span>
+                      {hasData && (
+                        <div className="text-xs space-y-1">
+                          {record.ingresos > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Euro className="h-3 w-3" />
+                              <span>{record.ingresos.toFixed(0)}</span>
+                            </div>
+                          )}
+                          {record.gastos > 0 && (
+                            <div className="text-xs opacity-75">
+                              G: {record.gastos.toFixed(0)}
+                            </div>
+                          )}
                         </div>
-                      </Button>
-                      
-                      <Button
-                        onClick={() => handlePaymentToggle(index)}
-                        size="sm"
-                        variant={isPaid ? "default" : "outline"}
-                        className={`w-full text-xs ${
-                          isPaid 
-                            ? 'bg-green-600 hover:bg-green-700 text-white' 
-                            : 'border-green-300 text-green-600 hover:bg-green-50'
-                        }`}
-                      >
-                        {isPaid ? 'Pagado' : 'No Pagado'}
-                      </Button>
-                    </div>
+                      )}
+                      {!hasData && (
+                        <div className="text-xs text-gray-400">
+                          Clic para guardar
+                        </div>
+                      )}
+                    </Button>
                   );
                 })}
               </div>
