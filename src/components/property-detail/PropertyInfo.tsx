@@ -8,24 +8,14 @@ import TenantDialog from './dialogs/TenantDialog';
 import { usePropertyInfoDialogs } from './property-info/hooks/usePropertyInfoDialogs';
 import ContactDetailsDialog from '@/components/properties/ContactDetailsDialog';
 import InventoryDialog from './dialogs/InventoryDialog';
+import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 
 interface PropertyInfoProps {
   property: Property;
-  setProperty?: (property: Property) => void;
-  onInventoryAdd?: (item: any) => void;
-  onInventoryEdit?: (item: any) => void;
-  onInventoryDelete?: (itemId: string) => void;
-  historicalYear?: number;
+  setProperty: (property: Property) => void;
 }
 
-const PropertyInfo = ({ 
-  property: initialProperty, 
-  setProperty,
-  onInventoryAdd,
-  onInventoryEdit,
-  onInventoryDelete,
-  historicalYear
-}: PropertyInfoProps) => {
+const PropertyInfo = ({ property: initialProperty, setProperty }: PropertyInfoProps) => {
   const [activeTab, setActiveTab] = useState('general');
   const [property, setLocalProperty] = useState(initialProperty);
   
@@ -48,6 +38,15 @@ const PropertyInfo = ({
     handleEditInventoryItemClick
   } = usePropertyInfoDialogs();
 
+  const { 
+    handleAddInventoryItem, 
+    handleDeleteInventoryItem, 
+    handleEditInventoryItem 
+  } = useInventoryManagement(property, (updatedProperty) => {
+    setLocalProperty(updatedProperty);
+    setProperty(updatedProperty);
+  });
+
   const handleAddInventoryClick = () => {
     handleInventoryDialogOpen();
   };
@@ -57,63 +56,15 @@ const PropertyInfo = ({
   };
 
   const handleInventorySave = (item: Omit<InventoryItem, 'id'>) => {
-    if (historicalYear && onInventoryAdd) {
-      // For historical years, use the provided handlers
-      if (editingInventoryItem && onInventoryEdit) {
-        onInventoryEdit({
-          ...item,
-          id: editingInventoryItem.id
-        });
-      } else {
-        onInventoryAdd(item);
-      }
-    } else if (setProperty) {
-      // For current year, use normal property management
-      const newItem: InventoryItem = {
+    if (editingInventoryItem) {
+      handleEditInventoryItem({
         ...item,
-        id: editingInventoryItem?.id || `inv-${Date.now()}`
-      };
-
-      if (editingInventoryItem) {
-        const updatedInventory = property.inventory?.map(inv => 
-          inv.id === editingInventoryItem.id ? newItem : inv
-        ) || [];
-        
-        const updatedProperty = {
-          ...property,
-          inventory: updatedInventory
-        };
-        
-        setLocalProperty(updatedProperty);
-        setProperty(updatedProperty);
-      } else {
-        const updatedProperty = {
-          ...property,
-          inventory: [...(property.inventory || []), newItem]
-        };
-        
-        setLocalProperty(updatedProperty);
-        setProperty(updatedProperty);
-      }
+        id: editingInventoryItem.id
+      });
+    } else {
+      handleAddInventoryItem(item);
     }
-    
     handleInventoryDialogClose();
-  };
-
-  const handleInventoryDelete = (itemId: string) => {
-    if (historicalYear && onInventoryDelete) {
-      // For historical years, use the provided handler
-      onInventoryDelete(itemId);
-    } else if (setProperty) {
-      // For current year, use normal property management
-      const updatedProperty = {
-        ...property,
-        inventory: property.inventory?.filter(item => item.id !== itemId) || []
-      };
-      
-      setLocalProperty(updatedProperty);
-      setProperty(updatedProperty);
-    }
   };
 
   const handleCloseContactDialog = () => {
@@ -141,7 +92,7 @@ const PropertyInfo = ({
           onContactClick={handleContactClick}
           onAddInventoryClick={handleAddInventoryClick}
           onEditInventoryItem={handleEditInventoryClick}
-          onDeleteInventoryItem={handleInventoryDelete}
+          onDeleteInventoryItem={handleDeleteInventoryItem}
         />
 
         {/* Dialogs */}

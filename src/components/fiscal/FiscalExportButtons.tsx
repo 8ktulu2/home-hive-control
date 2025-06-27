@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { FiscalData } from '@/hooks/useFiscalCalculations';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileDown, FileSpreadsheet, FileText, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportPropertyTaxDataToPDF } from '@/utils/pdfExport';
 import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
 
 interface FiscalExportButtonsProps {
   properties: Property[];
@@ -21,371 +22,305 @@ const FiscalExportButtons: React.FC<FiscalExportButtonsProps> = ({
   fiscalData,
   selectedPropertyId
 }) => {
-  const [exporting, setExporting] = useState(false);
-
-  const getReductionExplanation = (percentage: number) => {
-    switch (percentage) {
-      case 90: return "Vivienda en zona tensionada con reducción del precio de alquiler (≥5%)";
-      case 70: return "Zona tensionada con inquilino joven (18-35 años) o primer alquiler";
-      case 60: return "Obras de rehabilitación previas al contrato";
-      case 50: return "Reducción general para arrendamiento de vivienda habitual";
-      default: return "No es vivienda habitual - sin reducción aplicable";
-    }
-  };
+  const [showIndividualDialog, setShowIndividualDialog] = useState(false);
+  const [exportPropertyId, setExportPropertyId] = useState<string>('');
 
   const generateConsolidatedPDF = () => {
     try {
-      setExporting(true);
-      const doc = new jsPDF();
-      
-      const pageHeight = doc.internal.pageSize.height;
-      const pageWidth = doc.internal.pageSize.width;
-      let currentY = 20;
-      
-      // Header mejorado
-      doc.setFontSize(24);
-      doc.setFont(undefined, 'bold');
-      doc.text(`INFORME FISCAL IRPF - ${fiscalData.yearRange}`, pageWidth/2, currentY, { align: 'center' });
-      currentY += 12;
-      
-      doc.setFontSize(14);
-      doc.setFont(undefined, 'normal');
-      doc.text(`Rendimientos del Capital Inmobiliario`, pageWidth/2, currentY, { align: 'center' });
-      currentY += 8;
-      
-      doc.setFontSize(12);
-      doc.text(`Generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}`, pageWidth/2, currentY, { align: 'center' });
-      currentY += 20;
-      
-      // SECCIÓN 1: DATOS CLAVE PARA LA DECLARACIÓN
-      doc.setFontSize(18);
-      doc.setFont(undefined, 'bold');
-      doc.text('DATOS CLAVE PARA LA DECLARACIÓN DE LA RENTA', 14, currentY);
-      currentY += 12;
-      
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'normal');
-      
-      const summaryData = [
-        ['Ingresos Totales (Casilla 011):', `${fiscalData.grossIncome.toFixed(2)}€`, 'Todos los importes percibidos por arrendamiento'],
-        ['Gastos Deducibles (Casilla 012):', `${fiscalData.deductibleExpenses.toFixed(2)}€`, 'Art. 23 Ley IRPF: hipoteca, IBI, comunidad, seguros...'],
-        ['Rendimiento Neto:', `${fiscalData.netProfit.toFixed(2)}€`, 'Ingresos - Gastos deducibles'],
-        ['Reducción Aplicada:', `${fiscalData.reductionPercentage}%`, getReductionExplanation(fiscalData.reductionPercentage)],
-        ['Base Imponible (Casilla 013):', `${fiscalData.taxableBase.toFixed(2)}€`, 'Tras aplicar reducciones legales'],
-        ['Cuota IRPF Estimada:', `${fiscalData.irpfQuota.toFixed(2)}€`, 'Según tramos IRPF vigentes'],
-        ['Retenciones Practicadas:', `${fiscalData.retentions.toFixed(2)}€`, 'Retenciones aplicadas (19% s/ingresos)'],
-        ['Resultado Final:', `${fiscalData.finalLiquidity >= 0 ? '+' : ''}${fiscalData.finalLiquidity.toFixed(2)}€`, fiscalData.finalLiquidity >= 0 ? 'A devolver' : 'A pagar']
-      ];
-      
-      summaryData.forEach(([label, value, description]) => {
-        if (currentY > pageHeight - 40) {
-          doc.addPage();
-          currentY = 20;
-        }
-        
-        doc.setFont(undefined, 'bold');
-        doc.text(label, 14, currentY);
-        doc.text(value, 120, currentY);
-        currentY += 6;
-        
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(10);
-        const descLines = doc.splitTextToSize(description, pageWidth - 30);
-        descLines.forEach((line: string) => {
-          doc.text(line, 16, currentY);
-          currentY += 4;
-        });
-        doc.setFontSize(12);
-        currentY += 3;
-      });
-      
-      currentY += 10;
-      
-      // SECCIÓN 2: DESGLOSE DE GASTOS
-      if (currentY > pageHeight - 60) {
-        doc.addPage();
-        currentY = 20;
-      }
-      
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text('DESGLOSE DETALLADO DE GASTOS DEDUCIBLES', 14, currentY);
-      currentY += 12;
-      
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'normal');
-      
-      const expenseCategories = [
-        { key: 'hipoteca', label: 'Intereses de Hipoteca', description: 'Solo la parte de intereses, no el capital' },
-        { key: 'comunidad', label: 'Gastos de Comunidad', description: 'Cuotas ordinarias y extraordinarias' },
-        { key: 'ibi', label: 'IBI', description: 'Impuesto sobre Bienes Inmuebles' },
-        { key: 'seguroVida', label: 'Seguro de Vida', description: 'Vinculado al préstamo hipotecario' },
-        { key: 'seguroHogar', label: 'Seguro del Hogar', description: 'Seguro de la vivienda arrendada' },
-        { key: 'compras', label: 'Compras y Mobiliario', description: 'Amortización del mobiliario (10% anual)' },
-        { key: 'averias', label: 'Reparaciones', description: 'Gastos de conservación y reparación' },
-        { key: 'suministros', label: 'Suministros', description: 'Agua, luz, gas a cargo del propietario' }
-      ];
-      
-      expenseCategories.forEach(({ key, label, description }) => {
-        const amount = fiscalData.expenseBreakdown[key as keyof typeof fiscalData.expenseBreakdown];
-        if (amount > 0) {
-          if (currentY > pageHeight - 25) {
-            doc.addPage();
-            currentY = 20;
-          }
-          
-          doc.setFont(undefined, 'bold');
-          doc.text(`${label}:`, 14, currentY);
-          doc.text(`${amount.toFixed(2)}€`, 120, currentY);
-          currentY += 5;
-          
-          doc.setFont(undefined, 'normal');
-          doc.setFontSize(10);
-          doc.text(description, 16, currentY);
-          doc.setFontSize(12);
-          currentY += 8;
-        }
-      });
-      
-      // SECCIÓN 3: DETALLE POR PROPIEDAD
-      doc.addPage();
-      currentY = 20;
-      
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text('DETALLE POR INMUEBLE', 14, currentY);
-      currentY += 15;
-      
-      fiscalData.propertyDetails.forEach((property, index) => {
-        if (currentY > pageHeight - 80) {
-          doc.addPage();
-          currentY = 20;
-        }
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.text(`${index + 1}. ${property.name}`, 14, currentY);
-        currentY += 8;
-        
-        if (property.address) {
-          doc.setFontSize(11);
-          doc.setFont(undefined, 'italic');
-          doc.text(`Dirección: ${property.address}`, 14, currentY);
-          currentY += 6;
-        }
-        
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'normal');
-        
-        const propertyData = [
-          ['Ingresos del inmueble:', `${property.grossIncome.toFixed(2)}€`],
-          ['Gastos deducibles:', `${property.expenses.toFixed(2)}€`],
-          ['Rendimiento neto:', `${property.netProfit.toFixed(2)}€`],
-          ['Reducción aplicada:', `${property.reductionPercentage}%`],
-          ['Motivo de la reducción:', property.reductionReason],
-          ['Base imponible final:', `${property.taxableBase.toFixed(2)}€`],
-          ['Ocupación registrada:', `${property.occupancyMonths}/12 meses`]
-        ];
-        
-        propertyData.forEach(([label, value]) => {
-          if (currentY > pageHeight - 20) {
-            doc.addPage();
-            currentY = 20;
-          }
-          
-          doc.text(`  ${label}`, 14, currentY);
-          
-          if (label === 'Motivo de la reducción:') {
-            doc.setFontSize(9);
-            const lines = doc.splitTextToSize(value, pageWidth - 80);
-            lines.forEach((line: string, lineIndex: number) => {
-              doc.text(line, 80, currentY + (lineIndex * 4));
-            });
-            currentY += Math.max(6, lines.length * 4);
-            doc.setFontSize(11);
-          } else {
-            doc.text(value, 100, currentY);
-            currentY += 6;
-          }
-        });
-        
-        currentY += 8;
-      });
-      
-      // SECCIÓN 4: NORMATIVA APLICADA
-      doc.addPage();
-      currentY = 20;
-      
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text('NORMATIVA FISCAL APLICADA', 14, currentY);
-      currentY += 15;
-      
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text('BASE LEGAL:', 14, currentY);
-      currentY += 8;
-      
-      doc.setFont(undefined, 'normal');
-      const normativaTexts = [
-        '• Ley 35/2006, de 28 de noviembre, del Impuesto sobre la Renta de las Personas Físicas',
-        '• Ley 12/2023, de 24 de mayo, por el derecho a la vivienda (reducciones especiales)',
-        '• Real Decreto 439/2007, por el que se aprueba el Reglamento del IRPF',
-        '',
-        'REDUCCIONES APLICABLES SEGÚN LEY 12/2023:',
-        '• 90%: Zona tensionada con reducción del precio de alquiler (≥5%)',
-        '• 70%: Zona tensionada con inquilino joven (18-35 años)',
-        '• 60%: Obras de rehabilitación previas al contrato',
-        '• 50%: Reducción general para arrendamiento de vivienda habitual',
-        '',
-        'IMPORTANTE: Este informe es orientativo según la normativa fiscal española vigente.',
-        'Consulte con un asesor fiscal para casos específicos o dudas sobre la aplicación.'
-      ];
-      
-      normativaTexts.forEach(line => {
-        if (currentY > pageHeight - 20) {
-          doc.addPage();
-          currentY = 20;
-        }
-        doc.text(line, 14, currentY);
-        currentY += 5;
-      });
-      
-      // Footer en todas las páginas
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.text(`Página ${i} de ${totalPages}`, pageWidth - 30, pageHeight - 10);
-        doc.text('Informe Fiscal IRPF - Rendimientos del Capital Inmobiliario', 14, pageHeight - 10);
-      }
-      
-      doc.save(`Informe_Fiscal_IRPF_${fiscalData.yearRange.replace('-', '_')}.pdf`);
-      
-      toast.success('📄 Informe PDF generado correctamente', {
-        description: 'El archivo se ha descargado y está listo para adjuntar a tu declaración'
-      });
-      setExporting(false);
+      const consolidatedData = {
+        totalIncome: fiscalData.grossIncome,
+        totalExpenses: fiscalData.deductibleExpenses,
+        netProfit: fiscalData.netProfit,
+        taxableBase: fiscalData.taxableBase,
+        irpfQuota: fiscalData.irpfQuota,
+        properties: fiscalData.propertyDetails
+      };
+
+      // Create PDF content
+      const content = `
+INFORME FISCAL CONSOLIDADO - ${selectedYear}
+
+RESUMEN GENERAL:
+- Ingresos totales: ${fiscalData.grossIncome.toLocaleString('es-ES')}€
+- Gastos deducibles: ${fiscalData.deductibleExpenses.toLocaleString('es-ES')}€
+- Beneficio neto: ${fiscalData.netProfit.toLocaleString('es-ES')}€
+- Base imponible: ${fiscalData.taxableBase.toLocaleString('es-ES')}€
+
+DETALLE POR PROPIEDADES:
+${fiscalData.propertyDetails.map(prop => `
+- ${prop.name}:
+  Ingresos: ${prop.grossIncome.toLocaleString('es-ES')}€
+  Gastos: ${prop.expenses.toLocaleString('es-ES')}€
+  Neto: ${prop.netProfit.toLocaleString('es-ES')}€
+`).join('')}
+      `;
+
+      // Create and download file
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Informe_Fiscal_Consolidado_${selectedYear}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success('PDF consolidado descargado correctamente');
     } catch (error) {
-      console.error('Error generando PDF consolidado:', error);
-      toast.error('Error al generar el informe PDF');
-      setExporting(false);
+      toast.error('Error al generar el PDF consolidado');
+      console.error(error);
+    }
+  };
+
+  const handleExportPDF = (type: 'individual' | 'consolidated' | 'comparative') => {
+    if (type === 'individual' && !exportPropertyId) {
+      toast.error('Selecciona una propiedad para el informe individual');
+      return;
+    }
+    
+    try {
+      if (type === 'individual') {
+        const property = properties.find(p => p.id === exportPropertyId);
+        if (property) {
+          const success = exportPropertyTaxDataToPDF(
+            property, 
+            `Informe_Fiscal_${property.name}_${selectedYear}.pdf`
+          );
+          if (success) {
+            toast.success(`PDF individual generado para ${property.name}`);
+            setShowIndividualDialog(false);
+            setExportPropertyId('');
+          } else {
+            toast.error('Error al generar el PDF individual');
+          }
+        }
+      } else if (type === 'consolidated') {
+        generateConsolidatedPDF();
+      } else if (type === 'comparative') {
+        // Generate comparative report
+        const content = `
+INFORME COMPARATIVO - ${selectedYear}
+
+COMPARATIVA ANUAL:
+Año ${selectedYear - 1}: (datos no disponibles)
+Año ${selectedYear}: ${fiscalData.grossIncome.toLocaleString('es-ES')}€ ingresos
+
+EVOLUCIÓN POR PROPIEDADES:
+${fiscalData.propertyDetails.map(prop => `
+${prop.name}: ${prop.netProfit.toLocaleString('es-ES')}€ beneficio neto
+`).join('')}
+        `;
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Informe_Comparativo_${selectedYear}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success('PDF comparativo descargado correctamente');
+      }
+    } catch (error) {
+      toast.error('Error al generar el informe');
+      console.error(error);
     }
   };
 
   const handleExportExcel = () => {
     try {
-      setExporting(true);
-      
+      // Create workbook
       const wb = XLSX.utils.book_new();
 
-      // Hoja 1: Resumen para Hacienda
+      // Summary sheet
       const summaryData = [
-        ['INFORME FISCAL IRPF - RENDIMIENTOS DEL CAPITAL INMOBILIARIO'],
-        ['Período fiscal:', fiscalData.yearRange],
-        ['Generado el:', new Date().toLocaleDateString('es-ES')],
+        ['RESUMEN FISCAL', selectedYear],
         [''],
-        ['DATOS PARA LA DECLARACIÓN DE LA RENTA'],
-        [''],
-        ['Concepto', 'Casilla Modelo 100', 'Importe (€)', 'Observaciones'],
-        ['Ingresos totales', '011', fiscalData.grossIncome, 'Todos los importes percibidos por arrendamiento'],
-        ['Gastos deducibles', '012', fiscalData.deductibleExpenses, 'Art. 23 Ley IRPF'],
-        ['Rendimiento neto', '-', fiscalData.netProfit, 'Ingresos - Gastos'],
-        ['Reducción aplicada (%)', '-', fiscalData.reductionPercentage, getReductionExplanation(fiscalData.reductionPercentage)],
-        ['Base imponible', '013', fiscalData.taxableBase, 'Tras aplicar reducciones'],
-        ['Cuota IRPF estimada', '-', fiscalData.irpfQuota, 'Según tramos vigentes'],
-        ['Retenciones practicadas', '-', fiscalData.retentions, '19% sobre ingresos brutos'],
-        ['Resultado final', '-', fiscalData.finalLiquidity, fiscalData.finalLiquidity >= 0 ? 'A devolver' : 'A pagar'],
-        [''],
-        ['RESUMEN DE ACTIVIDAD'],
-        ['Total propiedades', '-', fiscalData.consolidatedSummary.totalProperties, ''],
-        ['Meses ocupados', '-', fiscalData.consolidatedSummary.totalMonthsOccupied, ''],
-        ['Ocupación promedio (%)', '-', fiscalData.consolidatedSummary.averageOccupancy.toFixed(1), ''],
-        ['Rentabilidad promedio (%)', '-', fiscalData.consolidatedSummary.averageRentability.toFixed(1), '']
+        ['Concepto', 'Importe (€)'],
+        ['Ingresos totales', fiscalData.grossIncome],
+        ['Gastos deducibles', fiscalData.deductibleExpenses],
+        ['Beneficio neto', fiscalData.netProfit],
+        ['Base imponible', fiscalData.taxableBase],
+        ['Cuota IRPF estimada', fiscalData.irpfQuota]
       ];
       const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, ws1, 'Datos para Hacienda');
+      XLSX.utils.book_append_sheet(wb, ws1, 'Resumen');
 
-      // Hoja 2: Desglose de gastos
-      const expensesData = [
-        ['DESGLOSE DETALLADO DE GASTOS DEDUCIBLES'],
-        [''],
-        ['Categoría', 'Importe (€)', 'Porcentaje', 'Descripción fiscal'],
-        ['Intereses de hipoteca', fiscalData.expenseBreakdown.hipoteca, ((fiscalData.expenseBreakdown.hipoteca / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Solo la parte de intereses, no el capital'],
-        ['Gastos de comunidad', fiscalData.expenseBreakdown.comunidad, ((fiscalData.expenseBreakdown.comunidad / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Cuotas ordinarias y extraordinarias'],
-        ['IBI', fiscalData.expenseBreakdown.ibi, ((fiscalData.expenseBreakdown.ibi / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Impuesto sobre Bienes Inmuebles'],
-        ['Seguro de vida', fiscalData.expenseBreakdown.seguroVida, ((fiscalData.expenseBreakdown.seguroVida / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Vinculado al préstamo hipotecario'],
-        ['Seguro del hogar', fiscalData.expenseBreakdown.seguroHogar, ((fiscalData.expenseBreakdown.seguroHogar / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Seguro de la vivienda arrendada'],
-        ['Compras y mobiliario', fiscalData.expenseBreakdown.compras, ((fiscalData.expenseBreakdown.compras / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Amortización del mobiliario (10% anual)'],
-        ['Reparaciones', fiscalData.expenseBreakdown.averias, ((fiscalData.expenseBreakdown.averias / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Gastos de conservación y reparación'],
-        ['Suministros', fiscalData.expenseBreakdown.suministros, ((fiscalData.expenseBreakdown.suministros / fiscalData.deductibleExpenses) * 100).toFixed(1) + '%', 'Agua, luz, gas a cargo del propietario'],
-        [''],
-        ['TOTAL GASTOS DEDUCIBLES', fiscalData.deductibleExpenses, '100%', 'Suma de todas las categorías']
-      ];
-      const ws2 = XLSX.utils.aoa_to_sheet(expensesData);
-      XLSX.utils.book_append_sheet(wb, ws2, 'Desglose de Gastos');
-
-      // Hoja 3: Detalle por propiedad
-      const propertiesHeader = [
-        'Propiedad', 'Dirección', 'Ingresos (€)', 'Gastos (€)', 'Rendimiento Neto (€)', 
-        'Reducción (%)', 'Motivo Reducción', 'Base Imponible (€)', 'Ocupación (meses)', 
-        'Rentabilidad (%)', 'Ocupación (%)'
-      ];
+      // Properties detail sheet
       const propertiesData = [
-        ['DETALLE POR INMUEBLE'],
+        ['DETALLE POR PROPIEDADES'],
         [''],
-        propertiesHeader,
+        ['Propiedad', 'Ingresos (€)', 'Gastos (€)', 'Neto (€)', 'Rentabilidad (%)'],
         ...fiscalData.propertyDetails.map(prop => [
           prop.name,
-          prop.address || 'No especificada',
           prop.grossIncome,
           prop.expenses,
           prop.netProfit,
-          prop.reductionPercentage,
-          prop.reductionReason,
-          prop.taxableBase,
-          prop.occupancyMonths,
-          prop.grossIncome > 0 ? ((prop.netProfit / prop.grossIncome) * 100).toFixed(1) : '0.0',
-          ((prop.occupancyMonths / 12) * 100).toFixed(1)
+          prop.grossIncome > 0 ? ((prop.netProfit / prop.grossIncome) * 100).toFixed(1) : '0.0'
         ])
       ];
-      const ws3 = XLSX.utils.aoa_to_sheet(propertiesData);
-      XLSX.utils.book_append_sheet(wb, ws3, 'Detalle por Inmueble');
+      const ws2 = XLSX.utils.aoa_to_sheet(propertiesData);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Propiedades');
 
-      XLSX.writeFile(wb, `Informe_Fiscal_IRPF_${fiscalData.yearRange.replace('-', '_')}.xlsx`);
-      
-      toast.success('📊 Archivo Excel generado correctamente', {
-        description: 'El archivo contiene todos los datos estructurados para tu gestión'
-      });
-      setExporting(false);
+      // Save file
+      XLSX.writeFile(wb, `Informe_Fiscal_Completo_${selectedYear}.xlsx`);
+      toast.success('Archivo Excel descargado correctamente');
     } catch (error) {
-      console.error('Error generando Excel:', error);
       toast.error('Error al generar el archivo Excel');
-      setExporting(false);
+      console.error(error);
     }
   };
 
   return (
-    <div className="flex flex-wrap gap-4 justify-center items-center">
-      <Button 
-        onClick={generateConsolidatedPDF}
-        className="flex items-center gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 text-lg shadow-lg hover:shadow-xl transition-all"
-        disabled={exporting}
-      >
-        <FileText className="h-5 w-5" />
-        {exporting ? '⏳ Generando PDF...' : '📄 PDF para Hacienda'}
-      </Button>
-      
-      <Button 
-        onClick={handleExportExcel}
-        variant="outline"
-        className="flex items-center gap-3 border-2 border-green-500 text-green-700 hover:bg-green-50 px-6 py-3 text-lg shadow-lg hover:shadow-xl transition-all"
-        disabled={exporting}
-      >
-        <FileSpreadsheet className="h-5 w-5" />
-        {exporting ? '⏳ Generando Excel...' : '📊 Excel Completo'}
-      </Button>
-    </div>
+    <>
+      {/* Mobile Layout */}
+      <div className="flex flex-col sm:hidden space-y-3">
+        <div className="grid grid-cols-2 gap-1">
+          <Dialog open={showIndividualDialog} onOpenChange={setShowIndividualDialog}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
+              >
+                <FileText className="h-3 w-3 mb-1" />
+                <span className="text-center">
+                  Individual
+                </span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Seleccionar Propiedad</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Select value={exportPropertyId} onValueChange={setExportPropertyId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una propiedad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.map((property) => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={() => handleExportPDF('individual')}
+                  className="w-full"
+                  disabled={!exportPropertyId}
+                >
+                  Generar PDF Individual
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Button 
+            onClick={() => handleExportPDF('consolidated')}
+            variant="outline"
+            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
+          >
+            <FileText className="h-3 w-3 mb-1" />
+            <span className="text-center">
+              Consolidado
+            </span>
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-1">
+          <Button 
+            onClick={() => handleExportPDF('comparative')}
+            variant="outline"
+            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
+          >
+            <FileText className="h-3 w-3 mb-1" />
+            <span className="text-center">
+              Comparativo
+            </span>
+          </Button>
+          
+          <Button 
+            onClick={handleExportExcel}
+            variant="outline"
+            className="text-[10px] px-1 py-2 leading-tight min-h-[44px] flex flex-col items-center justify-center break-words hyphens-auto"
+          >
+            <FileSpreadsheet className="h-3 w-3 mb-1" />
+            <span className="text-center">
+              Completo
+            </span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden sm:flex items-center justify-end gap-3">
+        <Dialog open={showIndividualDialog} onOpenChange={setShowIndividualDialog}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Individual
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Seleccionar Propiedad</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Select value={exportPropertyId} onValueChange={setExportPropertyId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una propiedad" />
+                </SelectTrigger>
+                <SelectContent>
+                  {properties.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+                </Select>
+              <Button 
+                onClick={() => handleExportPDF('individual')}
+                className="w-full"
+                disabled={!exportPropertyId}
+              >
+                Generar PDF Individual
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        <Button 
+          onClick={() => handleExportPDF('consolidated')}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          Consolidado
+        </Button>
+        
+        <Button 
+          onClick={() => handleExportPDF('comparative')}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          Comparativo
+        </Button>
+        
+        <Button 
+          onClick={handleExportExcel}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <FileSpreadsheet className="h-4 w-4" />
+          Completo
+        </Button>
+      </div>
+    </>
   );
 };
 

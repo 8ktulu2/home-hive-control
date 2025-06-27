@@ -1,28 +1,22 @@
 
 import { Property, InventoryItem } from '@/types/property';
-import { Plus, Sofa, Refrigerator, Home, Pencil, Trash, CheckCircle } from 'lucide-react';
+import { Plus, Sofa, Refrigerator, Home, Pencil, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useState } from 'react';
 
 interface InventoryTabProps {
   property: Property;
   onAddInventoryClick: () => void;
   onEditInventoryItem: (item: InventoryItem) => void;
   onDeleteInventoryItem: (itemId: string) => void;
-  historicalYear?: number;
 }
 
 const InventoryTab = ({ 
   property, 
   onAddInventoryClick, 
   onEditInventoryItem, 
-  onDeleteInventoryItem,
-  historicalYear 
+  onDeleteInventoryItem 
 }: InventoryTabProps) => {
-  const [deductibleItems, setDeductibleItems] = useState<Set<string>>(new Set());
-
   const getInventoryIcon = (type: string) => {
     switch(type) {
       case 'furniture':
@@ -49,96 +43,28 @@ const InventoryTab = ({
     }
   };
 
-  const toggleDeductible = (itemId: string) => {
-    const newDeductibleItems = new Set(deductibleItems);
-    if (newDeductibleItems.has(itemId)) {
-      newDeductibleItems.delete(itemId);
-    } else {
-      newDeductibleItems.add(itemId);
-    }
-    setDeductibleItems(newDeductibleItems);
-  };
-
-  const calculateTotalDeductible = () => {
-    return property.inventory?.reduce((total, item) => {
-      if (deductibleItems.has(item.id) && item.price) {
-        return total + item.price;
-      }
-      return total;
-    }, 0) || 0;
-  };
-
-  const calculateTotalInventoryValue = () => {
-    return property.inventory?.reduce((total, item) => {
-      if (item.price) {
-        return total + item.price;
-      }
-      return total;
-    }, 0) || 0;
-  };
-
-  const calculateNonDeductibleValue = () => {
-    return property.inventory?.reduce((total, item) => {
-      if (!deductibleItems.has(item.id) && item.price) {
-        return total + item.price;
-      }
-      return total;
-    }, 0) || 0;
-  };
-
   return (
-    <div className={`space-y-4 ${historicalYear ? 'bg-yellow-50 border border-yellow-200 rounded-lg p-4' : ''}`}>
-      {historicalYear && (
-        <Alert className="bg-yellow-100 border-yellow-300">
-          <AlertDescription className="text-yellow-800 text-sm">
-            <strong>Inventario Histórico {historicalYear}</strong> - Datos específicos del año {historicalYear}
-          </AlertDescription>
-        </Alert>
-      )}
-      
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className={`text-sm font-medium ${historicalYear ? 'text-yellow-900' : ''}`}>
-          Inventario {historicalYear ? `${historicalYear}` : ''}
-        </h3>
+        <h3 className="text-sm font-medium">Muebles y Electrodomésticos</h3>
         <Button
           size="sm"
           variant="outline"
           onClick={onAddInventoryClick}
-          className={`flex items-center gap-1 ${
-            historicalYear ? 'border-yellow-400 text-yellow-800 hover:bg-yellow-100' : ''
-          }`}
+          className="flex items-center gap-1"
         >
           <Plus className="h-3 w-3" /> Añadir
         </Button>
       </div>
-
-      {/* Totals section for historical years */}
-      {historicalYear && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
-          <p className="text-sm font-medium text-green-800">
-            Total inventario: {calculateTotalInventoryValue().toFixed(2)}€
-          </p>
-          <p className="text-sm font-medium text-blue-800">
-            Gastos deducibles: {calculateTotalDeductible().toFixed(2)}€
-          </p>
-          <p className="text-sm font-medium text-gray-700">
-            No deducibles: {calculateNonDeductibleValue().toFixed(2)}€
-          </p>
-        </div>
-      )}
       
       {property.inventory && property.inventory.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {property.inventory.map(item => (
-            <div key={item.id} className={`border p-3 rounded-md ${
-              historicalYear ? 'border-yellow-300 bg-yellow-50' : ''
-            }`}>
+            <div key={item.id} className="border p-3 rounded-md">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                   {getInventoryIcon(item.type)}
-                  <span className={`font-medium text-sm ${historicalYear ? 'text-yellow-900' : ''}`}>
-                    {item.name}
-                  </span>
+                  <span className="font-medium text-sm">{item.name}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Badge className={getConditionColor(item.condition)}>
@@ -146,26 +72,6 @@ const InventoryTab = ({
                     item.condition === 'good' ? 'Bueno' :
                     item.condition === 'fair' ? 'Regular' : 'Deteriorado'}
                   </Badge>
-                  
-                  {/* Deductible toggle for historical years */}
-                  {historicalYear && item.price && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => toggleDeductible(item.id)}
-                      title={deductibleItems.has(item.id) ? "Marcado como deducible" : "Marcar como deducible"}
-                    >
-                      <CheckCircle 
-                        className={`h-4 w-4 ${
-                          deductibleItems.has(item.id) 
-                            ? 'text-green-600 fill-green-100' 
-                            : 'text-gray-400'
-                        }`} 
-                      />
-                    </Button>
-                  )}
-                  
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -184,39 +90,14 @@ const InventoryTab = ({
                   </Button>
                 </div>
               </div>
-              {item.notes && (
-                <p className={`text-xs ${historicalYear ? 'text-yellow-700' : 'text-muted-foreground'}`}>
-                  {item.notes}
-                </p>
-              )}
-              {item.price && (
-                <div className="flex items-center justify-between mt-1">
-                  <p className={`text-xs font-medium ${historicalYear ? 'text-yellow-800' : 'text-green-600'}`}>
-                    Precio: {item.price}€
-                  </p>
-                  {historicalYear && (
-                    <span className={`text-xs font-medium ${
-                      deductibleItems.has(item.id) ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {deductibleItems.has(item.id) ? '✓ Deducible' : '✗ No deducible'}
-                    </span>
-                  )}
-                </div>
-              )}
+              {item.notes && <p className="text-xs text-muted-foreground">{item.notes}</p>}
             </div>
           ))}
         </div>
       ) : (
-        <div className={`text-center p-6 border rounded-md ${
-          historicalYear 
-            ? 'border-yellow-300 bg-yellow-50 text-yellow-700' 
-            : 'text-muted-foreground'
-        }`}>
-          <p>No hay elementos en el inventario{historicalYear ? ` para ${historicalYear}` : ''}</p>
-          <p className="text-xs mt-1">
-            Haz clic en "Añadir" para registrar muebles o electrodomésticos
-            {historicalYear ? ` para el año ${historicalYear}` : ''}
-          </p>
+        <div className="text-center p-6 border rounded-md text-muted-foreground">
+          <p>No hay elementos en el inventario</p>
+          <p className="text-xs mt-1">Haz clic en "Añadir" para registrar muebles o electrodomésticos</p>
         </div>
       )}
     </div>

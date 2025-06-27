@@ -4,12 +4,20 @@ import Layout from '@/components/layout/Layout';
 import { Property } from '@/types/property';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { History, AlertCircle } from 'lucide-react';
+import { useHistoricalData } from '@/hooks/useHistoricalData';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import HistoricalDataInput from '@/components/historical/HistoricalDataInput';
 
 const Historical = () => {
   const [properties, setProperties] = useState<Property[]>([]);
+
+  const {
+    historicalEntries,
+    addHistoricalEntry,
+    updateHistoricalEntry,
+    deleteHistoricalEntry
+  } = useHistoricalData();
 
   // Cargar propiedades del localStorage
   useEffect(() => {
@@ -47,7 +55,7 @@ const Historical = () => {
               <h1 className="text-3xl font-bold">Histórico</h1>
             </div>
             <p className="text-muted-foreground">
-              Introduce los datos históricos de tus propiedades por año y mes
+              Introduce los datos históricos de tus propiedades de forma rápida y visual
             </p>
           </div>
         </div>
@@ -64,7 +72,12 @@ const Historical = () => {
         )}
 
         {/* Componente principal de entrada de datos */}
-        <HistoricalDataInput properties={validProperties} />
+        <HistoricalDataInput
+          properties={validProperties}
+          onSaveData={addHistoricalEntry}
+          onUpdateData={updateHistoricalEntry}
+          existingEntries={historicalEntries}
+        />
       </div>
     </Layout>
   );

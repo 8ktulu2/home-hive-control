@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Property } from '@/types/property';
 import { FiscalData } from '@/hooks/useFiscalCalculations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface ExpenseBreakdownTabProps {
   properties: Property[];
@@ -16,6 +18,8 @@ const ExpenseBreakdownTab: React.FC<ExpenseBreakdownTabProps> = ({
   selectedYear,
   fiscalData
 }) => {
+  const [openCategories, setOpenCategories] = useState<string[]>([]);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
@@ -23,130 +27,144 @@ const ExpenseBreakdownTab: React.FC<ExpenseBreakdownTabProps> = ({
     }).format(amount);
   };
 
+  const toggleCategory = (category: string) => {
+    setOpenCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
   const expenseCategories = [
-    { key: 'hipoteca', label: 'Hipoteca', color: 'bg-red-100 text-red-800' },
-    { key: 'comunidad', label: 'Comunidad', color: 'bg-blue-100 text-blue-800' },
-    { key: 'ibi', label: 'IBI', color: 'bg-green-100 text-green-800' },
-    { key: 'seguroVida', label: 'Seguro de Vida', color: 'bg-purple-100 text-purple-800' },
-    { key: 'seguroHogar', label: 'Seguro de Hogar', color: 'bg-yellow-100 text-yellow-800' },
-    { key: 'compras', label: 'Compras', color: 'bg-pink-100 text-pink-800' },
-    { key: 'averias', label: 'Averías', color: 'bg-orange-100 text-orange-800' },
-    { key: 'suministros', label: 'Suministros', color: 'bg-indigo-100 text-indigo-800' }
+    {
+      id: 'ibi',
+      name: 'IBI y Tasas Municipales',
+      total: properties.reduce((sum, property) => 
+        sum + (property.taxInfo?.ibiAnnual || property.ibi || 0), 0),
+      items: properties.map(property => ({
+        name: property.name,
+        amount: property.taxInfo?.ibiAnnual || property.ibi || 0
+      })).filter(item => item.amount > 0)
+    },
+    {
+      id: 'community',
+      name: 'Gastos de Comunidad',
+      total: properties.reduce((sum, property) => 
+        sum + (property.taxInfo?.communityFeesAnnual || (property.communityFee || 0) * 12), 0),
+      items: properties.map(property => ({
+        name: property.name,
+        amount: property.taxInfo?.communityFeesAnnual || (property.communityFee || 0) * 12
+      })).filter(item => item.amount > 0)
+    },
+    {
+      id: 'insurance',
+      name: 'Seguros',
+      total: properties.reduce((sum, property) => 
+        sum + (property.homeInsurance?.cost || 0) + (property.lifeInsurance?.cost || 0), 0),
+      items: properties.map(property => ({
+        name: property.name,
+        amount: (property.homeInsurance?.cost || 0) + (property.lifeInsurance?.cost || 0)
+      })).filter(item => item.amount > 0)
+    },
+    {
+      id: 'mortgage',
+      name: 'Gastos Financieros (Hipoteca)',
+      total: properties.reduce((sum, property) => 
+        sum + (property.taxInfo?.mortgageInterest || property.mortgage?.annualInterest || 0), 0),
+      items: properties.map(property => ({
+        name: property.name,
+        amount: property.taxInfo?.mortgageInterest || property.mortgage?.annualInterest || 0
+      })).filter(item => item.amount > 0)
+    },
+    {
+      id: 'depreciation',
+      name: 'Amortización (3% anual)',
+      total: properties.reduce((sum, property) => 
+        sum + (property.taxInfo?.buildingDepreciation || 0), 0),
+      items: properties.map(property => ({
+        name: property.name,
+        amount: property.taxInfo?.buildingDepreciation || 0
+      })).filter(item => item.amount > 0)
+    },
+    {
+      id: 'other',
+      name: 'Otros Gastos Deducibles',
+      total: properties.reduce((sum, property) => {
+        const monthlyExpenses = (property.monthlyExpenses || [])
+          .filter(expense => expense.year === selectedYear && expense.isPaid)
+          .reduce((expSum, expense) => expSum + expense.amount, 0);
+        return sum + monthlyExpenses;
+      }, 0),
+      items: properties.map(property => {
+        const monthlyExpenses = (property.monthlyExpenses || [])
+          .filter(expense => expense.year === selectedYear && expense.isPaid)
+          .reduce((expSum, expense) => expSum + expense.amount, 0);
+        return {
+          name: property.name,
+          amount: monthlyExpenses
+        };
+      }).filter(item => item.amount > 0)
+    }
   ];
 
   return (
     <div className="space-y-4">
-      {/* Resumen Total de Gastos */}
-      <Card className="bg-amber-50 border-amber-200">
-        <CardHeader>
-          <CardTitle className="text-lg">Resumen Total de Gastos - {selectedYear}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-sm text-gray-600">Total Gastos</div>
-              <div className="font-bold text-red-600 text-lg">
-                {formatCurrency(fiscalData.deductibleExpenses)}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-600">Ingresos Brutos</div>
-              <div className="font-bold text-green-600 text-lg">
-                {formatCurrency(fiscalData.grossIncome)}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-600">% sobre Ingresos</div>
-              <div className="font-bold text-lg">
-                {fiscalData.grossIncome > 0 ? 
-                  ((fiscalData.deductibleExpenses / fiscalData.grossIncome) * 100).toFixed(1) : '0.0'
-                }%
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-600">Beneficio Neto</div>
-              <div className={`font-bold text-lg ${fiscalData.netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                {formatCurrency(fiscalData.netProfit)}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Desglose por Categorías */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Desglose por Categorías de Gastos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {expenseCategories.map((category) => {
-              const amount = fiscalData.expenseBreakdown[category.key as keyof typeof fiscalData.expenseBreakdown];
-              const percentage = fiscalData.deductibleExpenses > 0 
-                ? ((amount / fiscalData.deductibleExpenses) * 100).toFixed(1)
-                : '0.0';
-              
-              return (
-                <div key={category.key} className="p-3 border rounded-lg bg-gray-50">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-sm font-medium text-gray-700">{category.label}</span>
-                    <Badge className={`text-xs ${category.color}`}>
-                      {percentage}%
-                    </Badge>
-                  </div>
-                  <div className="text-lg font-bold text-gray-900">
-                    {formatCurrency(amount)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Desglose por Propiedades */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Desglose de Gastos por Propiedad</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {fiscalData.propertyDetails.map((property) => (
-              <div key={property.id} className="border rounded-lg p-4 bg-gray-50">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-semibold text-lg">{property.name}</h4>
-                  <div className="text-right">
-                    <div className="text-sm text-gray-600">Total Gastos</div>
-                    <div className="font-bold text-red-600">
-                      {formatCurrency(property.expenses)}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {expenseCategories.map((category) => (
+          <Card key={category.id} className="w-full">
+            <Collapsible 
+              open={openCategories.includes(category.id)}
+              onOpenChange={() => toggleCategory(category.id)}
+            >
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors p-4">
+                  <CardTitle className="flex items-center justify-between text-sm">
+                    <span>{category.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">
+                        {formatCurrency(category.total)}
+                      </span>
+                      {openCategories.includes(category.id) ? 
+                        <ChevronDown className="h-4 w-4" /> : 
+                        <ChevronRight className="h-4 w-4" />
+                      }
                     </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                  {expenseCategories.map((category) => {
-                    const amount = property.expenseBreakdown[category.key as keyof typeof property.expenseBreakdown];
-                    
-                    if (amount === 0) return null;
-                    
-                    return (
-                      <div key={category.key} className="text-center p-2 bg-white rounded border">
-                        <div className="text-xs text-gray-600">{category.label}</div>
-                        <div className="font-semibold text-sm">
-                          {formatCurrency(amount)}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="pt-0 p-4">
+                  {category.items.length > 0 ? (
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {category.items.map((item, index) => (
+                        <div key={index} className="flex justify-between text-xs">
+                          <span className="truncate">{item.name}</span>
+                          <span className="font-medium">
+                            {formatCurrency(item.amount)}
+                          </span>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {property.expenses === 0 && (
-                  <div className="text-center text-gray-500 py-4">
-                    No hay gastos registrados para esta propiedad en {selectedYear}
-                  </div>
-                )}
-              </div>
-            ))}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-500">
+                      No hay gastos registrados en esta categoría
+                    </div>
+                  )}
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+        ))}
+      </div>
+
+      {/* Total Summary */}
+      <Card className="bg-red-50 border-red-200">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center">
+            <span className="font-bold text-lg">Total Gastos Deducibles:</span>
+            <span className="font-bold text-xl text-red-600">
+              {formatCurrency(fiscalData.deductibleExpenses)}
+            </span>
           </div>
         </CardContent>
       </Card>

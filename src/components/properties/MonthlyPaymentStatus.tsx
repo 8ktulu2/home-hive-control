@@ -8,19 +8,12 @@ interface MonthlyPaymentStatusProps {
   property: Property;
   onPaymentUpdate?: (month: number, year: number, isPaid: boolean, notes?: string) => void;
   compact?: boolean;
-  historicalYear?: number; // Support for historical years
 }
 
-const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ 
-  property, 
-  onPaymentUpdate, 
-  compact = false,
-  historicalYear 
-}) => {
+const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({ property, onPaymentUpdate, compact = false }) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
-  const displayYear = historicalYear || currentYear; // Use historical year if provided
   
   const [selectedPayment, setSelectedPayment] = useState<{ month: number; year: number; isPaid: boolean } | null>(null);
   const [paymentStatuses, setPaymentStatuses] = useState<{[key: string]: boolean}>({});
@@ -35,31 +28,29 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
     if (property && property.paymentHistory) {
       const statuses: {[key: string]: boolean} = {};
       
-      // First set default values for all months of the display year
+      // First set default values for all months
       for (let month = 0; month < 12; month++) {
-        const key = `${displayYear}-${month}`;
+        const key = `${currentYear}-${month}`;
         statuses[key] = false;
       }
       
-      // Then update with actual payment history for the display year ONLY
+      // Then update with actual payment history
       property.paymentHistory.forEach(payment => {
-        if (payment.year === displayYear) {
+        if (payment.year === currentYear) {
           const key = `${payment.year}-${payment.month}`;
           statuses[key] = payment.isPaid;
         }
       });
       
-      // Set current month status from property.rentPaid only for current year (not historical)
-      if (!historicalYear) {
-        const currentMonthKey = `${currentYear}-${currentMonth}`;
-        if (statuses[currentMonthKey] === undefined) {
-          statuses[currentMonthKey] = property.rentPaid;
-        }
+      // Set current month status from property.rentPaid if no record exists
+      const currentMonthKey = `${currentYear}-${currentMonth}`;
+      if (statuses[currentMonthKey] === undefined) {
+        statuses[currentMonthKey] = property.rentPaid;
       }
       
       setPaymentStatuses(statuses);
     }
-  }, [property, property.paymentHistory, displayYear, currentYear, currentMonth, historicalYear]);
+  }, [property, property.paymentHistory, currentYear, currentMonth]);
   
   const getPaymentStatus = (month: number, year: number) => {
     const key = `${year}-${month}`;
@@ -67,7 +58,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
       return paymentStatuses[key];
     }
     
-    // Fallback to checking payment history directly (only for the specific year)
+    // Fallback to checking payment history directly
     if (property.paymentHistory && property.paymentHistory.length > 0) {
       const payment = property.paymentHistory.find(
         p => p.month === month && p.year === year
@@ -77,8 +68,8 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
       }
     }
     
-    // For current month of current year, fall back to property.rentPaid (only if not historical)
-    if (!historicalYear && month === currentMonth && year === currentYear) {
+    // For current month, fall back to property.rentPaid
+    if (month === currentMonth && year === currentYear) {
       return property.rentPaid;
     }
     
@@ -99,7 +90,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
         notes
       );
       
-      // Update local state immediately for better UX (isolated to the specific year)
+      // Update local state immediately for better UX
       setPaymentStatuses(prev => ({
         ...prev,
         [`${selectedPayment.year}-${selectedPayment.month}`]: !selectedPayment.isPaid
@@ -110,18 +101,17 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
 
   // Determine if selected month is in the future
   const isFutureMonth = (month: number, year: number) => {
-    if (historicalYear) return false; // Historical years are never in the future
     if (year > currentYear) return true;
     if (year === currentYear && month > currentMonth) return true;
     return false;
   };
 
-  // Generate all months of the display year
+  // Generate all months of the current year
   const generateMonths = () => {
     const result = [];
-    const year = displayYear;
+    const year = currentYear;
     
-    // Add all months of the display year (January to December)
+    // Add all months of the current year (January to December)
     for (let month = 0; month < 12; month++) {
       result.push({ month, year });
     }
@@ -138,7 +128,7 @@ const MonthlyPaymentStatus: React.FC<MonthlyPaymentStatusProps> = ({
   return (
     <div className="rounded-lg border mb-4">
       <div className="p-3 bg-muted/50 flex items-center justify-between border-b">
-        <h3 className="text-sm font-medium">Estado de Pagos {displayYear}</h3>
+        <h3 className="text-sm font-medium">Estado de Pagos {currentYear}</h3>
       </div>
       <div className="p-3">
         <div className="flex flex-wrap gap-1">

@@ -39,19 +39,19 @@ export const HeaderActions = () => {
       <Button 
         variant="outline" 
         size="icon" 
-        className="h-8 w-8 bg-white border-gray-300 hover:bg-[#2ecc71] hover:border-[#2ecc71] group transition-all duration-200"
+        className="h-8 w-8"
         onClick={() => navigate('/property/new')}
       >
-        <Plus className="h-4 w-4 text-[#2ecc71] group-hover:text-white transition-colors duration-200" />
+        <Plus className="h-4 w-4" />
       </Button>
       <Button 
-        variant="outline" 
+        variant="destructive" 
         size="icon" 
-        className="h-8 w-8 bg-white border-gray-300 hover:bg-[#e74c3c] hover:border-[#e74c3c] group transition-all duration-200"
+        className="h-8 w-8"
         onClick={handleDeleteProperties}
         aria-label="Delete properties"
       >
-        <Trash className="h-4 w-4 text-[#e74c3c] group-hover:text-white transition-colors duration-200" />
+        <Trash className="h-4 w-4" />
       </Button>
     </div>
   );

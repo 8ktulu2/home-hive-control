@@ -5,8 +5,6 @@ export interface InventoryItem {
   name: string;
   condition: 'new' | 'good' | 'fair' | 'poor';
   acquisitionDate?: string;
-  price?: number;
+  price?: number; // Add price field
   notes?: string;
-  purchaseDate?: string;
-  cost?: number;
 }

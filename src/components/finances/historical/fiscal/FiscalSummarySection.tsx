@@ -6,23 +6,13 @@ import { FiscalSectionProps } from './types';
 
 interface SummaryProps extends FiscalSectionProps {
   reduction: number;
-  filteredYear?: number;
-  filteredProperty?: string;
 }
 
-export const FiscalSummarySection: React.FC<SummaryProps> = ({ 
-  form, 
-  reduction,
-  filteredYear,
-  filteredProperty 
-}) => {
+export const FiscalSummarySection: React.FC<SummaryProps> = ({ form, reduction }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base flex items-center justify-between">
-          <span>Resumen fiscal</span>
-          {filteredYear && <span className="text-sm text-muted-foreground">{filteredYear}</span>}
-        </CardTitle>
+        <CardTitle className="text-base">Resumen fiscal</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -47,9 +37,6 @@ export const FiscalSummarySection: React.FC<SummaryProps> = ({
             <div>
               <p className="text-sm text-muted-foreground">Rendimiento neto reducido (a declarar)</p>
               <p className="text-xl font-semibold">{form.watch('reducedNetProfit')?.toFixed(2) || "0.00"}€</p>
-              {filteredProperty && (
-                <p className="text-xs text-muted-foreground mt-1">Propiedad: {filteredProperty}</p>
-              )}
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Reducción aplicada ({reduction}%)</p>

@@ -16,9 +16,6 @@ interface PropertyDetailContentProps {
   handleDocumentAdd: (document: any) => void;
   handleExpenseDelete?: (expenseId: string) => void;
   setProperty: (property: Property | null) => void;
-  onInventoryAdd?: (item: any) => void;
-  onInventoryEdit?: (item: any) => void;
-  onInventoryDelete?: (itemId: string) => void;
 }
 
 const PropertyDetailContent = ({
@@ -32,13 +29,10 @@ const PropertyDetailContent = ({
   handleDocumentDelete,
   handleDocumentAdd,
   handleExpenseDelete,
-  setProperty,
-  onInventoryAdd,
-  onInventoryEdit,
-  onInventoryDelete
+  setProperty
 }: PropertyDetailContentProps) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       <div className="pb-1">
         <MonthlyPaymentStatus 
           property={property}
@@ -61,9 +55,6 @@ const PropertyDetailContent = ({
         onTaskUpdate={handleTaskUpdate}
         onDocumentDelete={handleDocumentDelete}
         onDocumentAdd={handleDocumentAdd}
-        onInventoryAdd={onInventoryAdd}
-        onInventoryEdit={onInventoryEdit}
-        onInventoryDelete={onInventoryDelete}
       />
     </div>
   );
